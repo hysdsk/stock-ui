@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "nuxt": "^3.1.2"
+  },
+  "dependencies": {
+    "@vuestic/nuxt": "^1.0.10",
+    "chart.js": "^4.2.0",
+    "dayjs": "^1.11.7",
+    "deepmerge": "^4.3.0",
+    "mysql2": "^3.1.2"
+  }
+}
