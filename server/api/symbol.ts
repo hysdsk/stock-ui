@@ -34,6 +34,7 @@ interface SymbolDailyInfo {
     lendingBalance: number;
     sellBalance: number;
     buyBalance: number;
+    rotationDays: number;
 }
 
 const connection = mysql.createConnection({
@@ -172,12 +173,19 @@ export default defineEventHandler(async (event: any) => {
         });
     });
 
-    symbolDailyInfo.forEach((e, i, arr) => {
-        if (0 != i) {
-            e.previousClosingPrice = arr[i - 1].latterClosingPrice;
-            if (0 == e.sellBalance) {
-                e.sellBalance = arr[i - 1].sellBalance;
-                e.buyBalance = arr[i - 1].buyBalance;
+    symbolDailyInfo.forEach((elem, idx, arr) => {
+        if (0 != idx) {
+            elem.previousClosingPrice = arr[idx - 1].latterClosingPrice;
+            if (0 == elem.sellBalance) {
+                elem.sellBalance = arr[idx - 1].sellBalance;
+                elem.buyBalance = arr[idx - 1].buyBalance;
+            }
+            if (4 <= idx) {
+                const rangeSymbls = arr.filter((e, i) => i <= idx && i >= (idx - 4));
+                const avgLoaningBalance = rangeSymbls.map(e => e.loaningBalance).reduce((p, c) => p + c) / 5;
+                const avgLendingBalance = rangeSymbls.map(e => e.lendingBalance).reduce((p, c) => p + c) / 5;
+                const avgAmountAndPaid = rangeSymbls.map(e => e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount).reduce((p, c) => p + c) / 5;
+                elem.rotationDays = (avgLoaningBalance + avgLendingBalance) * 2 / avgAmountAndPaid;
             }
         }
     })
@@ -232,7 +240,7 @@ export default defineEventHandler(async (event: any) => {
             return e.firstLowPrice / e.firstOpeningPrice * 100 - 100
         }),
         rotationDays: symbolDailyInfo.map((e) => {
-            return (e.loaningBalance + e.lendingBalance) * 2 / (e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount)
+            return e.rotationDays.toFixed(1)
         })
     };
     return {
