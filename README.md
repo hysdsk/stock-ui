@@ -1,5 +1,16 @@
 # stock-ui
 
+## Environment
+`.env` で以下を設定する。
+
+| Key | Value |
+| --- | --- |
+| DB_HOST | データベースのホスト名 |
+| DB_PORT | データベースのポート番号 |
+| DB_USER | データベース接続のユーザ名 |
+| DB_PSWD | データベース接続のパスワード |
+| DB_NAME | データベース名 |
+
 # Nuxt 3 Minimal Starter
 
 Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
