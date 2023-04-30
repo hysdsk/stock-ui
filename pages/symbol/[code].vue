@@ -141,53 +141,13 @@
         scales: {
           days: { 
             type: "linear",
-            position: "right",
-            beginAtZero: false
+            position: "right"
           },
           volume: {
             type: "linear",
             position: "left"
           },
           x: {
-            stacked: true
-          }
-        }
-      }
-    });
-
-    new Chart(document.getElementById("priceRangeAtAmChart"), {
-      data: {
-        labels: data._value.dailyInfoForChart.openingDate,
-        datasets: [{
-          type: 'bar',
-          label: "AMギャップ率",
-          data: data._value.dailyInfoForChart.amGapRate,
-          borderWidth: 2,
-          barPercentage: 0.8,
-          borderColor: data._value.dailyInfoForChart.amGapColor,
-          backgroundColor: "rgba(0, 0, 0, 0)",
-          stack: "Gap"
-        },{
-          type: 'bar',
-          label: "AM上昇率",
-          data: data._value.dailyInfoForChart.amIncreaseRate,
-          backgroundColor: "#ff1744",
-          stack: "Range"
-        },{
-          type: 'bar',
-          label: "AM下落率",
-          data: data._value.dailyInfoForChart.amDecreaseRate,
-          backgroundColor: "#00E676",
-          stack: "Range"
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: {
-            stacked: true,
-          },
-          y: {
             stacked: true
           }
         }

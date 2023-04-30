@@ -15,7 +15,7 @@
       <tbody>
       <tr v-for="symbol in data.increaseVolumeSymbols" :key="symbol.code">
         <td>
-          <NuxtLink :to="`/symbol/${symbol.symbolCode}`">
+          <NuxtLink :to="`/symbol/${symbol.symbolCode}`" target="_blank">
             {{ symbol.symbolCode }}
           </NuxtLink>
         </td>
@@ -45,7 +45,7 @@
       <tbody>
       <tr v-for="symbol in data.increasePriceSymbols" :key="symbol.code">
         <td>
-          <NuxtLink :to="`/symbol/${symbol.symbolCode}`">
+          <NuxtLink :to="`/symbol/${symbol.symbolCode}`" target="_blank">
             {{ symbol.symbolCode }}
           </NuxtLink>
         </td>
@@ -76,7 +76,7 @@
       <tbody>
       <tr v-for="symbol in data.increaseSellBalance" :key="symbol.code">
         <td>
-          <NuxtLink :to="`/symbol/${symbol.symbolCode}`">
+          <NuxtLink :to="`/symbol/${symbol.symbolCode}`" target="_blank">
             {{ symbol.symbolCode }}
           </NuxtLink>
         </td>

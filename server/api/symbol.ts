@@ -224,21 +224,6 @@ export default defineEventHandler(async (event: any) => {
         buyBalance: symbolDailyInfo.map((e) => {
             return e.buyBalance - e.loaningBalance
         }),
-        amGapRate: symbolDailyInfo.map((e) => {
-            if (0 == e.firstOpeningPrice) {
-                return 0;
-            }
-            return e.firstOpeningPrice / e.previousClosingPrice * 100 - 100
-        }),
-        amGapColor: symbolDailyInfo.map((e) => {
-            return 1 < (e.firstOpeningPrice / e.previousClosingPrice) ? "#ff1744" : "#00E676"
-        }),
-        amIncreaseRate: symbolDailyInfo.map((e) => {
-            return e.firstHighPrice / e.firstOpeningPrice * 100 - 100 
-        }),
-        amDecreaseRate: symbolDailyInfo.map((e) => {
-            return e.firstLowPrice / e.firstOpeningPrice * 100 - 100
-        }),
         rotationDays: symbolDailyInfo.map((e) => {
             return e.rotationDays.toFixed(1)
         })
