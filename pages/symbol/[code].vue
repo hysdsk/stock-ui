@@ -1,18 +1,55 @@
 <template>
-  <h1 class="va-h1">{{ data.symbol.symbolName }}</h1>
-  <ul class="va-unordered">
-    <li>コード： {{ code }}</li>
-    <li>市場： {{ data.symbol.exchangeName }}{{ data.symbol.divisionName }}</li>
-    <li>業種： {{ data.symbol.bisCategoryName }}</li>
-    <li>時価総額： {{ data.symbol.marketCapitalization.toLocaleString() }}円</li>
-    <li>決算日： {{ data.symbol.fiscalYearEndBasic }}</li>
-    <li><a target="_blank" v-bind:href="'https://kabutan.jp/stock/?code=' + code">株探</a></li>
-    <li><a target="_blank" v-bind:href="'https://kabuyoho.ifis.co.jp/index.php?sa=report_top&bcode=' + code">株予報</a></li>
-    <li><a target="_blank" v-bind:href="'https://karauri.net/' + code">空売り情報</a></li>
-  </ul>
+  <div style="display: inline-block; width: 20%; text-align: center;">
+    <h1 class="va-h1">{{ data.symbol.symbolName }}</h1>
+  </div>
+  <div style="display: inline-block; width: 60%;">
+    <table class="va-table">
+      <thead>
+        <tr><th>
+          コード
+        </th><th>
+          市場
+        </th><th>
+          業種
+        </th><th>
+          時価総額
+        </th><th>
+          決算日
+        </th></tr>
+      </thead>
+      <tbody>
+        <tr><td>
+          {{ code }}
+        </td><td>
+          {{ data.symbol.exchangeName }}{{ data.symbol.divisionName }}
+        </td><td>
+          {{ data.symbol.bisCategoryName }}
+        </td><td>
+          {{ data.symbol.marketCapitalization.toLocaleString() }}円
+        </td><td>
+          {{ data.symbol.fiscalYearEndBasic }}
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="display: inline-block; width: 10%;">
+    <ul class="va-unordered">
+      <li><a target="_blank" v-bind:href="'https://kabutan.jp/stock/?code=' + code">株探</a></li>
+      <li><a target="_blank" v-bind:href="'https://kabuyoho.ifis.co.jp/index.php?sa=report_top&bcode=' + code">株予報</a></li>
+      <li><a target="_blank" v-bind:href="'https://karauri.net/' + code">空売り情報</a></li>
+    </ul>
+  </div>
+  <div style="display: inline-block; width: 10%;">
+    <ul>
+      <li><a :href="`${route.path}?period=1`">直近一ヵ月</a></li>
+      <li><a :href="`${route.path}?period=2`">直近二ヵ月</a></li>
+      <li><a :href="`${route.path}?period=3`">直近三ヵ月</a></li>
+    </ul>
+  </div>
+  <h2>価格と出来高の推移</h2>
   <canvas id="stockChart"></canvas>
+  <h2>出来高と信用残高の推移</h2>
   <canvas id="volumeChart"></canvas>
-  <canvas id="priceRangeAtAmChart"></canvas>
 </template>
 
 <script setup>
