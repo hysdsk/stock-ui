@@ -1,60 +1,53 @@
 <template>
-  <div style="display: inline-block; width: 20%; text-align: center;">
-    <h1 class="va-h1">{{ data.symbol.symbolName }}</h1>
-  </div>
-  <div style="display: inline-block; width: 60%;">
-    <table class="va-table">
-      <thead>
-        <tr><th>
-          コード
-        </th><th>
-          市場
-        </th><th>
-          業種
-        </th><th>
-          時価総額
-        </th><th>
-          決算日
-        </th></tr>
-      </thead>
-      <tbody>
-        <tr><td>
-          {{ code }}
-        </td><td>
-          {{ data.symbol.exchangeName }}{{ data.symbol.divisionName }}
-        </td><td>
-          {{ data.symbol.bisCategoryName }}
-        </td><td>
-          {{ data.symbol.marketCapitalization.toLocaleString() }}円
-        </td><td>
-          {{ data.symbol.fiscalYearEndBasic }}
-        </td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div style="display: inline-block; width: 10%;">
-    <ul class="va-unordered">
-      <li><a target="_blank" v-bind:href="'https://kabutan.jp/stock/?code=' + code">株探</a></li>
-      <li><a target="_blank" v-bind:href="'https://kabuyoho.ifis.co.jp/index.php?sa=report_top&bcode=' + code">株予報</a></li>
-      <li><a target="_blank" v-bind:href="'https://karauri.net/' + code">空売り情報</a></li>
-    </ul>
-  </div>
-  <div style="display: inline-block; width: 10%;">
-    <ul>
-      <li><a :href="`${route.path}?period=1`">直近一ヵ月</a></li>
-      <li><a :href="`${route.path}?period=2`">直近二ヵ月</a></li>
-      <li><a :href="`${route.path}?period=3`">直近三ヵ月</a></li>
-    </ul>
-  </div>
-  <h2>価格と出来高の推移</h2>
-  <canvas id="stockChart"></canvas>
-  <h2>出来高と信用残高の推移</h2>
-  <canvas id="volumeChart"></canvas>
+  <el-container>
+    <el-main>
+      <el-row :gutter="20">
+        <el-col :span="4">
+          <el-text size="large" tag="b" type="primary">{{ data.symbol.symbolName }}</el-text>
+        </el-col>
+        <el-col :span="14">
+          <el-descriptions title="" :column="3" border>
+            <el-descriptions-item label="銘柄コード">
+              {{ code }}
+            </el-descriptions-item>
+            <el-descriptions-item label="市場">
+              {{ data.symbol.exchangeName }}{{ data.symbol.divisionName }}
+            </el-descriptions-item>
+            <el-descriptions-item label="業種">
+              {{ data.symbol.bisCategoryName }}
+            </el-descriptions-item>
+            <el-descriptions-item label="決算日">
+              {{ data.symbol.fiscalYearEndBasic }}
+            </el-descriptions-item>
+            <el-descriptions-item label="時価総額">
+              {{ data.symbol.marketCapitalization.toLocaleString() }}円
+            </el-descriptions-item>
+          </el-descriptions>
+        </el-col>
+        <el-col :span="3">
+          <el-icon><Link /></el-icon> <el-link target="_blank" v-bind:href="'https://kabutan.jp/stock/?code=' + code">株探</el-link><br/>
+          <el-icon><Link /></el-icon> <el-link target="_blank" v-bind:href="'https://kabuyoho.ifis.co.jp/index.php?sa=report_top&bcode=' + code">株予報</el-link><br/>
+          <el-icon><Link /></el-icon> <el-link target="_blank" v-bind:href="'https://karauri.net/' + code">空売り情報</el-link>
+        </el-col>
+        <el-col :span="3">
+          <el-icon><Link /></el-icon> <el-link :href="`${route.path}?period=1`">直近一ヵ月</el-link><br/>
+          <el-icon><Link /></el-icon> <el-link :href="`${route.path}?period=2`">直近二ヵ月</el-link><br/>
+          <el-icon><Link /></el-icon> <el-link :href="`${route.path}?period=3`">直近三ヵ月</el-link>
+        </el-col>
+      </el-row>
+      <el-text size="large" tag="b">価格と出来高の推移</el-text>
+      <canvas id="stockChart"></canvas>
+      <br/>
+      <el-text size="large" tag="b">出来高と信用残高の推移</el-text>
+      <canvas id="volumeChart"></canvas>
+    </el-main>
+  </el-container>
 </template>
 
 <script setup>
   import Chart from 'chart.js/auto';
   import { onMounted } from 'vue';
+  import { Link } from '@element-plus/icons-vue'
 
   const route = useRoute();
   const { code } = route.params;

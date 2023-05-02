@@ -17,17 +17,9 @@ export default defineNuxtConfig({
         "@/assets/styles/main.css"
     ],
     modules: [
-        "@vuestic/nuxt"
+        '@element-plus/nuxt'
     ],
-    vuestic: {
-        config: {
-          colors: {
-            variables: {
-                textPrimary: "rgb(38, 50, 56)"
-            }
-          }
-        }
-    },
+    elementPlus: { /** Options */ },
     runtimeConfig: {
         dbHost: process.env.DB_HOST,
         dbPost: process.env.DB_PORT,
