@@ -5,6 +5,7 @@ const config = useRuntimeConfig()
 interface Symbol {
     symbolCode: string;
     symbolName: string;
+    divisionName: string;
     bisCategoryName: string;
     closingPrice: number;
     recentVolume: number;
@@ -30,12 +31,17 @@ export default defineEventHandler(async (event: any) => {
         SELECT
             s.code symbol_code,
             s.name symbol_name,
+            d.name division_name,
             bc.name bis_category_name,
             ROUND(recent.avg_volume * 1000, 0) recent_volume,
             ROUND(past.avg_volume * 1000, 0) average_volume,
             ROUND(recent.avg_volume / past.avg_volume * 100 - 100, 0) increase_rate
         FROM
             kabu.symbols s
+        INNER JOIN
+            kabu.divisions d
+        ON
+            d.code = s.division_code
         INNER JOIN
             kabu.bis_categories bc
         ON
@@ -65,7 +71,7 @@ export default defineEventHandler(async (event: any) => {
         AND
             recent.avg_volume > past.avg_volume * 2
         AND
-            s.division_code not in ('01', '21', '22', '31', '32')
+            s.division_code not in ('21', '22', '31', '32')
         ORDER BY
             increase_rate DESC
         `;
@@ -79,6 +85,7 @@ export default defineEventHandler(async (event: any) => {
         return reslut.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
+            divisionName: String(row.division_name),
             bisCategoryName: String(row.bis_category_name),
             closingPrice: Number(row.latter_closing_price),
             recentVolume: Number(row.recent_volume),
@@ -110,6 +117,7 @@ export default defineEventHandler(async (event: any) => {
         SELECT
             s.code symbol_code,
             s.name symbol_name,
+            d.name division_name,
             bc.name bis_category_name,
             today.latter_closing_price closing_price,
             truncate(
@@ -121,6 +129,10 @@ export default defineEventHandler(async (event: any) => {
             ROUND(today.latter_closing_price / three_days_ago.first_opening_price * 100 - 100, 0) increase_rate
         FROM
             kabu.symbols s
+        INNER JOIN
+            kabu.divisions d
+        ON
+            d.code = s.division_code
         INNER JOIN
             kabu.bis_categories bc
         ON
@@ -208,6 +220,7 @@ export default defineEventHandler(async (event: any) => {
         return reslut.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
+            divisionName: String(row.division_name),
             bisCategoryName: String(row.bis_category_name),
             closingPrice: Number(row.closing_price),
             averageVolume: Number(row.average_volume),
@@ -238,6 +251,7 @@ export default defineEventHandler(async (event: any) => {
         SELECT
             c.symbol_code,
             s.name symbol_name,
+            d.name division_name,
             b.name bis_category_name,
             d.trading_volume average_volume,
             c.sell_balance,
@@ -249,6 +263,10 @@ export default defineEventHandler(async (event: any) => {
             kabu.symbols s
         ON
             c.symbol_code = s.code
+        INNER JOIN
+            kabu.divisions d
+        ON
+            d.code = s.division_code
         INNER JOIN
             kabu.bis_categories b
         ON
@@ -291,6 +309,7 @@ export default defineEventHandler(async (event: any) => {
         return reslut.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
+            divisionName: String(row.division_name),
             bisCategoryName: String(row.bis_category_name),
             averageVolume: Number(row.average_volume),
             sellBalance: Number(row.sell_balance),
