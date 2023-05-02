@@ -1,9 +1,9 @@
 <template>
   <div style="display: inline-block; width: 20%; text-align: center;">
-    <h1 class="va-h1">{{ data.symbol.symbolName }}</h1>
+    <h1 class="">{{ data.symbol.symbolName }}</h1>
   </div>
   <div style="display: inline-block; width: 60%;">
-    <table class="va-table">
+    <table class="">
       <thead>
         <tr><th>
           コード
@@ -33,7 +33,7 @@
     </table>
   </div>
   <div style="display: inline-block; width: 10%;">
-    <ul class="va-unordered">
+    <ul class="">
       <li><a target="_blank" v-bind:href="'https://kabutan.jp/stock/?code=' + code">株探</a></li>
       <li><a target="_blank" v-bind:href="'https://kabuyoho.ifis.co.jp/index.php?sa=report_top&bcode=' + code">株予報</a></li>
       <li><a target="_blank" v-bind:href="'https://karauri.net/' + code">空売り情報</a></li>

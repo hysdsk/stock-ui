@@ -1,7 +1,7 @@
 <template>
-  <h1 class="va-h1">出来高増加銘柄一覧</h1>
-  <div class="va-table-responsive">
-    <table class="va-table">
+  <h1 class="">出来高増加銘柄一覧</h1>
+  <div class="">
+    <table class="">
       <thead>
       <tr>
         <th>銘柄コード</th>
@@ -29,9 +29,9 @@
     </table>
   </div>
 
-  <h1 class="va-h1">上昇銘柄一覧</h1>
-  <div class="va-table-responsive">
-    <table class="va-table">
+  <h1 class="">上昇銘柄一覧</h1>
+  <div class="">
+    <table class="">
       <thead>
       <tr>
         <th>銘柄コード</th>
@@ -59,9 +59,9 @@
     </table>
   </div>
 
-  <h1 class="va-h1">踏み上げ期待銘柄一覧</h1>
-  <div class="va-table-responsive">
-    <table class="va-table">
+  <h1 class="">踏み上げ期待銘柄一覧</h1>
+  <div class="">
+    <table class="">
       <thead>
       <tr>
         <th>銘柄コード</th>

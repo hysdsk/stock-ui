@@ -17,7 +17,6 @@ export default defineNuxtConfig({
         "@/assets/styles/main.css"
     ],
     modules: [
-        "@vuestic/nuxt"
     ],
     vuestic: {
         config: {
