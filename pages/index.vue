@@ -4,8 +4,8 @@
       <el-tabs>
         <el-tab-pane label="出来高増加銘柄">
           <el-card>
-            <el-icon><InfoFilled /></el-icon>
-            TODO:
+            <el-icon><InfoFilled /></el-icon> <b>抽出条件</b><br/>
+            直近一週間の平均売買高が50万株以上 かつ 過去三か月の平均売買高の倍以上の銘柄
           </el-card>
           <el-table :data="data.increaseVolumeSymbols" @row-click="moveTo">
             <el-table-column prop="symbolCode" label="銘柄コード"/>
@@ -19,8 +19,8 @@
         </el-tab-pane>
         <el-tab-pane label="上昇銘柄">
           <el-card>
-            <el-icon><InfoFilled /></el-icon>
-            TODO:
+            <el-icon><InfoFilled /></el-icon> <b>抽出条件</b><br/>
+            直近三連騰陽線 かつ 三日間の平均売買高が10万株以上の銘柄
           </el-card>
           <el-table :data="data.increasePriceSymbols" @row-click="moveTo">
             <el-table-column prop="symbolCode" label="銘柄コード"/>
@@ -34,8 +34,8 @@
         </el-tab-pane>
         <el-tab-pane label="踏み上げ期待銘柄">
           <el-card>
-            <el-icon><InfoFilled /></el-icon>
-            TODO:
+            <el-icon><InfoFilled /></el-icon> <b>抽出条件</b><br/>
+            現在の信用買い残が五週前より減っている かつ 現在の信用売り残が五週前より増えている かつ 現在の信用買い残が100万株以上の銘柄
           </el-card>
           <el-table :data="data.increaseSellBalance" @row-click="moveTo">
             <el-table-column prop="symbolCode" label="銘柄コード"/>

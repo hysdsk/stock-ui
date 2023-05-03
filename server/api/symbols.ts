@@ -102,7 +102,7 @@ export default defineEventHandler(async (event: any) => {
         	kabu.symbol_daily_info
         ORDER BY
         	opening_date DESC
-        LIMIT 4
+        LIMIT 3
         `
         connection.query(sql, [], (err, rows, fields) => {
             resolve(rows);
@@ -123,10 +123,9 @@ export default defineEventHandler(async (event: any) => {
             truncate(
                 ( today.trading_volume
                 + yesterday.trading_volume
-                + two_days_ago.trading_volume
-                + three_days_ago.trading_volume) * 1000 / 4,
+                + two_days_ago.trading_volume) * 1000 / 3,
             0) average_volume,
-            ROUND(today.latter_closing_price / three_days_ago.first_opening_price * 100 - 100, 0) increase_rate
+            ROUND(today.latter_closing_price / two_days_ago.first_opening_price * 100 - 100, 0) increase_rate
         FROM
             kabu.symbols s
         INNER JOIN
@@ -176,19 +175,6 @@ export default defineEventHandler(async (event: any) => {
         ) two_days_ago
         ON
             s.code = two_days_ago.symbol_code
-        INNER JOIN (
-            SELECT
-                symbol_code,
-                first_opening_price,
-                latter_closing_price,
-                trading_volume
-            FROM
-                kabu.symbol_daily_info
-            WHERE
-                opening_date = ?
-        ) three_days_ago
-        ON
-            s.code = three_days_ago.symbol_code
         WHERE
             today.latter_closing_price > today.first_opening_price
         AND
@@ -200,19 +186,14 @@ export default defineEventHandler(async (event: any) => {
         AND
             two_days_ago.latter_closing_price > two_days_ago.first_opening_price
         AND
-            two_days_ago.latter_closing_price > three_days_ago.latter_closing_price
-        AND
-            three_days_ago.latter_closing_price > three_days_ago.first_opening_price
-        AND
             ( today.trading_volume
             + yesterday.trading_volume
-            + two_days_ago.trading_volume
-            + three_days_ago.trading_volume)
-            / 4 > 100
+            + two_days_ago.trading_volume)
+            / 3 > 100
         ORDER BY
             increase_rate DESC
         `
-        connection.query(sql, [days[0], days[1], days[2], days[3]], (err, rows, fields) => {
+        connection.query(sql, [days[0], days[1], days[2]], (err, rows, fields) => {
             resolve(rows);
         });
     });
