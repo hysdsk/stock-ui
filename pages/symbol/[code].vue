@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-row :gutter="20">
-        <el-col :span="4">
+        <el-col :span="4" style="text-align: center;">
           <el-text size="large" tag="b" type="primary">{{ data.symbol.symbolName }}</el-text>
         </el-col>
         <el-col :span="14">

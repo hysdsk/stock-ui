@@ -5,6 +5,7 @@ const config = useRuntimeConfig()
 interface Symbol {
     symbolCode: string;
     symbolName: string;
+    divisionName: string;
     bisCategoryName: string;
     closingPrice: number;
     recentVolume: number;
@@ -13,6 +14,7 @@ interface Symbol {
     sellBalance: number;
     buyBalance: number;
     balanceRate: number;
+    marketPrice: number;
 }
 
 const connection = mysql.createConnection({
@@ -30,12 +32,17 @@ export default defineEventHandler(async (event: any) => {
         SELECT
             s.code symbol_code,
             s.name symbol_name,
+            d.name division_name,
             bc.name bis_category_name,
             ROUND(recent.avg_volume * 1000, 0) recent_volume,
             ROUND(past.avg_volume * 1000, 0) average_volume,
             ROUND(recent.avg_volume / past.avg_volume * 100 - 100, 0) increase_rate
         FROM
             kabu.symbols s
+        INNER JOIN
+            kabu.divisions d
+        ON
+            d.code = s.division_code
         INNER JOIN
             kabu.bis_categories bc
         ON
@@ -65,7 +72,7 @@ export default defineEventHandler(async (event: any) => {
         AND
             recent.avg_volume > past.avg_volume * 2
         AND
-            s.division_code not in ('01', '21', '22', '31', '32')
+            s.division_code not in ('21', '22', '31', '32')
         ORDER BY
             increase_rate DESC
         `;
@@ -79,6 +86,7 @@ export default defineEventHandler(async (event: any) => {
         return reslut.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
+            divisionName: String(row.division_name),
             bisCategoryName: String(row.bis_category_name),
             closingPrice: Number(row.latter_closing_price),
             recentVolume: Number(row.recent_volume),
@@ -95,7 +103,7 @@ export default defineEventHandler(async (event: any) => {
         	kabu.symbol_daily_info
         ORDER BY
         	opening_date DESC
-        LIMIT 4
+        LIMIT 60
         `
         connection.query(sql, [], (err, rows, fields) => {
             resolve(rows);
@@ -110,17 +118,21 @@ export default defineEventHandler(async (event: any) => {
         SELECT
             s.code symbol_code,
             s.name symbol_name,
+            d.name division_name,
             bc.name bis_category_name,
             today.latter_closing_price closing_price,
             truncate(
                 ( today.trading_volume
                 + yesterday.trading_volume
-                + two_days_ago.trading_volume
-                + three_days_ago.trading_volume) * 1000 / 4,
+                + two_days_ago.trading_volume) * 1000 / 3,
             0) average_volume,
-            ROUND(today.latter_closing_price / three_days_ago.first_opening_price * 100 - 100, 0) increase_rate
+            ROUND(today.latter_closing_price / two_days_ago.first_opening_price * 100 - 100, 0) increase_rate
         FROM
             kabu.symbols s
+        INNER JOIN
+            kabu.divisions d
+        ON
+            d.code = s.division_code
         INNER JOIN
             kabu.bis_categories bc
         ON
@@ -164,19 +176,6 @@ export default defineEventHandler(async (event: any) => {
         ) two_days_ago
         ON
             s.code = two_days_ago.symbol_code
-        INNER JOIN (
-            SELECT
-                symbol_code,
-                first_opening_price,
-                latter_closing_price,
-                trading_volume
-            FROM
-                kabu.symbol_daily_info
-            WHERE
-                opening_date = ?
-        ) three_days_ago
-        ON
-            s.code = three_days_ago.symbol_code
         WHERE
             today.latter_closing_price > today.first_opening_price
         AND
@@ -188,19 +187,14 @@ export default defineEventHandler(async (event: any) => {
         AND
             two_days_ago.latter_closing_price > two_days_ago.first_opening_price
         AND
-            two_days_ago.latter_closing_price > three_days_ago.latter_closing_price
-        AND
-            three_days_ago.latter_closing_price > three_days_ago.first_opening_price
-        AND
             ( today.trading_volume
             + yesterday.trading_volume
-            + two_days_ago.trading_volume
-            + three_days_ago.trading_volume)
-            / 4 > 100
+            + two_days_ago.trading_volume)
+            / 3 > 100
         ORDER BY
             increase_rate DESC
         `
-        connection.query(sql, [days[0], days[1], days[2], days[3]], (err, rows, fields) => {
+        connection.query(sql, [days[0], days[1], days[2]], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -208,6 +202,7 @@ export default defineEventHandler(async (event: any) => {
         return reslut.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
+            divisionName: String(row.division_name),
             bisCategoryName: String(row.bis_category_name),
             closingPrice: Number(row.closing_price),
             averageVolume: Number(row.average_volume),
@@ -238,6 +233,7 @@ export default defineEventHandler(async (event: any) => {
         SELECT
             c.symbol_code,
             s.name symbol_name,
+            d.name division_name,
             b.name bis_category_name,
             d.trading_volume average_volume,
             c.sell_balance,
@@ -249,6 +245,10 @@ export default defineEventHandler(async (event: any) => {
             kabu.symbols s
         ON
             c.symbol_code = s.code
+        INNER JOIN
+            kabu.divisions d
+        ON
+            d.code = s.division_code
         INNER JOIN
             kabu.bis_categories b
         ON
@@ -291,6 +291,7 @@ export default defineEventHandler(async (event: any) => {
         return reslut.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
+            divisionName: String(row.division_name),
             bisCategoryName: String(row.bis_category_name),
             averageVolume: Number(row.average_volume),
             sellBalance: Number(row.sell_balance),
@@ -299,9 +300,84 @@ export default defineEventHandler(async (event: any) => {
         });
     });
 
+    p = new Promise((resolve, reject) => {
+        const sql: string = `
+        SELECT
+            s.code symbol_code,
+            TRIM(s.name) symbol_name,
+            d.name division_name,
+            b.name bis_category_name,
+            recent.closing_price,
+            aggregated.average_volume,
+            s.total_stocks * recent.closing_price * 10000 market_price
+        FROM
+            symbols s
+        INNER JOIN
+            kabu.divisions d
+        ON
+            d.code = s.division_code
+        INNER JOIN
+            kabu.bis_categories b
+        ON
+            s.bis_category_code = b.code
+        INNER JOIN (
+            SELECT
+                symbol_code,
+                latter_closing_price closing_price
+            FROM
+                kabu.symbol_daily_info
+            WHERE
+                opening_date = ?
+        ) recent
+        ON
+            s.code = recent.symbol_code
+        INNER JOIN (
+            SELECT
+                sdi.symbol_code symbol_code,
+                TRUNCATE(AVG(sdi.trading_volume) * 1000, 0) average_volume,
+                MAX(sdi.first_high_price) - MIN(sdi.first_high_price) +
+                MAX(sdi.latter_high_price) - MIN(sdi.latter_high_price) diff_range
+            FROM
+                kabu.symbol_daily_info sdi
+            WHERE
+                sdi.opening_date >= ?
+            GROUP BY
+                sdi.symbol_code
+        ) aggregated
+        ON
+            s.code = aggregated.symbol_code
+        WHERE
+            s.total_stocks is not null
+        AND
+            (s.total_stocks * recent.closing_price) < 3000000
+        AND
+            recent.closing_price <= 500
+        AND
+            aggregated.average_volume < 500000
+        ORDER BY
+            aggregated.diff_range
+        `
+        connection.query(sql, [days.shift(), days.pop()], (err, rows, fields) => {
+            resolve(rows);
+        });
+    });
+    
+    const lowRankSymbols: Symbol[] = await p.then((reslut) => {
+        return reslut.map((row: any) => <Symbol> {
+            symbolCode: String(row.symbol_code),
+            symbolName: String(row.symbol_name),
+            divisionName: String(row.division_name),
+            bisCategoryName: String(row.bis_category_name),
+            averageVolume: Number(row.average_volume),
+            closingPrice: Number(row.closing_price),
+            marketPrice: Number(row.market_price)
+        });
+    });
+
     return {
         increaseVolumeSymbols,
         increasePriceSymbols,
-        increaseSellBalance
+        increaseSellBalance,
+        lowRankSymbols
     };
 });
