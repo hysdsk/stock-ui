@@ -48,6 +48,21 @@
             <el-table-column prop="balanceRate" label="信用倍率" align="right" :formatter="formatRate"/>
           </el-table>
         </el-tab-pane>
+        <el-tab-pane label="仕手上げ期待銘柄">
+          <el-card>
+            <el-icon><InfoFilled /></el-icon> <b>抽出条件</b><br/>
+            時価総額300億円以下 かつ 直近終値500円以下 かつ 直近三か月の平均売買高30万株以下の価格変動が小さい銘柄
+          </el-card>
+          <el-table :data="data.lowRankSymbols" @row-click="moveTo">
+            <el-table-column prop="symbolCode" label="銘柄コード"/>
+            <el-table-column prop="symbolName" label="銘柄名"/>
+            <el-table-column prop="divisionName" label="市場" :formatter="formatDivision"/>
+            <el-table-column prop="bisCategoryName" label="業種名"/>
+            <el-table-column prop="closingPrice" label="直近終値" align="right" :formatter="formatNum"/>
+            <el-table-column prop="averageVolume" label="平均出来高" align="right" :formatter="formatNum"/>
+            <el-table-column prop="marketPrice" label="時価総額" align="right" :formatter="formatNum"/>
+          </el-table>
+        </el-tab-pane>
       </el-tabs>
     </el-main>
   </el-container>
@@ -56,7 +71,8 @@
 <script setup>
   import { InfoFilled } from '@element-plus/icons-vue'
 
-  const { data } = await useFetch("/api/symbols");
+  const { data } = useFetch("/api/symbols");
+
   const moveTo = (e) => {
     window.open(`/symbol/${e.symbolCode}`, '_blank')
   }
