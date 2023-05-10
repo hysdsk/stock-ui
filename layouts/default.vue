@@ -1,7 +1,7 @@
 <template>
   <div style="display: inline-block; width: 100%;">
     <div style="padding: 0.75rem;">
-      <NuxtLink :to="`/`">Home</NuxtLink>
+      <a href="/">Home</a>
     </div>
   </div>
   <slot />
