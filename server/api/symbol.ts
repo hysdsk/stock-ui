@@ -37,6 +37,12 @@ interface SymbolDailyInfo {
     rotationDays: number;
 }
 
+interface SymbolWeeklyInfo {
+    weekendDate: string;
+    sellBalance: number;
+    buyBalance: number;
+}
+
 const connection = mysql.createConnection({
     host: config.dbHost,
     user: config.dbUser,
@@ -111,35 +117,33 @@ export default defineEventHandler(async (event: any) => {
     p = new Promise((resolve, reject) => {
         const daily_info_sql: string = `
         SELECT
-        	d.symbol_code,
-        	d.opening_date,
+            d.symbol_code,
+            d.opening_date,
             d.first_opening_price,
             d.first_high_price,
             d.first_low_price,
             d.latter_opening_price,
             d.latter_high_price,
             d.latter_low_price,
-        	d.latter_closing_price,
-        	d.trading_volume * 1000 trading_volume,
+            d.latter_closing_price,
+            d.trading_volume * 1000 trading_volume,
             d.vwap,
             d.loaning_amount,
             d.paid_loaning_amount,
-        	d.loaning_balance,
+            d.loaning_balance,
             d.lending_amount,
             d.paid_lending_amount,
-        	d.lending_balance,
-            w.sell_balance,
-            w.buy_balance
+            d.lending_balance
         FROM
-        	kabu.symbol_daily_info d
+            kabu.symbol_daily_info d
         LEFT JOIN
             kabu.symbol_weekly_info w
         ON
-        	d.symbol_code = w.symbol_code
+            d.symbol_code = w.symbol_code
         AND
-        	d.opening_date = w.weekend_date
+            d.opening_date = w.weekend_date
         WHERE
-        	d.symbol_code = ?
+            d.symbol_code = ?
         AND
             d.opening_date >= ?
         `;
@@ -167,12 +171,37 @@ export default defineEventHandler(async (event: any) => {
             loaningBalance: Number(e.loaning_balance),
             lendingAmount: Number(e.lending_amount),
             paidLendingAmount: Number(e.paid_lending_amount),
-            lendingBalance: Number(e.lending_balance),
+            lendingBalance: Number(e.lending_balance)
+        });
+    });
+
+    p = new Promise((resolve, reject) => {
+        const sql: string = `
+        SELECT
+            weekend_date,
+            sell_balance,
+            buy_balance
+        FROM
+            kabu.symbol_weekly_info
+        WHERE
+            symbol_code = ?
+        AND
+            weekend_date >= ?
+        `;
+        connection.query(sql, [symbolCode, startDate], (err, rows, fields) => {
+            resolve(rows);
+        });
+    });
+    let symbolWeeklyInfo: SymbolWeeklyInfo[] = [];
+    await p.then((reslut) => {
+        symbolWeeklyInfo = reslut.map((e: any) => <SymbolWeeklyInfo>{
+            weekendDate: String(e.weekend_date),
             sellBalance: Number(e.sell_balance),
             buyBalance: Number(e.buy_balance)
         });
     });
 
+    // 回転日数を計算している
     symbolDailyInfo.forEach((elem, idx, arr) => {
         if (0 != idx) {
             elem.previousClosingPrice = arr[idx - 1].latterClosingPrice;
@@ -190,8 +219,10 @@ export default defineEventHandler(async (event: any) => {
         }
     })
 
+    // 表示対象期間内に短縮している
     startDate = dayjs().subtract(month, "M").format("YYYYMMDD");
     symbolDailyInfo = symbolDailyInfo.filter(e => Number(e.openingDate) >= Number(startDate));
+    symbolWeeklyInfo = symbolWeeklyInfo.filter(e => Number(e.weekendDate) >= Number(startDate));
 
     const dailyInfoForChart = {
         openingDate: symbolDailyInfo.map((e) => {
@@ -218,18 +249,25 @@ export default defineEventHandler(async (event: any) => {
         vwap: symbolDailyInfo.map((e) => {return e.vwap}),
         loaningBalance: symbolDailyInfo.map((e) => {return e.loaningBalance}),
         lendingBalance: symbolDailyInfo.map((e) => {return e.lendingBalance}),
-        sellBalance: symbolDailyInfo.map((e) => {
-            return e.sellBalance - e.lendingBalance
-        }),
-        buyBalance: symbolDailyInfo.map((e) => {
-            return e.buyBalance - e.loaningBalance
-        }),
         rotationDays: symbolDailyInfo.map((e) => {
             return e.rotationDays.toFixed(1)
         })
     };
+
+    const weeklyInfoForChart = {
+        weekendDate: symbolWeeklyInfo.map((e) => {
+            const year = e.weekendDate.substring(0, 4);
+            const month = e.weekendDate.substring(4, 6);
+            const day = e.weekendDate.substring(6, 8);
+            return dayjs(`${year}-${month}-${day}`).format("YYYY/MM/DD（dd）");
+        }),
+        sellBalance: symbolWeeklyInfo.map((e) => {return e.sellBalance}),
+        buyBalance: symbolWeeklyInfo.map((e) => {return e.buyBalance})
+    }
+
     return {
         symbol,
-        dailyInfoForChart
+        dailyInfoForChart,
+        weeklyInfoForChart
     }
 });

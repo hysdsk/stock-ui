@@ -38,8 +38,11 @@
       <el-text size="large" tag="b">価格と出来高の推移</el-text>
       <canvas id="stockChart"></canvas>
       <br/>
-      <el-text size="large" tag="b">出来高と信用残高の推移</el-text>
+      <el-text size="large" tag="b">融資貸株残高と出来高の推移</el-text>
       <canvas id="volumeChart"></canvas>
+      <br/>
+      <el-text size="large" tag="b">信用残高推移</el-text>
+      <canvas id="balanceChart"></canvas>
     </el-main>
   </el-container>
 </template>
@@ -134,25 +137,9 @@
           stack: "Buy"
         },{
           type: 'bar',
-          label: "信用買残",
-          data: data._value.dailyInfoForChart.buyBalance,
-          backgroundColor: "#ff8a80",
-          order: 2,
-          yAxisID: "volume",
-          stack: "Buy"
-        },{
-          type: 'bar',
           label: "貸株残",
           data: data._value.dailyInfoForChart.lendingBalance,
           backgroundColor: "#00E676",
-          order: 2,
-          yAxisID: "volume",
-          stack: "Sell"
-        },{
-          type: 'bar',
-          label: "信用売残",
-          data: data._value.dailyInfoForChart.sellBalance,
-          backgroundColor: "#B9F6CA",
           order: 2,
           yAxisID: "volume",
           stack: "Sell"
@@ -181,6 +168,26 @@
             stacked: true
           }
         }
+      }
+    });
+
+    new Chart(document.getElementById("balanceChart"), {
+      data: {
+        labels: data._value.weeklyInfoForChart.weekendDate,
+        datasets: [{
+          type: "bar",
+          label: "信用売残",
+          data: data._value.weeklyInfoForChart.sellBalance,
+          backgroundColor: "#B9F6CA"
+        },{
+          type: 'bar',
+          label: "信用買残",
+          data: data._value.weeklyInfoForChart.buyBalance,
+          backgroundColor: "#ff8a80"
+        }]
+      },
+      options: {
+        scales: {}
       }
     });
   });
