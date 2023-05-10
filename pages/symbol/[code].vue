@@ -35,14 +35,17 @@
           <el-icon><Link /></el-icon> <el-link :href="`${route.path}?period=3`">直近三ヵ月</el-link>
         </el-col>
       </el-row>
-      <el-text size="large" tag="b">価格と出来高の推移</el-text>
-      <canvas id="stockChart"></canvas>
-      <br/>
-      <el-text size="large" tag="b">融資貸株残高と出来高の推移</el-text>
-      <canvas id="volumeChart"></canvas>
-      <br/>
-      <el-text size="large" tag="b">信用残高推移</el-text>
-      <canvas id="balanceChart"></canvas>
+      <el-tabs>
+        <el-tab-pane label="価格と出来高の推移">
+          <canvas id="stockChart"></canvas>
+        </el-tab-pane>
+        <el-tab-pane label="融資貸株残高と出来高の推移">
+          <canvas id="volumeChart"></canvas>
+        </el-tab-pane>
+        <el-tab-pane label="信用残高推移">
+          <canvas id="balanceChart"></canvas>
+        </el-tab-pane>
+      </el-tabs>
     </el-main>
   </el-container>
 </template>
@@ -112,6 +115,11 @@
           x: {
             stacked: true
           }
+        },
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
         }
       }
     });
@@ -167,6 +175,11 @@
           x: {
             stacked: true
           }
+        },
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
         }
       }
     });
@@ -187,7 +200,11 @@
         }]
       },
       options: {
-        scales: {}
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
+        }
       }
     });
   });
