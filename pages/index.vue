@@ -71,7 +71,7 @@
 <script setup>
   import { InfoFilled } from '@element-plus/icons-vue'
 
-  const { data } = useFetch("/api/symbols");
+  const { data } = useFetch("/api/searchedSymbols");
 
   const moveTo = (e) => {
     window.open(`/symbol/${e.symbolCode}`, '_blank')

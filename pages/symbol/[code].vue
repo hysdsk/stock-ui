@@ -42,7 +42,7 @@
         <el-tab-pane label="融資貸株残高と出来高の推移">
           <canvas id="volumeChart"></canvas>
         </el-tab-pane>
-        <el-tab-pane label="信用残高推移">
+        <el-tab-pane label="信用残高の推移">
           <canvas id="balanceChart"></canvas>
         </el-tab-pane>
       </el-tabs>
