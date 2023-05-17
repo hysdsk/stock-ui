@@ -25,6 +25,12 @@ export default defineNuxtConfig({
         dbPost: process.env.DB_PORT,
         dbUser: process.env.DB_USER,
         dbPswd: process.env.DB_PSWD,
-        dbName: process.env.DB_NAME
+        dbName: process.env.DB_NAME,
+        public: {
+            uiHost: process.env.UI_HOST,
+            uiPort: process.env.UI_PORT,
+            wsHost: process.env.WS_HOST,
+            wsPort: process.env.WS_PORT
+        }
     }
 })
