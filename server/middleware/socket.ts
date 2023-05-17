@@ -3,9 +3,13 @@ import { Server, Socket }  from "socket.io";
 
 const config = useRuntimeConfig()
 const server = http.createServer()
+let origin =  `http://${config.public.uiHost}`
+if (config.public.uiPort !== "") {
+    origin += `:${config.public.uiPort}`
+}
 const io = new Server(server, {
     cors:{
-        origin: [`http://${config.public.uiHost}:${config.public.uiPort}`]
+        origin: [origin]
     }
 });
 
