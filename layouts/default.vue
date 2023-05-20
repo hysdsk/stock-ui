@@ -12,6 +12,9 @@
       <el-button text @click="goSymbol">
         銘柄情報へ
       </el-button>
+      <el-button text @click="goNotices">
+        通知受信へ
+      </el-button>
     </template>
   </el-page-header>
   <slot />
@@ -34,5 +37,9 @@ const goSymbol = () => {
   } else {
     ElMessage.error("Not found symbol.")
   }
+}
+
+const goNotices = () => {
+  window.location.href = "/notices"
 }
 </script>

@@ -1,6 +1,11 @@
 <template>
   <br/>
-  <el-row :gutter="10">
+  <el-row :gutter="10" >
+    <el-col :span="6" v-if="Object.keys(msgs).length===0">
+      <el-card class="box-card">
+        <el-skeleton :rows="6" animated />
+      </el-card>
+    </el-col>
     <el-col :span="6" v-for="v, k in msgs">
       <el-card class="box-card">
           <template #header>
@@ -52,7 +57,7 @@
   const config = useRuntimeConfig()
   const msgs = ref({})
   onMounted(() => {
-    const socket = io(`${config.public.wsBaseURL}:${config.public.wsPort}`);
+    const socket = io(config.public.wsBaseURL);
     socket.on("new-msg", msg => {
       for (const key in msg) {
         if (!msgs.value[key]) {
