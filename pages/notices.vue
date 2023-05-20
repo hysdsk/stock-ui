@@ -69,7 +69,6 @@
       if (!ticks[key]) {
         ticks[key] = [];
       }
-
       while (ticks[key].length > 5) {
         ticks[key].shift();
       }
@@ -102,24 +101,25 @@
     return `${price}:${qty}`;
   }
   const colorRatio = (v) => {
-    if (v >  8) return  "text-red9";
-    if (v >  7) return  "text-red8";
-    if (v >  6) return  "text-red7";
-    if (v >  5) return  "text-red6";
-    if (v >  4) return  "text-red5";
-    if (v >  3) return  "text-red4";
-    if (v >  2) return  "text-red3";
-    if (v >  1) return  "text-red2";
-    if (v >  0) return  "text-red1";
-    if (v < -8) return "text-blue9";
-    if (v < -7) return "text-blue8";
-    if (v < -6) return "text-blue7";
-    if (v < -5) return "text-blue6";
-    if (v < -4) return "text-blue5";
-    if (v < -3) return "text-blue4";
-    if (v < -2) return "text-blue3";
-    if (v < -1) return "text-blue2";
-    if (v <  0) return "text-blue1";
+    const r = Math.round(v * 10) / 10;
+    if (r >  8) return  "text-red9";
+    if (r >  7) return  "text-red8";
+    if (r >  6) return  "text-red7";
+    if (r >  5) return  "text-red6";
+    if (r >  4) return  "text-red5";
+    if (r >  3) return  "text-red4";
+    if (r >  2) return  "text-red3";
+    if (r >  1) return  "text-red2";
+    if (r >  0) return  "text-red1";
+    if (r < -8) return "text-blue9";
+    if (r < -7) return "text-blue8";
+    if (r < -6) return "text-blue7";
+    if (r < -5) return "text-blue6";
+    if (r < -4) return "text-blue5";
+    if (r < -3) return "text-blue4";
+    if (r < -2) return "text-blue3";
+    if (r < -1) return "text-blue2";
+    if (r <  0) return "text-blue1";
     return ""
   }
   const colorVolume = (v, sob) => {
