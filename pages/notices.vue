@@ -1,12 +1,12 @@
 <template>
   <br/>
   <el-row :gutter="10" >
-    <el-col :span="6" v-if="Object.keys(msgs).length===0">
+    <el-col :span="6" v-if="Object.keys(ticks).length===0">
       <el-card class="box-card">
         <el-skeleton :rows="6" animated />
       </el-card>
     </el-col>
-    <el-col :span="6" v-for="v, k in msgs">
+    <el-col :span="6" v-for="v, k in ticks">
       <el-card class="box-card">
           <template #header>
             <div class="card-header">
@@ -19,9 +19,13 @@
               </el-tooltip>
             </div>
           </template>
-        <el-table :data="v" style="width: 100%">
-          <el-table-column prop="time" label="時刻" />
-          <el-table-column prop="currentprice" label="現値" align="right" class-name="test" />
+        <el-table :data="v" style="width: 100%" :row-class-name="tableRowClassName">
+          <el-table-column prop="time" label="時刻"/>
+          <el-table-column label="現値" align="right">
+            <template #default="scope">
+              <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="前日比" align="right">
             <template #default="scope">
               <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRate(scope.row.previouscloseratio) }}</span>
@@ -52,38 +56,39 @@
 
 <script setup>
   import { io } from "socket.io-client"
-  import { ref, onMounted } from "vue";
+  import { reactive, ref, onMounted } from "vue";
   
   const config = useRuntimeConfig()
-  const msgs = ref({})
+  const ticks = reactive({})
   onMounted(() => {
     const socket = io(config.public.wsBaseURL);
     socket.on("new-msg", msg => {
-      for (const key in msg) {
-        if (!msgs.value[key]) {
-          msgs.value[key] = [];
-        }
-        while (msgs.value[key].length > 4) {
-          msgs.value[key].shift();
-        }
-        msg[key].testflg = true
-        msgs.value[key].push(msg[key]);
+      const key = Object.keys(msg)[0]
+      const data = reactive(msg[key])
 
-        setTimeout(() => {
-          const i = msgs.value[key].indexOf(msg[key]);
-          msg[key].testflg = false;
-          msgs.value[key].splice(i, 1, msg[key]);
-        }, 50);
+      if (!ticks[key]) {
+        ticks[key] = [];
       }
+
+      while (ticks[key].length > 5) {
+        ticks[key].shift();
+      }
+
+      data.testflg = true
+      ticks[key].push(data);
+      setTimeout(() => {
+        data.testflg = false;
+      }, 50);
     });
   })
+
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(v);
     }
   }
   const formatRate = (v) => {
-    return `${Math.floor(v * 10) / 10}%`;
+    return `${Math.round(v * 10) / 10}%`;
   }
   const formatVolume = (v) => {
     return v > 0 ? `${Math.round(v / 1000)}k` : null;
@@ -92,7 +97,7 @@
     if (!v) {
       return null
     }
-    const price = v.price ? v.price : "-----";
+    const price = v.price ? v.price : "--- ";
     const qty = formatVolume(v.qty);
     return `${price}:${qty}`;
   }
@@ -138,7 +143,11 @@
     if (sob < 0 && v >     0) return "text-blue1";
     return ""
   }
-
+  const colorPrice = (v) => {
+    if (v == "nowopened") return "text-green";
+    if (v == "freezing")  return "text-gray";
+    return ""
+  }
   const tableRowClassName = (r, i) => {
     if (r.row.testflg) {
       return 'bg-highlight'
