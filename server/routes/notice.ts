@@ -1,7 +1,7 @@
 import { io } from "socket.io-client"
 
 const config = useRuntimeConfig()
-const socket = io(`http://${config.public.wsHost}:${config.public.wsPort}`);
+const socket = io(`${config.public.wsBaseURL}:${config.public.wsPort}`);
 
 export default defineEventHandler(async (event: any) => {
   const body = await readBody(event);
