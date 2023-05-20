@@ -52,7 +52,7 @@
   const config = useRuntimeConfig()
   const msgs = ref({})
   onMounted(() => {
-    const socket = io(`http://${config.public.wsHost}:${config.public.wsPort}`);
+    const socket = io(`${config.public.wsBaseURL}:${config.public.wsPort}`);
     socket.on("new-msg", msg => {
       for (const key in msg) {
         if (!msgs.value[key]) {
