@@ -32,9 +32,6 @@ interface SymbolDailyInfo {
     lendingAmount: number;
     paidLendingAmount: number;
     lendingBalance: number;
-    sellBalance: number;
-    buyBalance: number;
-    rotationDays: number;
 }
 
 interface SymbolWeeklyInfo {
@@ -117,35 +114,29 @@ export default defineEventHandler(async (event: any) => {
     p = new Promise((resolve, reject) => {
         const daily_info_sql: string = `
         SELECT
-            d.symbol_code,
-            d.opening_date,
-            d.first_opening_price,
-            d.first_high_price,
-            d.first_low_price,
-            d.latter_opening_price,
-            d.latter_high_price,
-            d.latter_low_price,
-            d.latter_closing_price,
-            d.trading_volume * 1000 trading_volume,
-            d.vwap,
-            d.loaning_amount,
-            d.paid_loaning_amount,
-            d.loaning_balance,
-            d.lending_amount,
-            d.paid_lending_amount,
-            d.lending_balance
+            symbol_code,
+            opening_date,
+            first_opening_price,
+            first_high_price,
+            first_low_price,
+            latter_opening_price,
+            latter_high_price,
+            latter_low_price,
+            latter_closing_price,
+            trading_volume * 1000 trading_volume,
+            vwap,
+            loaning_amount,
+            paid_loaning_amount,
+            loaning_balance,
+            lending_amount,
+            paid_lending_amount,
+            lending_balance
         FROM
-            kabu.symbol_daily_info d
-        LEFT JOIN
-            kabu.symbol_weekly_info w
-        ON
-            d.symbol_code = w.symbol_code
-        AND
-            d.opening_date = w.weekend_date
+            kabu.symbol_daily_info
         WHERE
-            d.symbol_code = ?
+            symbol_code = ?
         AND
-            d.opening_date >= ?
+            opening_date >= ?
         `;
         connection.query(daily_info_sql, [symbolCode, startDate], (err, rows, fields) => {
             resolve(rows);
@@ -201,24 +192,6 @@ export default defineEventHandler(async (event: any) => {
         });
     });
 
-    // 回転日数を計算している
-    symbolDailyInfo.forEach((elem, idx, arr) => {
-        if (0 != idx) {
-            elem.previousClosingPrice = arr[idx - 1].latterClosingPrice;
-            if (0 == elem.sellBalance) {
-                elem.sellBalance = arr[idx - 1].sellBalance;
-                elem.buyBalance = arr[idx - 1].buyBalance;
-            }
-            if (4 <= idx) {
-                const rangeSymbls = arr.filter((e, i) => i <= idx && i >= (idx - 4));
-                const avgLoaningBalance = rangeSymbls.map(e => e.loaningBalance).reduce((p, c) => p + c) / 5;
-                const avgLendingBalance = rangeSymbls.map(e => e.lendingBalance).reduce((p, c) => p + c) / 5;
-                const avgAmountAndPaid = rangeSymbls.map(e => e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount).reduce((p, c) => p + c) / 5;
-                elem.rotationDays = (avgLoaningBalance + avgLendingBalance) * 2 / avgAmountAndPaid;
-            }
-        }
-    })
-
     // 表示対象期間内に短縮している
     startDate = dayjs().subtract(month, "M").format("YYYYMMDD");
     symbolDailyInfo = symbolDailyInfo.filter(e => Number(e.openingDate) >= Number(startDate));
@@ -250,7 +223,9 @@ export default defineEventHandler(async (event: any) => {
         loaningBalance: symbolDailyInfo.map((e) => {return e.loaningBalance}),
         lendingBalance: symbolDailyInfo.map((e) => {return e.lendingBalance}),
         rotationDays: symbolDailyInfo.map((e) => {
-            return e.rotationDays.toFixed(1)
+            // ｛（融資残＋貸株残）×2 ｝÷（融資新規＋融資返済＋貸株新規＋貸株返済）
+            const result = (e.loaningBalance + e.lendingBalance) * 2 / (e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount)
+            return result.toFixed(1)
         })
     };
 

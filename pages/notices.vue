@@ -1,10 +1,14 @@
 <template>
   <el-container>
     <el-main>
-      <el-button type="info" round @click="changeCol(8)">3列</el-button>
-      <el-button type="info" round @click="changeCol(6)">4列</el-button>
-      <el-button type="info" round @click="changeCol(4)">6列</el-button>
-      <el-button type="info" round @click="changeCol(3)">8列</el-button>
+      <el-select v-model="colnum" size="small" style="width: 60px">
+        <el-option
+          v-for="item in colnums"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
+        />
+      </el-select>
     </el-main>
   </el-container>
   <el-row :gutter="10" >
@@ -65,6 +69,13 @@
   import { io } from "socket.io-client"
   import { reactive, ref, onMounted } from "vue";
   
+  const colnums = [
+    {value: 8, label: "3列"},
+    {value: 6, label: "4列"},
+    {value: 4, label: "6列"},
+    {value: 3, label: "8列"}
+  ]
+
   const config = useRuntimeConfig()
   const colnum = ref(6)
   const ticks = reactive({})
@@ -89,9 +100,6 @@
     });
   })
 
-  const changeCol = (v) => {
-    colnum.value = v
-  }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(v);
