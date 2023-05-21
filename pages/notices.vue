@@ -1,13 +1,20 @@
 <template>
-  <br/>
+  <el-container>
+    <el-main>
+      <el-button type="info" round @click="changeCol(8)">3列</el-button>
+      <el-button type="info" round @click="changeCol(6)">4列</el-button>
+      <el-button type="info" round @click="changeCol(4)">6列</el-button>
+      <el-button type="info" round @click="changeCol(3)">8列</el-button>
+    </el-main>
+  </el-container>
   <el-row :gutter="10" >
-    <el-col :span="6" v-if="Object.keys(ticks).length===0">
-      <el-card class="box-card">
+    <el-col :span="colnum" v-if="Object.keys(ticks).length===0">
+      <el-card>
         <el-skeleton :rows="6" animated />
       </el-card>
     </el-col>
-    <el-col :span="6" v-for="v, k in ticks">
-      <el-card class="box-card">
+    <el-col :span="colnum" v-for="v, k in ticks">
+      <el-card>
           <template #header>
             <div class="card-header">
               <el-tooltip
@@ -19,7 +26,7 @@
               </el-tooltip>
             </div>
           </template>
-        <el-table :data="v" style="width: 100%" :row-class-name="tableRowClassName">
+        <el-table :data="v" style="width: 100%" :row-class-name="colorTableRow">
           <el-table-column prop="time" label="時刻"/>
           <el-table-column label="現値" align="right">
             <template #default="scope">
@@ -59,6 +66,7 @@
   import { reactive, ref, onMounted } from "vue";
   
   const config = useRuntimeConfig()
+  const colnum = ref(6)
   const ticks = reactive({})
   onMounted(() => {
     const socket = io(config.public.wsBaseURL);
@@ -81,6 +89,9 @@
     });
   })
 
+  const changeCol = (v) => {
+    colnum.value = v
+  }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(v);
@@ -148,10 +159,8 @@
     if (v == "freezing")  return "text-gray";
     return ""
   }
-  const tableRowClassName = (r, i) => {
-    if (r.row.testflg) {
-      return 'bg-highlight'
-    }
-    return ''
+  const colorTableRow = (r, i) => {
+    if (r.row.testflg) return "bg-highlight"
+    return ""
   }
 </script>
