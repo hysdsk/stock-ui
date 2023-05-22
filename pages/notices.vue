@@ -39,23 +39,40 @@
   </el-container>
   <el-container>
     <el-main>
-      <el-select v-model="colnum" size="small" style="width: 60px">
-        <el-option
-          v-for="item in colnums"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        />
-      </el-select>
+      <el-space wrap>
+        <el-select v-model="colnum" style="width: 80px">
+          <el-option
+            v-for="item in colnums"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+        <el-select
+          v-model="selectedSymbols"
+          multiple
+          collapse-tags
+          collapse-tags-tooltip
+          style="width: 320px"
+        >
+          <el-option
+            v-for="v, k in symbols"
+            :key="k"
+            :label="`${k}: ${v.name}`"
+            :value="k"
+          />
+        </el-select>
+        <el-switch v-model="filtered" inline-prompt :active-icon="Filter" size="large"/>
+      </el-space>
     </el-main>
   </el-container>
   <el-row :gutter="10" >
-    <el-col :span="colnum" v-if="Object.keys(ticks).length===0">
+    <el-col :span="colnum" v-if="Object.keys(symbols).length===0">
       <el-card>
         <el-skeleton :rows="6" animated />
       </el-card>
     </el-col>
-    <el-col :span="colnum" v-for="v, k in ticks">
+    <el-col :span="colnum" v-show="!filtered || selectedSymbols.includes(k)" v-for="v, k in symbols">
       <el-card>
           <template #header>
             <div class="card-header">
@@ -64,11 +81,11 @@
                 trigger="click"
                 placement="top"
                 effect="light">
-                <el-button size="large" text @click="copyToClipboard(k)">{{ k }}: {{ v[0].name }}</el-button>
+                <el-button size="large" text @click="copyToClipboard(k)">{{ k }}: {{ v.name }}</el-button>
               </el-tooltip>
             </div>
           </template>
-        <el-table :data="v" style="width: 100%" :row-class-name="flashLatestRow">
+        <el-table :data="v.data" style="width: 100%" :row-class-name="flashLatestRow">
           <el-table-column prop="time" label="時刻"/>
           <el-table-column label="現値" align="right">
             <template #default="scope">
@@ -106,7 +123,9 @@
 <script setup>
   import { io } from "socket.io-client"
   import { reactive, ref, onMounted } from "vue";
+  import { Filter } from '@element-plus/icons-vue'
   
+  const config = useRuntimeConfig()
   const colnums = [
     {value: 8, label: "3列"},
     {value: 6, label: "4列"},
@@ -114,32 +133,36 @@
     {value: 3, label: "8列"}
   ]
 
-  const config = useRuntimeConfig()
   const colnum = ref(6)
-  const ticks = reactive({})
+  const filtered = ref(false)
+  const selectedSymbols = ref([])
+  const symbols = reactive({})
   const infomations = reactive([])
+
   onMounted(() => {
     const socket = io(config.public.wsBaseURL);
-    socket.on("new-msg", msg => {
-      const key = Object.keys(msg)[0]
-      const data = reactive(msg[key])
+    socket.on("new-msg", notices => {
+      for (const notice of notices) {
+        const code = notice.code;
+        const name = notice.name;
+        if (!symbols[code]) {
+          symbols[code] = { name: name, data: [] };
+        }
+        while (symbols[code].data.length > 5) {
+          symbols[code].data.shift();
+        }
+        while (infomations.length > 10) {
+          infomations.shift();
+        }
 
-      if (!ticks[key]) {
-        ticks[key] = [];
+        if (notice.status) {
+          const data = reactive(notice);
+          data.flash = true;
+          infomations.push(data);
+          symbols[code].data.push(data);
+          setTimeout(() => { data.flash = false; }, 100);
+        }
       }
-      while (ticks[key].length > 5) {
-        ticks[key].shift();
-      }
-      while (infomations.length > 10) {
-        infomations.shift();
-      }
-
-      data.flash = true
-      ticks[key].push(data);
-      infomations.push(data);
-      setTimeout(() => {
-        data.flash = false;
-      }, 100);
     });
   })
 
