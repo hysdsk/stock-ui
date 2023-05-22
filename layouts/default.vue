@@ -16,12 +16,31 @@
         通知受信へ
       </el-button>
     </template>
+    <template #extra>
+      <div class="flex items-center">
+        <el-switch
+          v-model="isDark"
+          size="large"
+          style="--el-switch-on-color: #455a64; --el-switch-off-color: #cfd8dc"
+          inline-prompt
+          :active-icon="Moon"
+          :inactive-icon="Sunny"
+          :change="toggleDark"
+        />
+      </div>
+    </template>
   </el-page-header>
   <slot />
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { useDark, useToggle } from '@vueuse/core'
+import 'element-plus/theme-chalk/dark/css-vars.css'
+import { Moon, Sunny } from '@element-plus/icons-vue'
+
+const isDark = useDark({"dark": false, "light": true})
+const toggleDark = useToggle(isDark)
 
 const { data } = useFetch("/api/symbols");
 const target = ref('')
