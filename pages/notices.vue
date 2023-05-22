@@ -1,6 +1,44 @@
 <template>
   <el-container>
     <el-main>
+      <el-card>
+        <el-table :data="infomations" style="width: 100%">
+          <el-table-column prop="time" label="時刻"/>
+          <el-table-column prop="code" label="コード"/>
+          <el-table-column prop="name" label="銘柄名"/>
+          <el-table-column label="現値" align="right">
+            <template #default="scope">
+              <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="前日比" align="right">
+            <template #default="scope">
+              <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRate(scope.row.previouscloseratio) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="VWAP比" align="right">
+            <template #default="scope">
+              <span :class="colorRatio(scope.row.vwapratio)">{{ formatRate(scope.row.vwapratio) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="出来高" align="right">
+            <template #default="scope">
+              <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="注文" align="right">
+            <template #default="scope">
+              <span v-if="scope.row.bidorder != null" :class="colorVolume(scope.row.bidorder.qty, -1)">{{ formatOrder(scope.row.bidorder) }}</span>
+              <span v-if="scope.row.askorder != null" :class="colorVolume(scope.row.askorder.qty,  1)">{{ formatOrder(scope.row.askorder) }}</span>
+              <span v-else></span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+    </el-main>
+  </el-container>
+  <el-container>
+    <el-main>
       <el-select v-model="colnum" size="small" style="width: 60px">
         <el-option
           v-for="item in colnums"
@@ -30,7 +68,7 @@
               </el-tooltip>
             </div>
           </template>
-        <el-table :data="v" style="width: 100%" :row-class-name="colorTableRow">
+        <el-table :data="v" style="width: 100%" :row-class-name="flashLatestRow">
           <el-table-column prop="time" label="時刻"/>
           <el-table-column label="現値" align="right">
             <template #default="scope">
@@ -79,6 +117,7 @@
   const config = useRuntimeConfig()
   const colnum = ref(6)
   const ticks = reactive({})
+  const infomations = reactive([])
   onMounted(() => {
     const socket = io(config.public.wsBaseURL);
     socket.on("new-msg", msg => {
@@ -91,12 +130,16 @@
       while (ticks[key].length > 5) {
         ticks[key].shift();
       }
+      while (infomations.length > 10) {
+        infomations.shift();
+      }
 
-      data.testflg = true
+      data.flash = true
       ticks[key].push(data);
+      infomations.push(data);
       setTimeout(() => {
-        data.testflg = false;
-      }, 50);
+        data.flash = false;
+      }, 100);
     });
   })
 
@@ -167,8 +210,8 @@
     if (v == "freezing")  return "text-gray";
     return ""
   }
-  const colorTableRow = (r, i) => {
-    if (r.row.testflg) return "bg-highlight"
+  const flashLatestRow = (r, i) => {
+    if (r.row.flash) return "bg-highlight"
     return ""
   }
 </script>
