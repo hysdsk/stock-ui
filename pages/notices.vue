@@ -181,6 +181,7 @@
     if (v.length > limit) {
       return `${v.substring(0, limit)}...`;
     }
+    return v;
   }
   const formatRate = (v) => {
     return `${Math.round(v * 10) / 10}%`;
