@@ -3,9 +3,9 @@
     <el-main>
       <el-card>
         <el-table :data="infomations" style="width: 100%">
-          <el-table-column prop="time" label="時刻"/>
-          <el-table-column prop="code" label="コード"/>
-          <el-table-column prop="name" label="銘柄名"/>
+          <el-table-column prop="time" label="時刻" width="120"/>
+          <el-table-column prop="code" label="コード" width="100"/>
+          <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
           <el-table-column label="現値" align="right">
             <template #default="scope">
               <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
@@ -21,9 +21,14 @@
               <span :class="colorRatio(scope.row.vwapratio)">{{ formatRate(scope.row.vwapratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="出来高" align="right">
+          <el-table-column label="約定" align="right">
             <template #default="scope">
               <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="出来高" align="right">
+            <template #default="scope">
+              <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="注文" align="right">
@@ -102,7 +107,7 @@
               <span :class="colorRatio(scope.row.vwapratio)">{{ formatRate(scope.row.vwapratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="出来高" align="right">
+          <el-table-column label="約定" align="right">
             <template #default="scope">
               <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
             </template>
@@ -171,11 +176,25 @@
         navigator.clipboard.writeText(v);
     }
   }
+  const formatName = (r, c, v, i) => {
+    const limit = 15;
+    if (v.length > limit) {
+      return `${v.substring(0, limit)}...`;
+    }
+  }
   const formatRate = (v) => {
     return `${Math.round(v * 10) / 10}%`;
   }
   const formatVolume = (v) => {
-    return v > 0 ? `${Math.round(v / 1000)}k` : null;
+    if (v >= 1000000) {
+      return `${Math.round(v / 1000000)}m`;
+    } else if (v >= 1000) {
+      return `${Math.round(v / 1000)}k`;
+    } else if (v > 0) {
+      return v;
+    } else {
+      return "";
+    }
   }
   const formatOrder = (v) => {
     if (!v) {
