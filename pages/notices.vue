@@ -21,7 +21,7 @@
               <span :class="colorRatio(scope.row.vwapratio)">{{ formatRate(scope.row.vwapratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="約定" align="right">
+          <el-table-column label="大約定" align="right">
             <template #default="scope">
               <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
             </template>
@@ -31,11 +31,21 @@
               <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="注文" align="right">
+          <el-table-column label="大注文" align="right">
             <template #default="scope">
               <span v-if="scope.row.bidorder != null" :class="colorVolume(scope.row.bidorder.qty, -1)">{{ formatOrder(scope.row.bidorder) }}</span>
               <span v-if="scope.row.askorder != null" :class="colorVolume(scope.row.askorder.qty,  1)">{{ formatOrder(scope.row.askorder) }}</span>
               <span v-else></span>
+            </template>
+          </el-table-column>
+          <el-table-column label="平均売板" align="right">
+            <template #default="scope">
+              <span :class="colorVolume(scope.row.avgbids, -1)">{{ formatVolume(scope.row.avgbids) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="平均買板" align="right">
+            <template #default="scope">
+              <span :class="colorVolume(scope.row.avgasks,  1)">{{ formatVolume(scope.row.avgasks) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -129,7 +139,7 @@
   import { io } from "socket.io-client"
   import { reactive, ref, onMounted } from "vue";
   import { Filter } from '@element-plus/icons-vue'
-  
+
   const config = useRuntimeConfig()
   const colnums = [
     {value: 8, label: "3列"},
