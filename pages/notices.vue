@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table :data="infomations" style="width: 100%">
+        <el-table :data="infomations" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column prop="time" label="時刻" width="120"/>
           <el-table-column prop="code" label="コード" width="100"/>
           <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
@@ -156,7 +156,7 @@
         while (symbols[code].data.length > 5) {
           symbols[code].data.shift();
         }
-        while (infomations.length > 10) {
+        while (infomations.length > 20) {
           infomations.shift();
         }
 
