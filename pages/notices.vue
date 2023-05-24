@@ -142,6 +142,7 @@
 
   const config = useRuntimeConfig()
   const colnums = [
+    {value:24, label: "1列"},
     {value: 8, label: "3列"},
     {value: 6, label: "4列"},
     {value: 4, label: "6列"},
