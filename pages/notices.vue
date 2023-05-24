@@ -197,11 +197,12 @@
     return `${Math.round(v * 10) / 10}%`;
   }
   const formatVolume = (v) => {
-    if (v >= 1000000) {
+    const t = v < 0 ? v * -1 : v;
+    if (t >= 1000000) {
       return `${Math.round(v / 1000000)}m`;
-    } else if (v >= 1000) {
+    } else if (t >= 1000) {
       return `${Math.round(v / 1000)}k`;
-    } else if (v > 0) {
+    } else if (t > 0) {
       return v;
     } else {
       return "";
@@ -238,24 +239,25 @@
     return ""
   }
   const colorVolume = (v, sob) => {
-    if (sob > 0 && v > 80000) return "text-red9";
-    if (sob > 0 && v > 70000) return "text-red8";
-    if (sob > 0 && v > 60000) return "text-red7";
-    if (sob > 0 && v > 50000) return "text-red6";
-    if (sob > 0 && v > 40000) return "text-red5";
-    if (sob > 0 && v > 30000) return "text-red4";
-    if (sob > 0 && v > 20000) return "text-red3";
-    if (sob > 0 && v > 10000) return "text-red2";
-    if (sob > 0 && v >     0) return "text-red1";
-    if (sob < 0 && v > 80000) return "text-blue9";
-    if (sob < 0 && v > 70000) return "text-blue8";
-    if (sob < 0 && v > 60000) return "text-blue7";
-    if (sob < 0 && v > 50000) return "text-blue6";
-    if (sob < 0 && v > 40000) return "text-blue5";
-    if (sob < 0 && v > 30000) return "text-blue4";
-    if (sob < 0 && v > 20000) return "text-blue3";
-    if (sob < 0 && v > 10000) return "text-blue2";
-    if (sob < 0 && v >     0) return "text-blue1";
+    const t = v < 0 ? v * -1 : v;
+    if (sob > 0 && t > 80000) return "text-red9";
+    if (sob > 0 && t > 70000) return "text-red8";
+    if (sob > 0 && t > 60000) return "text-red7";
+    if (sob > 0 && t > 50000) return "text-red6";
+    if (sob > 0 && t > 40000) return "text-red5";
+    if (sob > 0 && t > 30000) return "text-red4";
+    if (sob > 0 && t > 20000) return "text-red3";
+    if (sob > 0 && t > 10000) return "text-red2";
+    if (sob > 0 && t >     0) return "text-red1";
+    if (sob < 0 && t > 80000) return "text-blue9";
+    if (sob < 0 && t > 70000) return "text-blue8";
+    if (sob < 0 && t > 60000) return "text-blue7";
+    if (sob < 0 && t > 50000) return "text-blue6";
+    if (sob < 0 && t > 40000) return "text-blue5";
+    if (sob < 0 && t > 30000) return "text-blue4";
+    if (sob < 0 && t > 20000) return "text-blue3";
+    if (sob < 0 && t > 10000) return "text-blue2";
+    if (sob < 0 && t >     0) return "text-blue1";
     return ""
   }
   const colorPrice = (v) => {
