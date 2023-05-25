@@ -101,7 +101,7 @@
             </div>
           </template>
         <el-table :data="v.data" style="width: 100%" :row-class-name="flashLatestRow">
-          <el-table-column prop="time" label="時刻"/>
+          <el-table-column prop="time" label="時刻" width="90"/>
           <el-table-column label="現値" align="right">
             <template #default="scope">
               <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
@@ -112,17 +112,17 @@
               <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRate(scope.row.previouscloseratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="VWAP比" align="right">
+          <el-table-column label="vwap比" align="right">
             <template #default="scope">
               <span :class="colorRatio(scope.row.vwapratio)">{{ formatRate(scope.row.vwapratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="約定" align="right">
+          <el-table-column label="約定" align="right" width="60">
             <template #default="scope">
               <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="注文" align="right">
+          <el-table-column label="注文" align="right" width="100">
             <template #default="scope">
               <span v-if="scope.row.bidorder != null" :class="colorVolume(scope.row.bidorder.qty, -1)">{{ formatOrder(scope.row.bidorder) }}</span>
               <span v-if="scope.row.askorder != null" :class="colorVolume(scope.row.askorder.qty,  1)">{{ formatOrder(scope.row.askorder) }}</span>
@@ -136,9 +136,9 @@
 </template>
 
 <script setup>
-  import { io } from "socket.io-client"
+  import { io } from "socket.io-client";
   import { reactive, ref, onMounted } from "vue";
-  import { Filter } from '@element-plus/icons-vue'
+  import { Filter } from "@element-plus/icons-vue";
 
   const config = useRuntimeConfig()
   const colnums = [
@@ -167,7 +167,7 @@
         while (symbols[code].data.length > 5) {
           symbols[code].data.shift();
         }
-        while (infomations.length > 20) {
+        while (infomations.length > 30) {
           infomations.shift();
         }
 
