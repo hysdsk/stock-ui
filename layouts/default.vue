@@ -17,7 +17,7 @@
       </el-button>
     </template>
     <template #extra>
-      <div class="flex items-center">
+      <div style="padding-right: 1em;">
         <el-switch
           v-model="isDark"
           size="large"
@@ -39,11 +39,11 @@ import { useDark, useToggle } from '@vueuse/core'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import { Moon, Sunny } from '@element-plus/icons-vue'
 
-const isDark = useDark({"dark": false, "light": true})
-const toggleDark = useToggle(isDark)
+const isDark = useDark({"dark": false, "light": true});
+const toggleDark = useToggle(isDark);
 
 const { data } = useFetch("/api/symbols");
-const target = ref('')
+const target = ref('');
 
 const goHome = () => {
   window.location.href = "/";
@@ -59,6 +59,6 @@ const goSymbol = () => {
 }
 
 const goNotices = () => {
-  window.location.href = "/notices"
+  window.location.href = "/notices";
 }
 </script>
