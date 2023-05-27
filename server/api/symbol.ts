@@ -208,7 +208,7 @@ export default defineEventHandler(async (event: any) => {
         priceBody: symbolDailyInfo.map((e) => {
             return [
                 e.firstOpeningPrice == 0 ? e.latterOpeningPrice : e.firstOpeningPrice,
-                e.latterClosingPrice]
+                e.latterClosingPrice == 0 ? e.firstOpeningPrice : e.latterClosingPrice]
         }),
         tickColor: symbolDailyInfo.map((e) => {
             return e.firstOpeningPrice < e.latterClosingPrice ? "#ff1744" : "#00E676"
@@ -224,8 +224,12 @@ export default defineEventHandler(async (event: any) => {
         lendingBalance: symbolDailyInfo.map((e) => {return e.lendingBalance}),
         rotationDays: symbolDailyInfo.map((e) => {
             // ｛（融資残＋貸株残）×2 ｝÷（融資新規＋融資返済＋貸株新規＋貸株返済）
-            const result = (e.loaningBalance + e.lendingBalance) * 2 / (e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount)
-            return result.toFixed(1)
+            const divider = e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount;
+            if (divider) {
+                return ((e.loaningBalance + e.lendingBalance) * 2 / divider).toFixed(1)
+            } else {
+                return ((e.loaningBalance + e.lendingBalance) * 2 / 1).toFixed(1)
+            }
         })
     };
 

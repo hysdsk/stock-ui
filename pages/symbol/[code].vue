@@ -62,7 +62,6 @@
     code: code,
     period: queryParams.period === undefined ? 1 : queryParams.period
   }});
-
   onMounted(() => {
     new Chart(document.getElementById("stockChart"), {
       data: {
