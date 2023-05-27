@@ -13,15 +13,15 @@
           </el-table-column>
           <el-table-column label="前日比" align="right">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRate(scope.row.previouscloseratio) }}</span>
+              <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRatio(scope.row.previouscloseratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="VWAP比" align="right">
+          <el-table-column label="vwap比" align="right">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.vwapratio)">{{ formatRate(scope.row.vwapratio) }}</span>
+              <span :class="colorRatio(scope.row.vwapratio)">{{ formatRatio(scope.row.vwapratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="大約定" align="right">
+          <el-table-column label="約定" align="right">
             <template #default="scope">
               <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
             </template>
@@ -31,21 +31,21 @@
               <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="大注文" align="right">
+          <el-table-column label="注文" align="right">
             <template #default="scope">
               <span v-if="scope.row.bidorder != null" :class="colorVolume(scope.row.bidorder.qty, -1)">{{ formatOrder(scope.row.bidorder) }}</span>
               <span v-if="scope.row.askorder != null" :class="colorVolume(scope.row.askorder.qty,  1)">{{ formatOrder(scope.row.askorder) }}</span>
               <span v-else></span>
             </template>
           </el-table-column>
-          <el-table-column label="平均売板" align="right">
+          <el-table-column label="指値比" align="right">
             <template #default="scope">
-              <span :class="colorVolume(scope.row.avgbids, -1)">{{ formatVolume(scope.row.avgbids) }}</span>
+              <span :class="colorRatio(scope.row.loratio)">{{ formatRatio(scope.row.loratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="平均買板" align="right">
+          <el-table-column label="成行比" align="right">
             <template #default="scope">
-              <span :class="colorVolume(scope.row.avgasks,  1)">{{ formatVolume(scope.row.avgasks) }}</span>
+              <span :class="colorRatio(scope.row.moratio)">{{ formatRatio(scope.row.moratio) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -101,23 +101,23 @@
             </div>
           </template>
         <el-table :data="v.data" style="width: 100%" :row-class-name="flashLatestRow">
-          <el-table-column prop="time" label="時刻" width="90"/>
+          <el-table-column prop="time" label="時刻" width="100"/>
           <el-table-column label="現値" align="right">
             <template #default="scope">
               <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="前日比" align="right">
+          <el-table-column label="前日比" align="right" width="100">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRate(scope.row.previouscloseratio) }}</span>
+              <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRatio(scope.row.previouscloseratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="vwap比" align="right">
+          <el-table-column label="vwap比" align="right" width="100">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.vwapratio)">{{ formatRate(scope.row.vwapratio) }}</span>
+              <span :class="colorRatio(scope.row.vwapratio)">{{ formatRatio(scope.row.vwapratio) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="約定" align="right" width="60">
+          <el-table-column label="約定" align="right" width="100">
             <template #default="scope">
               <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
             </template>
@@ -140,7 +140,7 @@
   import { reactive, ref, onMounted } from "vue";
   import { Filter } from "@element-plus/icons-vue";
 
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig().public
   const colnums = [
     {value:24, label: "1列"},
     {value: 8, label: "3列"},
@@ -156,7 +156,7 @@
   const infomations = reactive([])
 
   onMounted(() => {
-    const socket = io(config.public.wsBaseURL);
+    const socket = io(config.wsBaseURL);
     socket.on("new-msg", notices => {
       for (const notice of notices) {
         const code = notice.code;
@@ -194,7 +194,7 @@
     }
     return v;
   }
-  const formatRate = (v) => {
+  const formatRatio = (v) => {
     return `${Math.round(v * 10) / 10}%`;
   }
   const formatVolume = (v) => {
