@@ -39,12 +39,12 @@
           </el-table-column>
           <el-table-column label="指値比" align="right">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.loratio)">{{ formatRatio(scope.row.loratio) }}</span>
+              <span :class="colorOrderRatio(scope.row.loratio)">{{ formatRatio(scope.row.loratio) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="成行比" align="right">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.moratio)">{{ formatRatio(scope.row.moratio) }}</span>
+              <span :class="colorOrderRatio(scope.row.moratio)">{{ formatRatio(scope.row.moratio) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -236,6 +236,10 @@
     if (r < -1) return "text-blue2";
     if (r <  0) return "text-blue1";
     return ""
+  }
+
+  const colorOrderRatio = (v) => {
+    return colorRatio(v / 100);
   }
   const colorVolume = (v, sob) => {
     const t = v < 0 ? v * -1 : v;
