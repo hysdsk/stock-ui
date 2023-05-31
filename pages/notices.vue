@@ -265,7 +265,9 @@
   }
   const colorPrice = (v) => {
     if (v == "nowopened") return "text-green";
+    if (v == "reopened")  return "text-yellow";
     if (v == "freezing")  return "text-gray";
+    if (v == "preparing") return "text-gray";
     return ""
   }
   const flashLatestRow = (r, i) => {
