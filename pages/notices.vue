@@ -13,12 +13,12 @@
           </el-table-column>
           <el-table-column label="前日比" align="right">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRatio(scope.row.previouscloseratio) }}</span>
+              <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="vwap比" align="right">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.vwapratio)">{{ formatRatio(scope.row.vwapratio) }}</span>
+              <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="約定" align="right">
@@ -39,12 +39,12 @@
           </el-table-column>
           <el-table-column label="指値比" align="right">
             <template #default="scope">
-              <span :class="colorOrderRatio(scope.row.loratio)">{{ formatRatio(scope.row.loratio) }}</span>
+              <span :class="colorOrderRate(scope.row.lorate)">{{ formatRate(scope.row.lorate) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="成行比" align="right">
             <template #default="scope">
-              <span :class="colorOrderRatio(scope.row.moratio)">{{ formatRatio(scope.row.moratio) }}</span>
+              <span :class="colorOrderRate(scope.row.morate)">{{ formatRate(scope.row.morate) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -108,12 +108,12 @@
           </el-table-column>
           <el-table-column label="前日比" align="right" width="100">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.previouscloseratio)">{{ formatRatio(scope.row.previouscloseratio) }}</span>
+              <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="vwap比" align="right" width="100">
             <template #default="scope">
-              <span :class="colorRatio(scope.row.vwapratio)">{{ formatRatio(scope.row.vwapratio) }}</span>
+              <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="約定" align="right" width="100">
@@ -192,7 +192,7 @@
     }
     return v;
   }
-  const formatRatio = (v) => {
+  const formatRate = (v) => {
     return `${Math.round(v * 10) / 10}%`;
   }
   const formatVolume = (v) => {
@@ -215,7 +215,7 @@
     const qty = formatVolume(v.qty);
     return `${price}:${qty}`;
   }
-  const colorRatio = (v) => {
+  const colorRate = (v) => {
     const r = Math.round(v * 10) / 10;
     if (r >  8) return  "text-red9";
     if (r >  7) return  "text-red8";
@@ -238,8 +238,8 @@
     return ""
   }
 
-  const colorOrderRatio = (v) => {
-    return colorRatio(v / 100);
+  const colorOrderRate = (v) => {
+    return colorRate(v / 100);
   }
   const colorVolume = (v, sob) => {
     const t = v < 0 ? v * -1 : v;
