@@ -5,8 +5,13 @@
         <el-table :data="ranklist" height="1024" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column prop="code" label="コード" width="100"/>
           <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
-          <el-table-column prop="buyCount" label="買約定数" align="right"/>
-          <el-table-column prop="sellCount" label="売約定数" align="right"/>
+          <el-table-column prop="buyCount" label="買約定回数" align="right"/>
+          <el-table-column prop="sellCount" label="売約定回数" align="right"/>
+          <el-table-column label="Tick回数" align="right">
+            <template #default="scope">
+              <span>{{ scope.row.tickcount }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="出来高" align="right">
             <template #default="scope">
               <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
@@ -146,6 +151,7 @@
             name: name,
             buyCount: 0,
             sellCount: 0,
+            tickcount: 0,
             currentprice: 0,
             tradingvolumetotal: 0,
             previouscloserate: 0,
@@ -157,33 +163,46 @@
         }
 
         if (notice.status) {
-          const data = reactive(notice);
-          data.flash = true;
-          symbols[code].data.push(data);
+          // ランキング更新
           const rankdata = ranklist.find((e) => { return e.code == code});
           rankdata.currentprice = notice.currentprice
+          rankdata.tickcount = notice.tickcount
           rankdata.tradingvolumetotal = notice.tradingvolumetotal
           rankdata.previouscloserate = notice.previouscloserate
           rankdata.vwaprate = notice.vwaprate
-          if (notice.tradingvolume > 0) {
-            if (notice.sob > 0) {
-              rankdata.buyCount += 1
-            } else if(notice.sob < 0) {
-              rankdata.sellCount += 1
+
+          if (notice.status != "light") {
+            const data = reactive(notice);
+            data.flash = true;
+            symbols[code].data.push(data);
+            setTimeout(() => { data.flash = false; }, 100);
+
+            // 約定通知は約定回数更新後にソートする
+            if (notice.status == "opening" && notice.tradingvolume > 0) {
+              if (notice.sob > 0) {
+                rankdata.buyCount++
+              } else if (notice.sob < 0) {
+                rankdata.sellCount++
+              }
+              ranklist.sort((a, b) => {
+                const ac = a.buyCount - a.sellCount;
+                const bc = b.buyCount - b.sellCount;
+                if (ac > bc) {
+                  return -1;
+                } else if (ac < bc) {
+                  return 1;
+                } else {
+                  if (a.tickcount > b.tickcount) {
+                    return -1;
+                  } else if (a.tickcount < b.tickcount) {
+                    return 1;
+                  } else {
+                    return 0
+                  }
+                }
+              });
             }
           }
-          ranklist.sort((a, b) => {
-            const ac = a.buyCount - a.sellCount;
-            const bc = b.buyCount - b.sellCount;
-            if (ac > bc) {
-              return -1;
-            } else if (ac < bc) {
-              return 1;
-            } else {
-              return 0
-            }
-          });
-          setTimeout(() => { data.flash = false; }, 100);
         }
       }
     });
