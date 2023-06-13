@@ -33,58 +33,6 @@
   </el-container>
   <el-container>
     <el-main>
-      <el-card>
-        <el-table :data="infomations" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
-          <el-table-column prop="time" label="時刻" width="120"/>
-          <el-table-column prop="code" label="コード" width="100"/>
-          <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
-          <el-table-column label="現値" align="right">
-            <template #default="scope">
-              <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="前日比" align="right">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="vwap比" align="right">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="約定" align="right">
-            <template #default="scope">
-              <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="出来高" align="right">
-            <template #default="scope">
-              <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="注文" align="right">
-            <template #default="scope">
-              <span v-if="scope.row.order != null" :class="colorVolume(scope.row.order.qty, scope.row.order.type)">{{ formatOrder(scope.row.order) }}</span>
-              <span v-else></span>
-            </template>
-          </el-table-column>
-          <el-table-column label="指値比" align="right">
-            <template #default="scope">
-              <span :class="colorOrderRate(scope.row.lorate)">{{ formatRate(scope.row.lorate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="成行比" align="right">
-            <template #default="scope">
-              <span :class="colorOrderRate(scope.row.morate)">{{ formatRate(scope.row.morate) }}</span>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </el-main>
-  </el-container>
-  <el-container>
-    <el-main>
       <el-space wrap>
         <el-select v-model="colnum" style="width: 80px">
           <el-option
@@ -183,7 +131,6 @@
   const filtered = ref(false)
   const selectedSymbols = ref([])
   const symbols = reactive({})
-  const infomations = reactive([])
   const ranklist = reactive([])
 
   onMounted(() => {
@@ -208,14 +155,10 @@
         while (symbols[code].data.length > 5) {
           symbols[code].data.shift();
         }
-        while (infomations.length > 20) {
-          infomations.shift();
-        }
 
         if (notice.status) {
           const data = reactive(notice);
           data.flash = true;
-          infomations.push(data);
           symbols[code].data.push(data);
           const rankdata = ranklist.find((e) => { return e.code == code});
           rankdata.currentprice = notice.currentprice
