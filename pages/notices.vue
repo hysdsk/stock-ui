@@ -2,10 +2,16 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table :data="infomations" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
-          <el-table-column prop="time" label="時刻" width="120"/>
+        <el-table :data="ranklist" height="1024" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column prop="code" label="コード" width="100"/>
           <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
+          <el-table-column prop="buyCount" label="買約定数" align="right"/>
+          <el-table-column prop="sellCount" label="売約定数" align="right"/>
+          <el-table-column label="出来高" align="right">
+            <template #default="scope">
+              <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="現値" align="right">
             <template #default="scope">
               <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
@@ -19,32 +25,6 @@
           <el-table-column label="vwap比" align="right">
             <template #default="scope">
               <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="約定" align="right">
-            <template #default="scope">
-              <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="出来高" align="right">
-            <template #default="scope">
-              <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="注文" align="right">
-            <template #default="scope">
-              <span v-if="scope.row.order != null" :class="colorVolume(scope.row.order.qty, scope.row.order.type)">{{ formatOrder(scope.row.order) }}</span>
-              <span v-else></span>
-            </template>
-          </el-table-column>
-          <el-table-column label="指値比" align="right">
-            <template #default="scope">
-              <span :class="colorOrderRate(scope.row.lorate)">{{ formatRate(scope.row.lorate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="成行比" align="right">
-            <template #default="scope">
-              <span :class="colorOrderRate(scope.row.morate)">{{ formatRate(scope.row.morate) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -151,7 +131,7 @@
   const filtered = ref(false)
   const selectedSymbols = ref([])
   const symbols = reactive({})
-  const infomations = reactive([])
+  const ranklist = reactive([])
 
   onMounted(() => {
     const socket = io(config.wsBaseURL);
@@ -161,19 +141,48 @@
         const name = notice.name;
         if (!symbols[code]) {
           symbols[code] = { name: name, data: [] };
+          ranklist.push({
+            code: code,
+            name: name,
+            buyCount: 0,
+            sellCount: 0,
+            currentprice: 0,
+            tradingvolumetotal: 0,
+            previouscloserate: 0,
+            vwaprate: 0
+          })
         }
         while (symbols[code].data.length > 5) {
           symbols[code].data.shift();
-        }
-        while (infomations.length > 30) {
-          infomations.shift();
         }
 
         if (notice.status) {
           const data = reactive(notice);
           data.flash = true;
-          infomations.push(data);
           symbols[code].data.push(data);
+          const rankdata = ranklist.find((e) => { return e.code == code});
+          rankdata.currentprice = notice.currentprice
+          rankdata.tradingvolumetotal = notice.tradingvolumetotal
+          rankdata.previouscloserate = notice.previouscloserate
+          rankdata.vwaprate = notice.vwaprate
+          if (notice.tradingvolume > 0) {
+            if (notice.sob > 0) {
+              rankdata.buyCount += 1
+            } else if(notice.sob < 0) {
+              rankdata.sellCount += 1
+            }
+          }
+          ranklist.sort((a, b) => {
+            const ac = a.buyCount - a.sellCount;
+            const bc = b.buyCount - b.sellCount;
+            if (ac > bc) {
+              return -1;
+            } else if (ac < bc) {
+              return 1;
+            } else {
+              return 0
+            }
+          });
           setTimeout(() => { data.flash = false; }, 100);
         }
       }
@@ -191,6 +200,9 @@
       return `${v.substring(0, limit)}...`;
     }
     return v;
+  }
+  const formatRatio = (v) => {
+    return `${Math.round(v * 100) / 100}%`;
   }
   const formatRate = (v) => {
     return `${Math.round(v * 10) / 10}%`;
