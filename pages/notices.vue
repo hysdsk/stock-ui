@@ -5,16 +5,24 @@
         <el-table :data="ranklist" height="1024" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column prop="code" label="コード" width="100"/>
           <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
-          <el-table-column prop="buyCount" label="買約定回数" align="right"/>
-          <el-table-column prop="sellCount" label="売約定回数" align="right"/>
-          <el-table-column label="Tick回数" align="right">
+          <el-table-column label="買約定" align="right">
             <template #default="scope">
-              <span>{{ scope.row.tickcount }}</span>
+              <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="出来高" align="right">
+          <el-table-column label="売約定" align="right">
             <template #default="scope">
-              <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
+              <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="直近一分／板更新" align="right">
+            <template #default="scope">
+              <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }} / {{ formatVolume(scope.row.tickcounttotal) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="直近一分／出来高" align="right">
+            <template #default="scope">
+              <span :class="colorValue(scope.row.tradingvolumebyminute*scope.row.currentprice, 1)">{{ formatVolume(scope.row.tradingvolumebyminute) }} / {{ formatVolume(scope.row.tradingvolumetotal) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="現値" align="right">
@@ -27,7 +35,7 @@
               <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="vwap比" align="right">
+          <el-table-column label="VWAP比" align="right">
             <template #default="scope">
               <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
             </template>
@@ -91,22 +99,12 @@
               <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="前日比" align="right" width="100">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="vwap比" align="right" width="100">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="約定" align="right" width="100">
+          <el-table-column label="約定" align="right">
             <template #default="scope">
               <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="注文" align="right" width="100">
+          <el-table-column label="注文" align="right">
             <template #default="scope">
               <span v-if="scope.row.order != null" :class="colorVolume(scope.row.order.qty, scope.row.order.type)">{{ formatOrder(scope.row.order) }}</span>
               <span v-else></span>
@@ -140,7 +138,7 @@
 
   onMounted(() => {
     const socket = io(config.wsBaseURL);
-    socket.on("new-msg", notices => {
+    socket.on("initial-notice", notices => {
       for (const notice of notices) {
         const code = notice.code;
         const name = notice.name;
@@ -151,60 +149,69 @@
             name: name,
             buyCount: 0,
             sellCount: 0,
-            tickcount: 0,
+            tickcounttotal: 0,
+            tickcountbyminute: 0,
             currentprice: 0,
             tradingvolumetotal: 0,
+            tradingvolumebyminute: 0,
             previouscloserate: 0,
             vwaprate: 0
           })
         }
-        while (symbols[code].data.length > 5) {
-          symbols[code].data.shift();
-        }
-
-        if (notice.status) {
-          // ランキング更新
-          const rankdata = ranklist.find((e) => { return e.code == code});
-          rankdata.currentprice = notice.currentprice
-          rankdata.tickcount = notice.tickcount
-          rankdata.tradingvolumetotal = notice.tradingvolumetotal
-          rankdata.previouscloserate = notice.previouscloserate
-          rankdata.vwaprate = notice.vwaprate
-
-          if (notice.status != "light") {
-            const data = reactive(notice);
-            data.flash = true;
-            symbols[code].data.push(data);
-            setTimeout(() => { data.flash = false; }, 100);
-
-            // 約定通知は約定回数更新後にソートする
-            if (notice.status == "opening" && notice.tradingvolume > 0) {
-              if (notice.sob > 0) {
-                rankdata.buyCount++
-              } else if (notice.sob < 0) {
-                rankdata.sellCount++
-              }
-              ranklist.sort((a, b) => {
-                const ac = a.buyCount - a.sellCount;
-                const bc = b.buyCount - b.sellCount;
-                if (ac > bc) {
-                  return -1;
-                } else if (ac < bc) {
-                  return 1;
-                } else {
-                  if (a.tickcount > b.tickcount) {
-                    return -1;
-                  } else if (a.tickcount < b.tickcount) {
-                    return 1;
-                  } else {
-                    return 0
-                  }
-                }
-              });
-            }
+      }
+    })
+    socket.on("action-notice", notice => {
+      const code = notice.code;
+      const name = notice.name;
+      if (!symbols[code]) return
+      while (symbols[code].data.length > 5) {
+        symbols[code].data.shift();
+      }
+      if (notice.status) {
+        const data = reactive(notice);
+        data.flash = true;
+        symbols[code].data.push(data);
+        setTimeout(() => { data.flash = false; }, 100);
+        // 約定通知は約定回数更新後にソートする
+        const rankdata = ranklist.find((e) => { return e.code == code});
+        if (notice.status == "opening" && notice.tradingvolume > 0) {
+          if (notice.sob > 0) {
+            rankdata.buyCount++
+          } else if (notice.sob < 0) {
+            rankdata.sellCount++
           }
+          ranklist.sort((a, b) => {
+            const ac = a.buyCount - a.sellCount;
+            const bc = b.buyCount - b.sellCount;
+            if (ac > bc) {
+              return -1;
+            } else if (ac < bc) {
+              return 1;
+            } else {
+              if (a.tickcount > b.tickcount) {
+                return -1;
+              } else if (a.tickcount < b.tickcount) {
+                return 1;
+              } else {
+                return 0
+              }
+            }
+          });
         }
       }
+    });
+    socket.on("regular-notice", notice => {
+      const code = notice.code;
+      const name = notice.name;
+      if (!symbols[code]) return
+      const rankdata = ranklist.find((e) => { return e.code == code});
+      rankdata.currentprice = notice.currentprice
+      rankdata.tickcounttotal = notice.tickcounttotal
+      rankdata.tickcountbyminute = notice.tickcountbyminute
+      rankdata.tradingvolumetotal = notice.tradingvolumetotal
+      rankdata.tradingvolumebyminute = notice.tradingvolumebyminute
+      rankdata.previouscloserate = notice.previouscloserate
+      rankdata.vwaprate = notice.vwaprate
     });
   })
 
@@ -292,6 +299,49 @@
     if (sob < 0 && t > 20000) return "text-blue3";
     if (sob < 0 && t > 10000) return "text-blue2";
     if (sob < 0 && t >     0) return "text-blue1";
+    return ""
+  }
+  const colorValue = (v) => {
+    const t = Math.round(v / 1000000)
+    if (t > 250) return "text-red9";
+    if (t > 220) return "text-red8";
+    if (t > 180) return "text-red7";
+    if (t > 150) return "text-red6";
+    if (t > 120) return "text-red5";
+    if (t >  90) return "text-red4";
+    if (t >  70) return "text-red3";
+    if (t >  50) return "text-red2";
+    if (t >  35) return "text-red1";
+    if (t >  30) return "text-blue1";
+    if (t >  26) return "text-blue2";
+    if (t >  22) return "text-blue3";
+    if (t >  18) return "text-blue4";
+    if (t >  14) return "text-blue5";
+    if (t >  10) return "text-blue6";
+    if (t >   6) return "text-blue7";
+    if (t >   2) return "text-blue8";
+    if (t >   0) return "text-blue9";
+    return ""
+  }
+  const colorTick = (v) => {
+    if (v > 450) return "text-red9";
+    if (v > 400) return "text-red8";
+    if (v > 350) return "text-red7";
+    if (v > 300) return "text-red6";
+    if (v > 250) return "text-red5";
+    if (v > 200) return "text-red4";
+    if (v > 150) return "text-red3";
+    if (v > 100) return "text-red2";
+    if (v >  50) return "text-red1";
+    if (v >  40) return "text-blue1";
+    if (v >  35) return "text-blue2";
+    if (v >  30) return "text-blue3";
+    if (v >  25) return "text-blue4";
+    if (v >  20) return "text-blue5";
+    if (v >  15) return "text-blue6";
+    if (v >  10) return "text-blue7";
+    if (v >   5) return "text-blue8";
+    if (v >   0) return "text-blue1";
     return ""
   }
   const colorPrice = (v) => {
