@@ -5,14 +5,24 @@
         <el-table :data="ranklist" height="1024" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column prop="code" label="コード" width="100"/>
           <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
-          <el-table-column prop="buyCount" label="買約定回数" align="right"/>
-          <el-table-column prop="sellCount" label="売約定回数" align="right"/>
-          <el-table-column label="Tick回数" align="right">
+          <el-table-column prop="buyCount" label="買約定" align="right"/>
+          <el-table-column prop="sellCount" label="売約定" align="right"/>
+          <el-table-column label="直近板更新" align="right">
             <template #default="scope">
-              <span>{{ scope.row.tickcount }}</span>
+              <span>{{ formatVolume(scope.row.tickcountbyminute) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="出来高" align="right">
+          <el-table-column prop="tickcounttotal" label="総板更新" align="right">
+            <template #default="scope">
+              <span>{{ formatVolume(scope.row.tickcounttotal) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="直近出来高" align="right">
+            <template #default="scope">
+              <span>{{ formatVolume(scope.row.tradingvolumebyminute) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="総出来高" align="right">
             <template #default="scope">
               <span>{{ formatVolume(scope.row.tradingvolumetotal) }}</span>
             </template>
@@ -27,7 +37,7 @@
               <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="vwap比" align="right">
+          <el-table-column label="VWAP比" align="right">
             <template #default="scope">
               <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
             </template>
@@ -151,9 +161,11 @@
             name: name,
             buyCount: 0,
             sellCount: 0,
-            tickcount: 0,
+            tickcounttotal: 0,
+            tickcountbyminute: 0,
             currentprice: 0,
             tradingvolumetotal: 0,
+            tradingvolumebyminute: 0,
             previouscloserate: 0,
             vwaprate: 0
           })
@@ -166,8 +178,10 @@
           // ランキング更新
           const rankdata = ranklist.find((e) => { return e.code == code});
           rankdata.currentprice = notice.currentprice
-          rankdata.tickcount = notice.tickcount
+          rankdata.tickcounttotal = notice.tickcounttotal
+          rankdata.tickcountbyminute = notice.tickcountbyminute
           rankdata.tradingvolumetotal = notice.tradingvolumetotal
+          rankdata.tradingvolumebyminute = notice.tradingvolumebyminute
           rankdata.previouscloserate = notice.previouscloserate
           rankdata.vwaprate = notice.vwaprate
 
