@@ -8,8 +8,14 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket: Socket) => {
-    socket.on("send-msg", msg => {
-        socket.broadcast.emit("new-msg", msg);
+    socket.on("initial", msg => {
+        socket.broadcast.emit("initial-notice", msg);
+    })
+    socket.on("action", msg => {
+        socket.broadcast.emit("action-notice", msg);
+    })
+    socket.on("regular", msg => {
+        socket.broadcast.emit("regular-notice", msg);
     })
 })
 
