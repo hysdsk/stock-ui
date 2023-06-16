@@ -162,47 +162,26 @@
     })
     socket.on("action-notice", notice => {
       const code = notice.code;
-      const name = notice.name;
       if (!symbols[code]) return
       while (symbols[code].data.length > 5) {
         symbols[code].data.shift();
       }
-      if (notice.status) {
-        const data = reactive(notice);
-        data.flash = true;
-        symbols[code].data.push(data);
-        setTimeout(() => { data.flash = false; }, 100);
-        // 約定通知は約定回数更新後にソートする
+      const data = reactive(notice);
+      data.flash = true;
+      symbols[code].data.push(data);
+      setTimeout(() => { data.flash = false; }, 100);
+      // 約定通知時に約定回数をインクリメントする
+      if (notice.status == "opening" && notice.tradingvolume > 0) {
         const rankdata = ranklist.find((e) => { return e.code == code});
-        if (notice.status == "opening" && notice.tradingvolume > 0) {
-          if (notice.sob > 0) {
-            rankdata.buyCount++
-          } else if (notice.sob < 0) {
-            rankdata.sellCount++
-          }
-          ranklist.sort((a, b) => {
-            const ac = a.buyCount - a.sellCount;
-            const bc = b.buyCount - b.sellCount;
-            if (ac > bc) {
-              return -1;
-            } else if (ac < bc) {
-              return 1;
-            } else {
-              if (a.tickcount > b.tickcount) {
-                return -1;
-              } else if (a.tickcount < b.tickcount) {
-                return 1;
-              } else {
-                return 0
-              }
-            }
-          });
+        if (notice.sob > 0) {
+          rankdata.buyCount++
+        } else if (notice.sob < 0) {
+          rankdata.sellCount++
         }
       }
     });
     socket.on("regular-notice", notice => {
       const code = notice.code;
-      const name = notice.name;
       if (!symbols[code]) return
       const rankdata = ranklist.find((e) => { return e.code == code});
       rankdata.currentprice = notice.currentprice
@@ -212,6 +191,15 @@
       rankdata.tradingvolumebyminute = notice.tradingvolumebyminute
       rankdata.previouscloserate = notice.previouscloserate
       rankdata.vwaprate = notice.vwaprate
+      ranklist.sort((a, b) => {
+        if (a.tickcountbyminute > b.tickcountbyminute) {
+          return -1;
+        } else if (a.tickcountbyminute < b.tickcountbyminute) {
+          return 1;
+        } else {
+          return 0
+        }
+      });
     });
   })
 
