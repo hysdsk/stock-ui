@@ -3,41 +3,61 @@
     <el-main>
       <el-card>
         <el-table :data="ranklist" height="1024" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
-          <el-table-column prop="code" label="コード" width="100"/>
-          <el-table-column prop="name" label="銘柄名" width="250" :formatter="formatName"/>
-          <el-table-column label="買約定" align="right">
+          <el-table-column prop="code" label="コード" header-align="center" width="100"/>
+          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName"/>
+          <el-table-column label="板更新／分" header-align="center" align="right" width="120">
             <template #default="scope">
-              <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
+              <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="売約定" align="right">
+          <el-table-column label="総板更新" header-align="center" align="right" width="120">
+            <template #default="scope">
+              <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcounttotal) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="売買代金／分" header-align="center" align="right" width="120">
+            <template #default="scope">
+              <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluebyminute) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="総売買代金" header-align="center" align="right" width="120">
+            <template #default="scope">
+              <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluetotal) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="売約定" header-align="center" align="center" width="80">
             <template #default="scope">
               <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="直近一分／板更新" align="right">
+          <el-table-column label="売気配" header-align="center" align="right" width="80">
             <template #default="scope">
-              <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }} / {{ formatVolume(scope.row.tickcounttotal) }}</span>
+              <span class="text-yellow">{{ formatSign(scope.row.bidsign) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="直近一分／出来高" align="right">
+          <el-table-column label="現値" header-align="center" align="right" width="100">
             <template #default="scope">
-              <span :class="colorValue(scope.row.tradingvolumebyminute*scope.row.currentprice, 1)">{{ formatVolume(scope.row.tradingvolumebyminute) }} / {{ formatVolume(scope.row.tradingvolumetotal) }}</span>
+              <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="現値" align="right">
-            <template #default="scope">
-              <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="前日比" align="right">
+          <el-table-column label="前日比" header-align="center" align="right" width="80">
             <template #default="scope">
               <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="VWAP比" align="right">
+          <el-table-column label="vwap比" header-align="center" align="right" width="80">
             <template #default="scope">
               <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="買気配" header-align="center" align="left" width="80">
+            <template #default="scope">
+              <span class="text-yellow">{{ formatSign(scope.row.asksign) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="買約定" header-align="center" align="center" width="80">
+            <template #default="scope">
+              <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -152,66 +172,58 @@
             tickcounttotal: 0,
             tickcountbyminute: 0,
             currentprice: 0,
-            tradingvolumetotal: 0,
-            tradingvolumebyminute: 0,
+            tradingvaluetotal: 0,
+            tradingvaluebyminute: 0,
             previouscloserate: 0,
-            vwaprate: 0
+            vwaprate: 0,
+            bidsign: "",
+            asksign: ""
           })
         }
       }
     })
     socket.on("action-notice", notice => {
       const code = notice.code;
-      const name = notice.name;
       if (!symbols[code]) return
       while (symbols[code].data.length > 5) {
         symbols[code].data.shift();
       }
-      if (notice.status) {
-        const data = reactive(notice);
-        data.flash = true;
-        symbols[code].data.push(data);
-        setTimeout(() => { data.flash = false; }, 100);
-        // 約定通知は約定回数更新後にソートする
+      const data = reactive(notice);
+      data.flash = true;
+      symbols[code].data.push(data);
+      setTimeout(() => { data.flash = false; }, 100);
+      // 約定通知時に約定回数をインクリメントする
+      if (notice.status == "opening" && notice.tradingvolume > 0) {
         const rankdata = ranklist.find((e) => { return e.code == code});
-        if (notice.status == "opening" && notice.tradingvolume > 0) {
-          if (notice.sob > 0) {
-            rankdata.buyCount++
-          } else if (notice.sob < 0) {
-            rankdata.sellCount++
-          }
-          ranklist.sort((a, b) => {
-            const ac = a.buyCount - a.sellCount;
-            const bc = b.buyCount - b.sellCount;
-            if (ac > bc) {
-              return -1;
-            } else if (ac < bc) {
-              return 1;
-            } else {
-              if (a.tickcount > b.tickcount) {
-                return -1;
-              } else if (a.tickcount < b.tickcount) {
-                return 1;
-              } else {
-                return 0
-              }
-            }
-          });
+        if (notice.sob > 0) {
+          rankdata.buyCount++
+        } else if (notice.sob < 0) {
+          rankdata.sellCount++
         }
       }
     });
     socket.on("regular-notice", notice => {
       const code = notice.code;
-      const name = notice.name;
       if (!symbols[code]) return
       const rankdata = ranklist.find((e) => { return e.code == code});
       rankdata.currentprice = notice.currentprice
       rankdata.tickcounttotal = notice.tickcounttotal
       rankdata.tickcountbyminute = notice.tickcountbyminute
-      rankdata.tradingvolumetotal = notice.tradingvolumetotal
-      rankdata.tradingvolumebyminute = notice.tradingvolumebyminute
+      rankdata.tradingvaluetotal = notice.tradingvaluetotal
+      rankdata.tradingvaluebyminute = notice.tradingvaluebyminute
       rankdata.previouscloserate = notice.previouscloserate
       rankdata.vwaprate = notice.vwaprate
+      rankdata.bidsign = notice.bidsign
+      rankdata.asksign = notice.asksign
+      ranklist.sort((a, b) => {
+        if (a.tickcountbyminute > b.tickcountbyminute) {
+          return -1;
+        } else if (a.tickcountbyminute < b.tickcountbyminute) {
+          return 1;
+        } else {
+          return 0
+        }
+      });
     });
   })
 
@@ -221,7 +233,7 @@
     }
   }
   const formatName = (r, c, v, i) => {
-    const limit = 15;
+    const limit = 30;
     if (v.length > limit) {
       return `${v.substring(0, limit)}...`;
     }
@@ -235,15 +247,10 @@
   }
   const formatVolume = (v) => {
     const t = v < 0 ? v * -1 : v;
-    if (t >= 1000000) {
-      return `${Math.round(v / 1000000)}m`;
-    } else if (t >= 1000) {
-      return `${Math.round(v / 1000)}k`;
-    } else if (t > 0) {
-      return v;
-    } else {
-      return "";
-    }
+    if (t >= 1000000000) return `${Math.round(v / 1000000000)}g`;
+    if (t >=    1000000) return `${Math.round(v /    1000000)}m`;
+    if (t >=       1000) return `${Math.round(v /       1000)}k`;
+    return v;
   }
   const formatOrder = (v) => {
     if (!v) {
@@ -252,6 +259,11 @@
     const price = v.price ? v.price : "--- ";
     const qty = formatVolume(v.qty);
     return `${price}:${qty}`;
+  }
+  const formatSign = (v) => {
+    if (v == "0118") return "連"
+    if (v == "0102") return "特"
+    return ""
   }
   const colorRate = (v) => {
     const r = Math.round(v * 10) / 10;
@@ -302,47 +314,44 @@
     return ""
   }
   const colorValue = (v) => {
-    const t = Math.round(v / 1000000)
-    if (t > 250) return "text-red9";
-    if (t > 220) return "text-red8";
-    if (t > 180) return "text-red7";
-    if (t > 150) return "text-red6";
-    if (t > 120) return "text-red5";
-    if (t >  90) return "text-red4";
-    if (t >  70) return "text-red3";
-    if (t >  50) return "text-red2";
-    if (t >  35) return "text-red1";
-    if (t >  30) return "text-blue1";
-    if (t >  26) return "text-blue2";
-    if (t >  22) return "text-blue3";
-    if (t >  18) return "text-blue4";
-    if (t >  14) return "text-blue5";
-    if (t >  10) return "text-blue6";
-    if (t >   6) return "text-blue7";
-    if (t >   2) return "text-blue8";
-    if (t >   0) return "text-blue9";
-    return ""
+    if (v >= 200000000) return "text-red9";
+    if (v >= 180000000) return "text-red8";
+    if (v >= 150000000) return "text-red7";
+    if (v >= 120000000) return "text-red6";
+    if (v >= 100000000) return "text-red5";
+    if (v >=  75000000) return "text-red4";
+    if (v >=  55000000) return "text-red3";
+    if (v >=  40000000) return "text-red2";
+    if (v >=  30000000) return "text-red1";
+    if (v >=  25000000) return "text-blue1";
+    if (v >=  20000000) return "text-blue2";
+    if (v >=  17000000) return "text-blue3";
+    if (v >=  13000000) return "text-blue4";
+    if (v >=  10000000) return "text-blue5";
+    if (v >=   7000000) return "text-blue6";
+    if (v >=   4000000) return "text-blue7";
+    if (v >=   2000000) return "text-blue8";
+    return                     "text-blue9";
   }
   const colorTick = (v) => {
-    if (v > 450) return "text-red9";
-    if (v > 400) return "text-red8";
-    if (v > 350) return "text-red7";
-    if (v > 300) return "text-red6";
-    if (v > 250) return "text-red5";
-    if (v > 200) return "text-red4";
-    if (v > 150) return "text-red3";
-    if (v > 100) return "text-red2";
-    if (v >  50) return "text-red1";
-    if (v >  40) return "text-blue1";
-    if (v >  35) return "text-blue2";
-    if (v >  30) return "text-blue3";
-    if (v >  25) return "text-blue4";
-    if (v >  20) return "text-blue5";
-    if (v >  15) return "text-blue6";
-    if (v >  10) return "text-blue7";
-    if (v >   5) return "text-blue8";
-    if (v >   0) return "text-blue1";
-    return ""
+    if (v >= 500) return "text-red9";
+    if (v >= 450) return "text-red8";
+    if (v >= 400) return "text-red7";
+    if (v >= 350) return "text-red6";
+    if (v >= 300) return "text-red5";
+    if (v >= 250) return "text-red4";
+    if (v >= 200) return "text-red3";
+    if (v >= 150) return "text-red2";
+    if (v >= 100) return "text-red1";
+    if (v >=  80) return "text-blue1";
+    if (v >=  60) return "text-blue2";
+    if (v >=  50) return "text-blue3";
+    if (v >=  40) return "text-blue4";
+    if (v >=  30) return "text-blue5";
+    if (v >=  20) return "text-blue6";
+    if (v >=  10) return "text-blue7";
+    if (v >=   5) return "text-blue8";
+    return               "text-blue9";
   }
   const colorPrice = (v) => {
     if (v == "nowopened") return "text-green";
