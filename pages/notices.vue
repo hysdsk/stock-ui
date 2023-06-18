@@ -3,6 +3,7 @@
     <el-main>
       <el-card>
         <el-table :data="ranklist" height="1024" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
+          <el-table-column type="index" label="位" header-align="center"  align="right" width="50" />
           <el-table-column prop="code" label="コード" header-align="center" width="100"/>
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName"/>
           <el-table-column label="板更新／分" header-align="center" align="right" width="120">
@@ -193,7 +194,7 @@
       symbols[code].data.push(data);
       setTimeout(() => { data.flash = false; }, 100);
       // 約定通知時に約定回数をインクリメントする
-      if (notice.status == "opening" && notice.tradingvolume > 0) {
+      if (notice.order == null && notice.status == "opening") {
         const rankdata = ranklist.find((e) => { return e.code == code});
         if (notice.sob > 0) {
           rankdata.buyCount++
