@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table :data="ranklist" height="1024" style="width: 100%" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
+        <el-table :data="ranklist" height="1024" style="width: 100%" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column type="index" label="位" header-align="center"  align="right" width="50" />
           <el-table-column prop="code" label="コード" header-align="center" width="100"/>
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName"/>
@@ -228,6 +228,13 @@
     });
   })
 
+  const colorChance = (v) => {
+    const tc = v.row.tickcountbyminute;
+    const tv = v.row.tradingvaluebyminute / 1000000;
+    const vr = v.row.vwaprate
+    const vd = v.row.buyCount - v.row.sellCount
+    return (tc >= 200 && tv >= 100 && vr < 2 && vd >= 0) ? "bg-chance" : "";
+  }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
         navigator.clipboard.writeText(v);
