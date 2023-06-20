@@ -33,7 +33,7 @@
           </el-table-column>
           <el-table-column label="売気配" header-align="center" align="right" width="80">
             <template #default="scope">
-              <span class="text-yellow">{{ formatSign(scope.row.bidsign) }}</span>
+              <span :class="colorBidSign(scope.row.bidsign)">{{ formatSign(scope.row.bidsign) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="現値" header-align="center" align="right" width="100">
@@ -53,7 +53,7 @@
           </el-table-column>
           <el-table-column label="買気配" header-align="center" align="left" width="80">
             <template #default="scope">
-              <span class="text-yellow">{{ formatSign(scope.row.asksign) }}</span>
+              <span :class="colorAskSign(scope.row.asksign)">{{ formatSign(scope.row.asksign) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="買約定" header-align="center" align="center" width="80">
@@ -267,6 +267,16 @@
     const price = v.price ? v.price : "--- ";
     const qty = formatVolume(v.qty);
     return `${price}:${qty}`;
+  }
+  const colorBidSign = (v) => {
+    if (v == "0118") return "text-blue5"
+    if (v == "0102") return "text-yellow"
+    return ""
+  }
+  const colorAskSign = (v) => {
+    if (v == "0118") return "text-red5"
+    if (v == "0102") return "text-yellow"
+    return ""
   }
   const formatSign = (v) => {
     if (v == "0118") return "連"
