@@ -98,7 +98,7 @@ export default defineEventHandler(async (event: any) => {
         });
     });
     let symbol: Symbol = await p.then((reslut) => {
-        return reslut.map((e: any) => <Symbol>{
+        return reslut?.map((e: any) => <Symbol>{
             symbolCode: String(e.code),
             symbolName: String(e.symbol_name),
             exchangeName: String(e.exchange_name),
@@ -144,7 +144,7 @@ export default defineEventHandler(async (event: any) => {
     });
     let symbolDailyInfo: SymbolDailyInfo[] = [];
     await p.then((reslut) => {
-        symbolDailyInfo = reslut.map((e: any) => <SymbolDailyInfo>{
+        symbolDailyInfo = reslut?.map((e: any) => <SymbolDailyInfo>{
             symbolCode: String(e.symbol_code),
             openingDate: String(e.opening_date),
             firstOpeningPrice: Number(e.first_opening_price),
@@ -185,7 +185,7 @@ export default defineEventHandler(async (event: any) => {
     });
     let symbolWeeklyInfo: SymbolWeeklyInfo[] = [];
     await p.then((reslut) => {
-        symbolWeeklyInfo = reslut.map((e: any) => <SymbolWeeklyInfo>{
+        symbolWeeklyInfo = reslut?.map((e: any) => <SymbolWeeklyInfo>{
             weekendDate: String(e.weekend_date),
             sellBalance: Number(e.sell_balance),
             buyBalance: Number(e.buy_balance)
@@ -198,31 +198,31 @@ export default defineEventHandler(async (event: any) => {
     symbolWeeklyInfo = symbolWeeklyInfo.filter(e => Number(e.weekendDate) >= Number(startDate));
 
     const dailyInfoForChart = {
-        openingDate: symbolDailyInfo.map((e) => {
+        openingDate: symbolDailyInfo?.map((e) => {
             const year = e.openingDate.substring(0, 4);
             const month = e.openingDate.substring(4, 6);
             const day = e.openingDate.substring(6, 8);
             return dayjs(`${year}-${month}-${day}`).format("YYYY/MM/DD（dd）");
         }),
-        tradingVolume: symbolDailyInfo.map((e) => {return e.tradingVolume}),
-        priceBody: symbolDailyInfo.map((e) => {
+        tradingVolume: symbolDailyInfo?.map((e) => {return e.tradingVolume}),
+        priceBody: symbolDailyInfo?.map((e) => {
             return [
                 e.firstOpeningPrice == 0 ? e.latterOpeningPrice : e.firstOpeningPrice,
                 e.latterClosingPrice == 0 ? e.firstOpeningPrice : e.latterClosingPrice]
         }),
-        tickColor: symbolDailyInfo.map((e) => {
+        tickColor: symbolDailyInfo?.map((e) => {
             return e.firstOpeningPrice < e.latterClosingPrice ? "#ff1744" : "#00E676"
         }),
-        highAndLow: symbolDailyInfo.map((e) => {
+        highAndLow: symbolDailyInfo?.map((e) => {
             let highPrice: number = e.firstHighPrice > e.latterHighPrice ? e.firstHighPrice : e.latterHighPrice;
             let lowPrice: number = e.firstLowPrice > e.latterLowPrice ? e.latterLowPrice : e.firstLowPrice;
             lowPrice = lowPrice == 0 ? highPrice : lowPrice;
             return [highPrice, lowPrice];
         }),
-        vwap: symbolDailyInfo.map((e) => {return e.vwap}),
-        loaningBalance: symbolDailyInfo.map((e) => {return e.loaningBalance}),
-        lendingBalance: symbolDailyInfo.map((e) => {return e.lendingBalance}),
-        rotationDays: symbolDailyInfo.map((e) => {
+        vwap: symbolDailyInfo?.map((e) => {return e.vwap}),
+        loaningBalance: symbolDailyInfo?.map((e) => {return e.loaningBalance}),
+        lendingBalance: symbolDailyInfo?.map((e) => {return e.lendingBalance}),
+        rotationDays: symbolDailyInfo?.map((e) => {
             // ｛（融資残＋貸株残）×2 ｝÷（融資新規＋融資返済＋貸株新規＋貸株返済）
             const divider = e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount;
             if (divider) {
@@ -234,14 +234,14 @@ export default defineEventHandler(async (event: any) => {
     };
 
     const weeklyInfoForChart = {
-        weekendDate: symbolWeeklyInfo.map((e) => {
+        weekendDate: symbolWeeklyInfo?.map((e) => {
             const year = e.weekendDate.substring(0, 4);
             const month = e.weekendDate.substring(4, 6);
             const day = e.weekendDate.substring(6, 8);
             return dayjs(`${year}-${month}-${day}`).format("YYYY/MM/DD（dd）");
         }),
-        sellBalance: symbolWeeklyInfo.map((e) => {return e.sellBalance}),
-        buyBalance: symbolWeeklyInfo.map((e) => {return e.buyBalance})
+        sellBalance: symbolWeeklyInfo?.map((e) => {return e.sellBalance}),
+        buyBalance: symbolWeeklyInfo?.map((e) => {return e.buyBalance})
     }
 
     return {

@@ -50,7 +50,7 @@ const goHome = () => {
 }
 
 const goSymbol = () => {
-  const exists = data.value.symbols.map(s => s.code).includes(target.value);
+  const exists = data.value.symbols?.map(s => s.code).includes(target.value);
   if (exists) {
     window.location.href = `/symbol/${target.value}`;
   } else {

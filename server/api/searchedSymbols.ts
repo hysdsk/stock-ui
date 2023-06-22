@@ -83,7 +83,7 @@ export default defineEventHandler(async (event: any) => {
         });
     });
     const increaseVolumeSymbols: symbol[] = await p.then((reslut) => {
-        return reslut.map((row: any) => <Symbol> {
+        return reslut?.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
             divisionName: String(row.division_name),
@@ -110,7 +110,7 @@ export default defineEventHandler(async (event: any) => {
         });
     });
     const days: string[] = await p.then((result) => {
-        return result.map((row: any) => { return row.opening_date });
+        return result?.map((row: any) => { return row.opening_date });
     });
     
     p = new Promise((resolve, reject) => {
@@ -199,7 +199,7 @@ export default defineEventHandler(async (event: any) => {
         });
     });
     const increasePriceSymbols: Symbol[] = await p.then((reslut) => {
-        return reslut.map((row: any) => <Symbol> {
+        return reslut?.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
             divisionName: String(row.division_name),
@@ -225,7 +225,7 @@ export default defineEventHandler(async (event: any) => {
         });
     });
     const weekEndDates: string[] = await p.then((result) => {
-        return result.map((row: any) => { return row.weekend_date });
+        return result?.map((row: any) => { return row.weekend_date });
     });
 
     p = new Promise((resolve, reject) => {
@@ -288,7 +288,7 @@ export default defineEventHandler(async (event: any) => {
         });
     });
     const increaseSellBalance: Symbol[] = await p.then((reslut) => {
-        return reslut.map((row: any) => <Symbol> {
+        return reslut?.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
             divisionName: String(row.division_name),
@@ -363,7 +363,7 @@ export default defineEventHandler(async (event: any) => {
     });
     
     const lowRankSymbols: Symbol[] = await p.then((reslut) => {
-        return reslut.map((row: any) => <Symbol> {
+        return reslut?.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
             symbolName: String(row.symbol_name),
             divisionName: String(row.division_name),

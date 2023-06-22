@@ -29,7 +29,7 @@ export default defineEventHandler(async (event: any) => {
         });
     });
     const symbols: symbol[] = await p.then((reslut) => {
-        return reslut.map((row: any) => <Symbol> {
+        return reslut?.map((row: any) => <Symbol> {
             code: String(row.code),
             name: String(row.name)
         });
