@@ -17,7 +17,7 @@ interface Symbol {
     marketPrice: number;
 }
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
@@ -76,7 +76,7 @@ export default defineEventHandler(async (event: any) => {
         ORDER BY
             increase_rate DESC
         `;
-        connection.query(sql,
+        pool.query(sql,
             [oneWeekBefore, threeMonthBefore, oneWeekBefore],
             (err, rows, fields) => {
             resolve(rows);
@@ -105,7 +105,7 @@ export default defineEventHandler(async (event: any) => {
         	opening_date DESC
         LIMIT 60
         `
-        connection.query(sql, [], (err, rows, fields) => {
+        pool.query(sql, [], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -194,7 +194,7 @@ export default defineEventHandler(async (event: any) => {
         ORDER BY
             increase_rate DESC
         `
-        connection.query(sql, [days[0], days[1], days[2]], (err, rows, fields) => {
+        pool.query(sql, [days[0], days[1], days[2]], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -220,7 +220,7 @@ export default defineEventHandler(async (event: any) => {
             weekend_date DESC
         LIMIT 5
         `
-        connection.query(sql, [], (err, rows, fields) => {
+        pool.query(sql, [], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -283,7 +283,7 @@ export default defineEventHandler(async (event: any) => {
         ORDER BY
             balance_rate;
         `
-        connection.query(sql, [weekEndDates.pop(), weekEndDates.shift()], (err, rows, fields) => {
+        pool.query(sql, [weekEndDates.pop(), weekEndDates.shift()], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -357,11 +357,10 @@ export default defineEventHandler(async (event: any) => {
         ORDER BY
             aggregated.diff_range
         `
-        connection.query(sql, [days.shift(), days.pop()], (err, rows, fields) => {
+        pool.query(sql, [days.shift(), days.pop()], (err, rows, fields) => {
             resolve(rows);
         });
     });
-    
     const lowRankSymbols: Symbol[] = await p.then((reslut) => {
         return reslut?.map((row: any) => <Symbol> {
             symbolCode: String(row.symbol_code),
