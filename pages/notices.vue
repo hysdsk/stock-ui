@@ -241,7 +241,7 @@
     const tv = v.row.tradingvaluebyminute / 1000000;
     const vr = v.row.vwaprate
     const vd = v.row.buyCount - v.row.sellCount
-    return (tc >= 200 && tv >= 100 && vr > 0 && vr < 3 && vd >= 0) ? "bg-chance" : "";
+    return (tc >= 200 && tv >= 100 && vr > 0 && vr < 3 && vd > 0) ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
