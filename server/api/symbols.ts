@@ -6,7 +6,7 @@ interface Symbol {
     name: string;
 }
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event: any) => {
         ORDER BY
             code
         `;
-        connection.query(sql, [], (err, rows, fields) => {
+        pool.query(sql, [], (err, rows, fields) => {
             resolve(rows);
         });
     });

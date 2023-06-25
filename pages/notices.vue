@@ -61,6 +61,11 @@
               <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
             </template>
           </el-table-column>
+          <el-table-column label="閾値" header-align="center" align="right" width="80">
+            <template #default="scope">
+              <span>{{ formatVolume(scope.row.threshold) }}</span>
+            </template>
+          </el-table-column>
         </el-table>
       </el-card>
     </el-main>
@@ -178,7 +183,8 @@
             previouscloserate: 0,
             vwaprate: 0,
             bidsign: "",
-            asksign: ""
+            asksign: "",
+            threshold: notice.threshold
           })
         }
       }
@@ -217,9 +223,11 @@
       rankdata.bidsign = notice.bidsign
       rankdata.asksign = notice.asksign
       ranklist.sort((a, b) => {
-        if (a.tickcountbyminute > b.tickcountbyminute) {
+        const apoint = (a.tickcountbyminute / 2) + (a.tradingvaluebyminute / 1000000)
+        const bpoint = (b.tickcountbyminute / 2) + (b.tradingvaluebyminute / 1000000)
+        if (apoint > bpoint) {
           return -1;
-        } else if (a.tickcountbyminute < b.tickcountbyminute) {
+        } else if (apoint < bpoint) {
           return 1;
         } else {
           return 0
@@ -233,7 +241,7 @@
     const tv = v.row.tradingvaluebyminute / 1000000;
     const vr = v.row.vwaprate
     const vd = v.row.buyCount - v.row.sellCount
-    return (tc >= 200 && tv >= 100 && vr < 2 && vd >= 0) ? "bg-chance" : "";
+    return (tc >= 200 && tv >= 100 && vr > 0 && vr < 3 && vd >= 0) ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {

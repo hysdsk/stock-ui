@@ -40,7 +40,7 @@ interface SymbolWeeklyInfo {
     buyBalance: number;
 }
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
@@ -93,7 +93,7 @@ export default defineEventHandler(async (event: any) => {
         WHERE
             s.code = ? 
         `;
-        connection.query(symbol_detail_sql, [symbolCode, symbolCode], (err, rows, fields) => {
+        pool.query(symbol_detail_sql, [symbolCode, symbolCode], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -138,7 +138,7 @@ export default defineEventHandler(async (event: any) => {
         AND
             opening_date >= ?
         `;
-        connection.query(daily_info_sql, [symbolCode, startDate], (err, rows, fields) => {
+        pool.query(daily_info_sql, [symbolCode, startDate], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -179,7 +179,7 @@ export default defineEventHandler(async (event: any) => {
         AND
             weekend_date >= ?
         `;
-        connection.query(sql, [symbolCode, startDate], (err, rows, fields) => {
+        pool.query(sql, [symbolCode, startDate], (err, rows, fields) => {
             resolve(rows);
         });
     });

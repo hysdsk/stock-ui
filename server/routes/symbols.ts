@@ -1,7 +1,7 @@
 import * as mysql from "mysql2";
 const config = useRuntimeConfig()
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event: any) => {
         WHERE
             code in (${new Array<String>(codelist.length).fill("?").join(",")})
         `;
-        connection.query(symbol_detail_sql, codelist, (err, rows, fields) => {
+        pool.query(symbol_detail_sql, codelist, (err, rows, fields) => {
             resolve(rows);
         });
     });
