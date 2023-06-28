@@ -223,8 +223,8 @@
       rankdata.bidsign = notice.bidsign
       rankdata.asksign = notice.asksign
       ranklist.sort((a, b) => {
-        const apoint = (a.tickcountbyminute / 2) + (a.tradingvaluebyminute / 1000000)
-        const bpoint = (b.tickcountbyminute / 2) + (b.tradingvaluebyminute / 1000000)
+        const apoint = a.tickcountbyminute + (a.tradingvaluebyminute / 1000000)
+        const bpoint = b.tickcountbyminute + (b.tradingvaluebyminute / 1000000)
         if (apoint > bpoint) {
           return -1;
         } else if (apoint < bpoint) {
@@ -293,24 +293,24 @@
   }
   const colorRate = (v) => {
     const r = Math.round(v * 10) / 10;
-    if (r >  8) return  "text-red9";
-    if (r >  7) return  "text-red8";
-    if (r >  6) return  "text-red7";
-    if (r >  5) return  "text-red6";
-    if (r >  4) return  "text-red5";
-    if (r >  3) return  "text-red4";
-    if (r >  2) return  "text-red3";
-    if (r >  1) return  "text-red2";
-    if (r >  0) return  "text-red1";
-    if (r < -8) return "text-blue9";
-    if (r < -7) return "text-blue8";
-    if (r < -6) return "text-blue7";
-    if (r < -5) return "text-blue6";
-    if (r < -4) return "text-blue5";
-    if (r < -3) return "text-blue4";
-    if (r < -2) return "text-blue3";
-    if (r < -1) return "text-blue2";
-    if (r <  0) return "text-blue1";
+    if (r >  16) return  "text-red9";
+    if (r >  14) return  "text-red8";
+    if (r >  12) return  "text-red7";
+    if (r >  10) return  "text-red6";
+    if (r >   8) return  "text-red5";
+    if (r >   6) return  "text-red4";
+    if (r >   4) return  "text-red3";
+    if (r >   2) return  "text-red2";
+    if (r >   0) return  "text-red1";
+    if (r < -16) return "text-blue9";
+    if (r < -14) return "text-blue8";
+    if (r < -12) return "text-blue7";
+    if (r < -10) return "text-blue6";
+    if (r <  -8) return "text-blue5";
+    if (r <  -6) return "text-blue4";
+    if (r <  -4) return "text-blue3";
+    if (r <  -2) return "text-blue2";
+    if (r <   0) return "text-blue1";
     return ""
   }
 
@@ -360,18 +360,18 @@
     return                     "text-blue9";
   }
   const colorTick = (v) => {
-    if (v >= 500) return "text-red9";
-    if (v >= 450) return "text-red8";
-    if (v >= 400) return "text-red7";
-    if (v >= 350) return "text-red6";
-    if (v >= 300) return "text-red5";
-    if (v >= 250) return "text-red4";
-    if (v >= 200) return "text-red3";
-    if (v >= 150) return "text-red2";
-    if (v >= 100) return "text-red1";
-    if (v >=  80) return "text-blue1";
-    if (v >=  60) return "text-blue2";
-    if (v >=  50) return "text-blue3";
+    if (v >= 600) return "text-red9";
+    if (v >= 500) return "text-red8";
+    if (v >= 450) return "text-red7";
+    if (v >= 400) return "text-red6";
+    if (v >= 350) return "text-red5";
+    if (v >= 300) return "text-red4";
+    if (v >= 250) return "text-red3";
+    if (v >= 200) return "text-red2";
+    if (v >= 150) return "text-red1";
+    if (v >= 100) return "text-blue1";
+    if (v >=  80) return "text-blue2";
+    if (v >=  60) return "text-blue3";
     if (v >=  40) return "text-blue4";
     if (v >=  30) return "text-blue5";
     if (v >=  20) return "text-blue6";
