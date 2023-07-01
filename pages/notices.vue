@@ -144,8 +144,9 @@
 
 <script setup>
   import { io } from "socket.io-client";
-  import { reactive, ref, onMounted } from "vue";
+  import { reactive, ref, onMounted, h } from "vue";
   import { Filter } from "@element-plus/icons-vue";
+  import { ElNotification } from 'element-plus'
 
   const config = useRuntimeConfig().public
   const colnums = [
@@ -204,8 +205,16 @@
         const rankdata = ranklist.find((e) => { return e.code == code});
         if (notice.sob > 0) {
           rankdata.buyCount++
+          ElNotification({
+            message: h("b", {style: "color: #f44336"}, `${rankdata.buyCount}回目 \n${rankdata.code}: ${rankdata.name.substring(0, 12)}`),
+            onClick: () => copyToClipboard(rankdata.code)
+          })
         } else if (notice.sob < 0) {
           rankdata.sellCount++
+          ElNotification({
+            message: h("b", {style: "color: #2196f3"}, `${rankdata.sellCount}回目 \n${rankdata.code}: ${rankdata.name.substring(0, 12)}`),
+            onClick: () => copyToClipboard(rankdata.code)
+          })
         }
       }
     });
