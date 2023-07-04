@@ -206,13 +206,13 @@
         if (notice.sob > 0) {
           rankdata.buyCount++
           ElNotification({
-            message: h("b", {style: "color: #f44336"}, `${rankdata.buyCount}回目 \n${rankdata.code}: ${rankdata.name.substring(0, 12)}`),
+            message: h("b", {style: "color: #f44336"}, `買 ${rankdata.code}: ${rankdata.name.substring(0, 13)}`),
             onClick: () => copyToClipboard(rankdata.code)
           })
         } else if (notice.sob < 0) {
           rankdata.sellCount++
           ElNotification({
-            message: h("b", {style: "color: #2196f3"}, `${rankdata.sellCount}回目 \n${rankdata.code}: ${rankdata.name.substring(0, 12)}`),
+            message: h("b", {style: "color: #2196f3"}, `売 ${rankdata.code}: ${rankdata.name.substring(0, 13)}`),
             onClick: () => copyToClipboard(rankdata.code)
           })
         }
