@@ -196,6 +196,11 @@
           label: "信用買残",
           data: data._value.weeklyInfoForChart.buyBalance,
           backgroundColor: "#ff8a80"
+        },{
+          type: 'bar',
+          label: "貸付残高",
+          data: data._value.weeklyInfoForChart.lendBalance,
+          backgroundColor: "#82b1ff"
         }]
       },
       options: {

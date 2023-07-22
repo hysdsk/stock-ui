@@ -38,6 +38,7 @@ interface SymbolWeeklyInfo {
     weekendDate: string;
     sellBalance: number;
     buyBalance: number;
+    lendBalance: number;
 }
 
 const pool = mysql.createPool({
@@ -171,7 +172,8 @@ export default defineEventHandler(async (event: any) => {
         SELECT
             weekend_date,
             sell_balance,
-            buy_balance
+            buy_balance,
+            lend_balance
         FROM
             kabu.symbol_weekly_info
         WHERE
@@ -188,7 +190,8 @@ export default defineEventHandler(async (event: any) => {
         symbolWeeklyInfo = reslut?.map((e: any) => <SymbolWeeklyInfo>{
             weekendDate: String(e.weekend_date),
             sellBalance: Number(e.sell_balance),
-            buyBalance: Number(e.buy_balance)
+            buyBalance: Number(e.buy_balance),
+            lendBalance: Number(e.lend_balance)
         });
     });
 
@@ -241,7 +244,8 @@ export default defineEventHandler(async (event: any) => {
             return dayjs(`${year}-${month}-${day}`).format("YYYY/MM/DD（dd）");
         }),
         sellBalance: symbolWeeklyInfo?.map((e) => {return e.sellBalance}),
-        buyBalance: symbolWeeklyInfo?.map((e) => {return e.buyBalance})
+        buyBalance: symbolWeeklyInfo?.map((e) => {return e.buyBalance}),
+        lendBalance: symbolWeeklyInfo?.map((e) => {return e.lendBalance})
     }
 
     return {
