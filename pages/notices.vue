@@ -11,19 +11,29 @@
               <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="総板更新" header-align="center" align="right" width="120">
+          <!-- <el-table-column label="総板更新" header-align="center" align="right" width="120">
             <template #default="scope">
               <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcounttotal) }}</span>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column label="売買代金／分" header-align="center" align="right" width="120">
             <template #default="scope">
               <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluebyminute) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="総売買代金" header-align="center" align="right" width="120">
+          <!-- <el-table-column label="総売買代金" header-align="center" align="right" width="120">
             <template #default="scope">
               <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluetotal) }}</span>
+            </template>
+          </el-table-column> -->
+          <el-table-column label="売買圧比" header-align="center" align="right" width="120">
+            <template #default="scope">
+              <span :class="colorRate(scope.row.underoverrate / 10)">{{ formatRate(scope.row.underoverrate) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="売買板比" header-align="center" align="right" width="120">
+            <template #default="scope">
+              <span :class="colorRate(scope.row.limitorderrate / 10)">{{ formatRate(scope.row.limitorderrate) }}</span>
             </template>
           </el-table-column>
           <el-table-column label="売約定" header-align="center" align="center" width="80">
@@ -183,6 +193,8 @@
             tradingvaluebyminute: 0,
             previouscloserate: 0,
             vwaprate: 0,
+            underoverrate: 0,
+            limitorderrate: 0,
             bidsign: "",
             asksign: "",
             threshold: notice.threshold
@@ -208,38 +220,40 @@
           ElNotification({
             message: h("b", {style: "color: #f44336"}, `買 ${rankdata.code}: ${rankdata.name.substring(0, 13)}`),
             onClick: () => copyToClipboard(rankdata.code)
-          })
+          });
         } else if (notice.sob < 0) {
           rankdata.sellCount++
           ElNotification({
             message: h("b", {style: "color: #2196f3"}, `売 ${rankdata.code}: ${rankdata.name.substring(0, 13)}`),
             onClick: () => copyToClipboard(rankdata.code)
-          })
+          });
         }
       }
     });
     socket.on("regular-notice", notice => {
       const code = notice.code;
-      if (!symbols[code]) return
+      if (!symbols[code]) return;
       const rankdata = ranklist.find((e) => { return e.code == code});
-      rankdata.currentprice = notice.currentprice
-      rankdata.tickcounttotal = notice.tickcounttotal
-      rankdata.tickcountbyminute = notice.tickcountbyminute
-      rankdata.tradingvaluetotal = notice.tradingvaluetotal
-      rankdata.tradingvaluebyminute = notice.tradingvaluebyminute
-      rankdata.previouscloserate = notice.previouscloserate
-      rankdata.vwaprate = notice.vwaprate
-      rankdata.bidsign = notice.bidsign
-      rankdata.asksign = notice.asksign
+      rankdata.currentprice = notice.currentprice;
+      rankdata.tickcounttotal = notice.tickcounttotal;
+      rankdata.tickcountbyminute = notice.tickcountbyminute;
+      rankdata.tradingvaluetotal = notice.tradingvaluetotal;
+      rankdata.tradingvaluebyminute = notice.tradingvaluebyminute;
+      rankdata.previouscloserate = notice.previouscloserate;
+      rankdata.vwaprate = notice.vwaprate;
+      rankdata.underoverrate = notice.underoverrate;
+      rankdata.limitorderrate = notice.limitorderrate;
+      rankdata.bidsign = notice.bidsign;
+      rankdata.asksign = notice.asksign;
       ranklist.sort((a, b) => {
-        const apoint = a.tickcountbyminute + (a.tradingvaluebyminute / 1000000)
-        const bpoint = b.tickcountbyminute + (b.tradingvaluebyminute / 1000000)
+        const apoint = a.tickcountbyminute + (a.tradingvaluebyminute / 1000000);
+        const bpoint = b.tickcountbyminute + (b.tradingvaluebyminute / 1000000);
         if (apoint > bpoint) {
           return -1;
         } else if (apoint < bpoint) {
           return 1;
         } else {
-          return 0
+          return 0;
         }
       });
     });
@@ -248,8 +262,8 @@
   const colorChance = (v) => {
     const tc = v.row.tickcountbyminute;
     const tv = v.row.tradingvaluebyminute / 1000000;
-    const vr = v.row.vwaprate
-    const vd = v.row.buyCount - v.row.sellCount
+    const vr = v.row.vwaprate;
+    const vd = v.row.buyCount - v.row.sellCount;
     return (tc >= 200 && tv >= 100 && vr > 0 && vr < 3 && vd > 0) ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
