@@ -2,10 +2,20 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table :data="ranklist" height="1024" style="width: 100%" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
+        <el-table :data="ranklist" style="width: 100%" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column type="index" label="位" header-align="center"  align="right" width="50" />
           <el-table-column prop="code" label="コード" header-align="center" width="100"/>
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName"/>
+          <el-table-column label="閾値" header-align="center" align="right" width="80">
+            <template #default="scope">
+              <span>{{ formatVolume(scope.row.threshold) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="vwap始値比" header-align="center" align="right" width="120">
+            <template #default="scope">
+              <span :class="colorRate(scope.row.vwapopeningrate)">{{ formatRate(scope.row.vwapopeningrate) }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="板更新／分" header-align="center" align="right" width="120">
             <template #default="scope">
               <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
@@ -69,11 +79,6 @@
           <el-table-column label="買約定" header-align="center" align="center" width="80">
             <template #default="scope">
               <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="閾値" header-align="center" align="right" width="80">
-            <template #default="scope">
-              <span>{{ formatVolume(scope.row.threshold) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -195,6 +200,7 @@
             vwaprate: 0,
             underoverrate: 0,
             limitorderrate: 0,
+            vwapopeningrate: 0,
             bidsign: "",
             asksign: "",
             threshold: notice.threshold
@@ -218,13 +224,13 @@
         if (notice.sob > 0) {
           rankdata.buyCount++
           ElNotification({
-            message: h("b", {style: "color: #f44336"}, `買 ${rankdata.code}: ${rankdata.name.substring(0, 13)}`),
+            message: h("b", {style: "color: #f44336"}, `買約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
         } else if (notice.sob < 0) {
           rankdata.sellCount++
           ElNotification({
-            message: h("b", {style: "color: #2196f3"}, `売 ${rankdata.code}: ${rankdata.name.substring(0, 13)}`),
+            message: h("b", {style: "color: #2196f3"}, `売約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
         }
@@ -243,6 +249,7 @@
       rankdata.vwaprate = notice.vwaprate;
       rankdata.underoverrate = notice.underoverrate;
       rankdata.limitorderrate = notice.limitorderrate;
+      rankdata.vwapopeningrate = notice.vwapopeningrate;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
       ranklist.sort((a, b) => {
