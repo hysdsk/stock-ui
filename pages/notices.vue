@@ -16,6 +16,11 @@
               <span :class="colorRate(scope.row.vwapopeningrate)">{{ formatRate(scope.row.vwapopeningrate) }}</span>
             </template>
           </el-table-column>
+          <el-table-column label="vwap傾き" header-align="center" align="right" width="120">
+            <template #default="scope">
+              <span :class="colorRate(scope.row.vwapslope)">{{ formatRate(scope.row.vwapslope) }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="板更新／分" header-align="center" align="right" width="120">
             <template #default="scope">
               <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
@@ -46,9 +51,11 @@
               <span :class="colorRate(scope.row.limitorderrate / 10)">{{ formatRate(scope.row.limitorderrate) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="売約定" header-align="center" align="center" width="80">
+          <el-table-column label="大約定" header-align="center" align="center" width="80">
             <template #default="scope">
               <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
+              :
+              <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
             </template>
           </el-table-column>
           <el-table-column label="売気配" header-align="center" align="right" width="80">
@@ -74,11 +81,6 @@
           <el-table-column label="買気配" header-align="center" align="left" width="80">
             <template #default="scope">
               <span :class="colorAskSign(scope.row.asksign)">{{ formatSign(scope.row.asksign) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="買約定" header-align="center" align="center" width="80">
-            <template #default="scope">
-              <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -201,6 +203,7 @@
             underoverrate: 0,
             limitorderrate: 0,
             vwapopeningrate: 0,
+            vwapslope: 0,
             bidsign: "",
             asksign: "",
             threshold: notice.threshold
@@ -250,6 +253,7 @@
       rankdata.underoverrate = notice.underoverrate;
       rankdata.limitorderrate = notice.limitorderrate;
       rankdata.vwapopeningrate = notice.vwapopeningrate;
+      rankdata.vwapslope = notice.vwapslope;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
       ranklist.sort((a, b) => {
