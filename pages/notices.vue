@@ -2,85 +2,69 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table :data="ranklist" style="width: 100%" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
+        <el-table :data="Object.values(ranklist)" style="width: 100%" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
           <el-table-column type="index" label="位" header-align="center"  align="right" width="50" />
-          <el-table-column prop="code" label="コード" header-align="center" width="100"/>
-          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName"/>
-          <el-table-column label="閾値" header-align="center" align="right" width="80">
+          <el-table-column prop="code" label="コード" header-align="center" width="100" sortable/>
+          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" sortable/>
+          <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
             <template #default="scope">
               <span>{{ formatVolume(scope.row.threshold) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="vwap始値比" header-align="center" align="right" width="120">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.vwapopeningrate)">{{ formatRate(scope.row.vwapopeningrate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="vwap傾き" header-align="center" align="right" width="120">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.vwapslope)">{{ formatRate(scope.row.vwapslope) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="板更新／分" header-align="center" align="right" width="120">
+          <el-table-column prop="tickcountbyminute" label="板更新／分" header-align="center" align="right" width="120" sortable>
             <template #default="scope">
               <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
             </template>
           </el-table-column>
-          <!-- <el-table-column label="総板更新" header-align="center" align="right" width="120">
-            <template #default="scope">
-              <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcounttotal) }}</span>
-            </template>
-          </el-table-column> -->
-          <el-table-column label="売買代金／分" header-align="center" align="right" width="120">
+          <el-table-column prop="tradingvaluebyminute" label="売買代金／分" header-align="center" align="right" width="140" sortable>
             <template #default="scope">
               <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluebyminute) }}</span>
             </template>
           </el-table-column>
-          <!-- <el-table-column label="総売買代金" header-align="center" align="right" width="120">
-            <template #default="scope">
-              <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluetotal) }}</span>
-            </template>
-          </el-table-column> -->
-          <el-table-column label="売買圧比" header-align="center" align="right" width="120">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.underoverrate / 10)">{{ formatRate(scope.row.underoverrate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="売買板比" header-align="center" align="right" width="120">
-            <template #default="scope">
-              <span :class="colorRate(scope.row.limitorderrate / 10)">{{ formatRate(scope.row.limitorderrate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="大約定" header-align="center" align="center" width="80">
+          <el-table-column prop="sellCount" label="売約定" header-align="center" align="center" width="90" sortable>
             <template #default="scope">
               <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
-              :
+            </template>
+          </el-table-column>
+          <el-table-column prop="buyCount" label="買約定" header-align="center" align="center" width="90" sortable>
+            <template #default="scope">
               <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="売気配" header-align="center" align="right" width="80">
+          <el-table-column label="気配" header-align="center" align="center" width="80">
             <template #default="scope">
-              <span :class="colorBidSign(scope.row.bidsign)">{{ formatSign(scope.row.bidsign) }}</span>
+              <span :class="colorFirstSign(scope.row.bidsign, scope.row.asksign)">{{ formatFirstSign(scope.row.bidsign, scope.row.asksign) }}</span>
+              <span :class="colorSecondSign(scope.row.bidsign, scope.row.asksign)">{{ formatSecondSign(scope.row.bidsign, scope.row.asksign) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="現値" header-align="center" align="right" width="100">
+          <el-table-column prop="currentprice" label="現値" header-align="center" align="right" width="100" sortable>
             <template #default="scope">
               <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="前日比" header-align="center" align="right" width="80">
+          <el-table-column prop="previouscloserate" label="前日比" header-align="center" align="right" width="90" sortable>
             <template #default="scope">
               <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="vwap比" header-align="center" align="right" width="80">
+          <el-table-column prop="vwaprate" label="vwap比" header-align="center" align="right" width="110" sortable>
             <template #default="scope">
               <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="買気配" header-align="center" align="left" width="80">
+          <el-table-column prop="vwapslope" label="vwap傾き" header-align="center" align="right" width="120" sortable>
             <template #default="scope">
-              <span :class="colorAskSign(scope.row.asksign)">{{ formatSign(scope.row.asksign) }}</span>
+              <span :class="colorRate(scope.row.vwapslope)">{{ formatRate(scope.row.vwapslope) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="underoverrate" label="売買圧比" header-align="center" align="right" width="120" sortable>
+            <template #default="scope">
+              <span :class="colorRate(scope.row.underoverrate / 10)">{{ formatRate(scope.row.underoverrate) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="limitorderrate" label="売買板比" header-align="center" align="right" width="120" sortable>
+            <template #default="scope">
+              <span :class="colorRate(scope.row.limitorderrate / 10)">{{ formatRate(scope.row.limitorderrate) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -178,7 +162,7 @@
   const filtered = ref(false)
   const selectedSymbols = ref([])
   const symbols = reactive({})
-  const ranklist = reactive([])
+  const ranklist = reactive({})
 
   onMounted(() => {
     const socket = io(config.wsBaseURL);
@@ -188,7 +172,7 @@
         const name = notice.name;
         if (!symbols[code]) {
           symbols[code] = { name: name, data: [] };
-          ranklist.push({
+          ranklist[code] = {
             code: code,
             name: name,
             buyCount: 0,
@@ -202,12 +186,11 @@
             vwaprate: 0,
             underoverrate: 0,
             limitorderrate: 0,
-            vwapopeningrate: 0,
             vwapslope: 0,
             bidsign: "",
             asksign: "",
             threshold: notice.threshold
-          })
+          }
         }
       }
     })
@@ -223,7 +206,7 @@
       setTimeout(() => { data.flash = false; }, 100);
       // 約定通知時に約定回数をインクリメントする
       if (notice.order == null && notice.status == "opening") {
-        const rankdata = ranklist.find((e) => { return e.code == code});
+        const rankdata = ranklist[code];
         if (notice.sob > 0) {
           rankdata.buyCount++
           ElNotification({
@@ -242,7 +225,7 @@
     socket.on("regular-notice", notice => {
       const code = notice.code;
       if (!symbols[code]) return;
-      const rankdata = ranklist.find((e) => { return e.code == code});
+      const rankdata = ranklist[code];
       rankdata.currentprice = notice.currentprice;
       rankdata.tickcounttotal = notice.tickcounttotal;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
@@ -252,21 +235,9 @@
       rankdata.vwaprate = notice.vwaprate;
       rankdata.underoverrate = notice.underoverrate;
       rankdata.limitorderrate = notice.limitorderrate;
-      rankdata.vwapopeningrate = notice.vwapopeningrate;
       rankdata.vwapslope = notice.vwapslope;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
-      ranklist.sort((a, b) => {
-        const apoint = a.tickcountbyminute + (a.tradingvaluebyminute / 1000000);
-        const bpoint = b.tickcountbyminute + (b.tradingvaluebyminute / 1000000);
-        if (apoint > bpoint) {
-          return -1;
-        } else if (apoint < bpoint) {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
     });
   })
 
@@ -310,19 +281,25 @@
     const qty = formatVolume(v.qty);
     return `${price}:${qty}`;
   }
-  const colorBidSign = (v) => {
-    if (v == "0118") return "text-blue5"
-    if (v == "0102") return "text-yellow"
+  const colorFirstSign = (bidSign, askSign) => {
+    if (bidSign == "0118") return "text-blue5"
+    if (askSign == "0118") return "text-red5"
+    if (bidSign == "0102" || askSign == "0102") return "text-yellow"
     return ""
   }
-  const colorAskSign = (v) => {
-    if (v == "0118") return "text-red5"
-    if (v == "0102") return "text-yellow"
+  const colorSecondSign = (bidSign, askSign) => {
+    if (bidSign == "0118" || bidSign == "0102") return "text-blue5"
+    if (askSign == "0118" || askSign == "0102") return "text-red5"
     return ""
   }
-  const formatSign = (v) => {
-    if (v == "0118") return "連"
-    if (v == "0102") return "特"
+  const formatFirstSign = (bidSign, askSign) => {
+    if (bidSign == "0118" || askSign == "0118") return "連"
+    if (bidSign == "0102" || askSign == "0102") return "特"
+    return ""
+  }
+  const formatSecondSign = (bidSign, askSign) => {
+    if (bidSign == "0118" || bidSign == "0102") return "売"
+    if (askSign == "0118" || askSign == "0102") return "買"
     return ""
   }
   const colorRate = (v) => {
