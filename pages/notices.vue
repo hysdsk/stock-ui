@@ -2,9 +2,9 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table :data="Object.values(ranklist)" style="width: 100%" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }">
-          <el-table-column type="index" label="位" header-align="center"  align="right" width="50" />
-          <el-table-column prop="code" label="コード" header-align="center" width="100" sortable/>
+        <el-table :data="Object.values(ranklist)" row-key="code" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%">
+          <el-table-column type="selection" header-align="center"  align="center" width="50" reserve-selection/>
+          <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable />
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" sortable/>
           <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
             <template #default="scope">
