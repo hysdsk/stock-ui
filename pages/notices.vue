@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table ref="multipleTableRef" :data="Object.values(ranklist)" row-key="code" :row-class-name="colorRows" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%" height="896">
+        <el-table ref="multipleTableRef" :data="Object.values(ranklist)" row-key="code" :row-class-name="colorRows" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%" max-height="896">
           <el-table-column type="selection" header-align="center"  align="center" width="50" reserve-selection/>
           <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable />
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" sortable/>
@@ -72,7 +72,7 @@
     </el-main>
   </el-container>
   <el-row :gutter="10" >
-    <el-col :span="colnum" v-show="showEachSymbol(k)" v-for="v, k in symbols">
+    <el-col :span="6" v-show="showEachSymbol(k)" v-for="v, k in symbols">
       <el-card>
           <template #header>
             <div class="card-header">
@@ -109,21 +109,13 @@
   </el-row>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
   import { io } from "socket.io-client";
   import { reactive, ref, onMounted, h } from "vue";
   import { Filter } from "@element-plus/icons-vue";
   import { ElNotification, ElTable } from 'element-plus';
 
   const config = useRuntimeConfig().public;
-  const colnums = [
-    {value:24, label: "1列"},
-    {value: 8, label: "3列"},
-    {value: 6, label: "4列"},
-    {value: 4, label: "6列"},
-    {value: 3, label: "8列"}
-  ];
-
   const multipleTableRef = ref<InstanceType<typeof ElTable>>();
   const colnum = ref(6);
   const filtered = ref(false);
