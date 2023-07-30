@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table :data="Object.values(ranklist)" row-key="code" :row-class-name="colorChance" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%">
+        <el-table ref="multipleTableRef" :data="Object.values(ranklist)" row-key="code" :row-class-name="colorRows" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%" height="896">
           <el-table-column type="selection" header-align="center"  align="center" width="50" reserve-selection/>
           <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable />
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" sortable/>
@@ -71,42 +71,8 @@
       </el-card>
     </el-main>
   </el-container>
-  <el-container>
-    <el-main>
-      <el-space wrap>
-        <el-select v-model="colnum" style="width: 80px">
-          <el-option
-            v-for="item in colnums"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-        <el-select
-          v-model="selectedSymbols"
-          multiple
-          collapse-tags
-          collapse-tags-tooltip
-          style="width: 320px"
-        >
-          <el-option
-            v-for="v, k in symbols"
-            :key="k"
-            :label="`${k}: ${v.name}`"
-            :value="k"
-          />
-        </el-select>
-        <el-switch v-model="filtered" inline-prompt :active-icon="Filter" size="large"/>
-      </el-space>
-    </el-main>
-  </el-container>
   <el-row :gutter="10" >
-    <el-col :span="colnum" v-if="Object.keys(symbols).length===0">
-      <el-card>
-        <el-skeleton :rows="6" animated />
-      </el-card>
-    </el-col>
-    <el-col :span="colnum" v-show="!filtered || selectedSymbols.includes(k)" v-for="v, k in symbols">
+    <el-col :span="colnum" v-show="showEachSymbol(k)" v-for="v, k in symbols">
       <el-card>
           <template #header>
             <div class="card-header">
@@ -143,26 +109,27 @@
   </el-row>
 </template>
 
-<script setup>
+<script setup lang="ts">
   import { io } from "socket.io-client";
   import { reactive, ref, onMounted, h } from "vue";
   import { Filter } from "@element-plus/icons-vue";
-  import { ElNotification } from 'element-plus'
+  import { ElNotification, ElTable } from 'element-plus';
 
-  const config = useRuntimeConfig().public
+  const config = useRuntimeConfig().public;
   const colnums = [
     {value:24, label: "1列"},
     {value: 8, label: "3列"},
     {value: 6, label: "4列"},
     {value: 4, label: "6列"},
     {value: 3, label: "8列"}
-  ]
+  ];
 
-  const colnum = ref(6)
-  const filtered = ref(false)
-  const selectedSymbols = ref([])
-  const symbols = reactive({})
-  const ranklist = reactive({})
+  const multipleTableRef = ref<InstanceType<typeof ElTable>>();
+  const colnum = ref(6);
+  const filtered = ref(false);
+  const selectedSymbols = ref([]);
+  const symbols = reactive({});
+  const ranklist = reactive({});
 
   onMounted(() => {
     const socket = io(config.wsBaseURL);
@@ -241,12 +208,21 @@
     });
   })
 
-  const colorChance = (v) => {
-    const tc = v.row.tickcountbyminute;
-    const tv = v.row.tradingvaluebyminute / 1000000;
-    const vr = v.row.vwaprate;
-    const vd = v.row.buyCount - v.row.sellCount;
-    return (tc >= 200 && tv >= 100 && vr > 0 && vr < 3 && vd > 0) ? "bg-chance" : "";
+  const showEachSymbol = (code) => {
+    const rows = multipleTableRef.value!.getSelectionRows();
+    return (rows.length > 0 && rows.filter(row => row.code == code).length > 0);
+  }
+  const colorRows = (v) => {
+    const rows = multipleTableRef.value!.getSelectionRows();
+    if (rows.length > 0 && rows.filter(row => row.code == v.row.code).length > 0) {
+      return "bg-selected";
+    }
+    const tc = v.row.tickcountbyminute >= 200;
+    const tv = v.row.tradingvaluebyminute / 1000000 >= 100;
+    const vr = v.row.vwaprate < 3;
+    const vs = v.row.vwapslope > 0;
+    const vd = v.row.buyCount - v.row.sellCount > 0;
+    return (tc && tv && vr && vs && vd) ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
