@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-card>
-        <el-table ref="multipleTableRef" :data="Object.values(ranklist)" row-key="code" :row-class-name="colorRows" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%" max-height="896">
+        <el-table ref="multipleTableRef" :data="Object.values(ranklist)" row-key="code" :row-class-name="colorRows" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%">
           <el-table-column type="selection" header-align="center"  align="center" width="50" reserve-selection/>
           <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable />
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" sortable/>
