@@ -11,22 +11,36 @@
               <span>{{ formatVolume(scope.row.threshold) }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="tickcountbyminute" label="板更新／分" header-align="center" align="right" width="120" sortable>
-            <template #default="scope">
-              <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
-            </template>
+          <el-table-column label="板更新" header-align="center">
+            <el-table-column prop="tickcountbyminute" label="分" header-align="center" align="right" width="80" sortable>
+              <template #default="scope">
+                <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="tickcounttotal" label="総" header-align="center" align="right" width="80" sortable>
+              <template #default="scope">
+                <span>{{ formatVolume(scope.row.tickcounttotal) }}</span>
+              </template>
+            </el-table-column>
           </el-table-column>
-          <el-table-column prop="tradingvaluebyminute" label="売買代金／分" header-align="center" align="right" width="140" sortable>
-            <template #default="scope">
-              <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluebyminute) }}</span>
-            </template>
+          <el-table-column label="売買代金" header-align="center">
+            <el-table-column prop="tradingvaluebyminute" label="分" header-align="center" align="right" width="80" sortable>
+              <template #default="scope">
+                <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluebyminute) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="tradingvaluetotal" label="総" header-align="center" align="right" width="80" sortable>
+              <template #default="scope">
+                <span>{{ formatVolume(scope.row.tradingvaluetotal) }}</span>
+              </template>
+            </el-table-column>
           </el-table-column>
-          <el-table-column prop="sellCount" label="売約定" header-align="center" align="center" width="90" sortable>
+          <el-table-column prop="sellCount" label="売約定" header-align="center" align="center" width="100" sortable>
             <template #default="scope">
               <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="buyCount" label="買約定" header-align="center" align="center" width="90" sortable>
+          <el-table-column prop="buyCount" label="買約定" header-align="center" align="center" width="100" sortable>
             <template #default="scope">
               <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
             </template>
@@ -42,7 +56,7 @@
               <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="previouscloserate" label="前日比" header-align="center" align="right" width="90" sortable>
+          <el-table-column prop="previouscloserate" label="前日比" header-align="center" align="right" width="100" sortable>
             <template #default="scope">
               <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
             </template>
@@ -220,7 +234,7 @@
     }
   }
   const formatName = (r, c, v, i) => {
-    const limit = 30;
+    const limit = 20;
     if (v.length > limit) {
       return `${v.substring(0, limit)}...`;
     }
