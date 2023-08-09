@@ -2,6 +2,11 @@
     vertical-align: -10%;
 }
 
+.el-card {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 .text-red1 { color: #ffcdd2; }
 .text-red2 { color: #ef9a9a; }
 .text-red3 { color: #e57373; }

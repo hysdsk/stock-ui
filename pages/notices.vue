@@ -1,6 +1,6 @@
 <template>
-  <el-container>
-    <el-main>
+  <el-row :gutter="10" >
+    <el-col :span="24">
       <el-card>
         <el-table ref="multipleTableRef" :data="Object.values(ranklist)" row-key="code" :row-class-name="colorRows" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%" height="896">
           <el-table-column type="selection" header-align="center"  align="center" width="50" reserve-selection/>
@@ -83,9 +83,7 @@
           </el-table-column>
         </el-table>
       </el-card>
-    </el-main>
-  </el-container>
-  <el-row :gutter="10" >
+    </el-col>
     <el-col :span="6" v-show="showEachSymbol(k)" v-for="v, k in symbols">
       <el-card>
           <template #header>
