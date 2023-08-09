@@ -2,7 +2,14 @@
   <el-row :gutter="10" >
     <el-col :span="24">
       <el-card>
-        <el-table ref="multipleTableRef" :data="Object.values(ranklist)" row-key="code" :row-class-name="colorRows" @row-click="(r, c, e) => { copyToClipboard(r.code) }" style="width: 100%" height="896">
+        <el-table
+          row-key="code"
+          ref="realtimeTableRef"
+          :data="Object.values(ranklist)"
+          :row-class-name="colorRows"
+          @row-click="(r, c, e) => { copyToClipboard(r.code) }"
+          height="896"
+        >
           <el-table-column type="selection" header-align="center"  align="center" width="50" reserve-selection/>
           <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable />
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" sortable/>
@@ -122,12 +129,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { io } from "socket.io-client";
   import { reactive, ref, onMounted, h } from "vue";
-  import { ElNotification, ElTable } from 'element-plus';
+  import { io } from "socket.io-client";
 
   const config = useRuntimeConfig().public;
-  const multipleTableRef = ref<InstanceType<typeof ElTable>>();
+  const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
   const filtered = ref(false);
   const selectedSymbols = ref([]);
   const symbols = reactive({});
@@ -211,11 +217,11 @@
   })
 
   const showEachSymbol = (code) => {
-    const rows = multipleTableRef.value!.getSelectionRows();
+    const rows = realtimeTableRef.value!.getSelectionRows();
     return (rows.length > 0 && rows.filter(row => row.code == code).length > 0);
   }
   const colorRows = (v) => {
-    const rows = multipleTableRef.value!.getSelectionRows();
+    const rows = realtimeTableRef.value!.getSelectionRows();
     if (rows.length > 0 && rows.filter(row => row.code == v.row.code).length > 0) {
       return "bg-selected";
     }

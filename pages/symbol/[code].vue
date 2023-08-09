@@ -50,7 +50,7 @@
   </el-container>
 </template>
 
-<script setup>
+<script lang="ts" setup>
   import Chart from 'chart.js/auto';
   import { onMounted } from 'vue';
   import { Link } from '@element-plus/icons-vue'

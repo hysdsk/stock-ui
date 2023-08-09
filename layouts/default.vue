@@ -33,11 +33,11 @@
   <slot />
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import { ref } from 'vue'
 import { useDark, useToggle } from '@vueuse/core'
-import 'element-plus/theme-chalk/dark/css-vars.css'
 import { Moon, Sunny } from '@element-plus/icons-vue'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
 const isDark = useDark({"dark": false, "light": true});
 const toggleDark = useToggle(isDark);
