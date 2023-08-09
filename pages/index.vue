@@ -68,7 +68,7 @@
   </el-container>
 </template>
 
-<script setup>
+<script lang="ts" setup>
   import { InfoFilled } from '@element-plus/icons-vue'
 
   const { data } = useFetch("/api/searchedSymbols");
