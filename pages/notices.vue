@@ -180,18 +180,36 @@
       symbols[code].data.push(data);
       setTimeout(() => { data.flash = false; }, 100);
       // 約定通知時に約定回数をインクリメントする
+      const rankdata = ranklist[code];
       if (notice.order == null && notice.status == "opening") {
-        const rankdata = ranklist[code];
         if (notice.sob > 0) {
           rankdata.buyCount++
           ElNotification({
+            title: notice.time,
             message: h("b", {style: "color: #f44336"}, `買約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
         } else if (notice.sob < 0) {
           rankdata.sellCount++
           ElNotification({
+            title: notice.time,
             message: h("b", {style: "color: #2196f3"}, `売約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
+            onClick: () => copyToClipboard(rankdata.code)
+          });
+        }
+      } else if (notice.order != null) {
+        if (notice.order.type > 0 && notice.order.price == null) {
+          // 成行買い
+          ElNotification({
+            title: notice.time,
+            message: h("b", {style: "color: #f44336"}, `成行買 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
+            onClick: () => copyToClipboard(rankdata.code)
+          });
+        } else if (notice.order.type < 0 && notice.order.price == null) {
+          // 成行売り
+          ElNotification({
+            title: notice.time,
+            message: h("b", {style: "color: #2196f3"}, `成行売 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
         }
