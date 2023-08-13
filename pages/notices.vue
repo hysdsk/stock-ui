@@ -10,9 +10,9 @@
           @row-click="(r, c, e) => { copyToClipboard(r.code) }"
           height="896"
         >
-          <el-table-column type="selection" header-align="center"  align="center" width="50" reserve-selection/>
-          <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable />
-          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" sortable/>
+          <el-table-column type="selection" header-align="center" align="center" width="50" reserve-selection fixed/>
+          <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable fixed/>
+          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" width="320" sortable fixed/>
           <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
             <template #default="scope">
               <span>{{ formatVolume(scope.row.threshold) }}</span>
@@ -81,6 +81,11 @@
           <el-table-column prop="underoverrate" label="売買圧比" header-align="center" align="right" width="120" sortable>
             <template #default="scope">
               <span :class="colorRate(scope.row.underoverrate / 10)">{{ formatRate(scope.row.underoverrate) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="marketorderrate" label="成行比" header-align="center" align="right" width="120" sortable>
+            <template #default="scope">
+              <span :class="colorRate(scope.row.marketorderrate / 10)">{{ formatRate(scope.row.marketorderrate) }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="limitorderrate" label="売買板比" header-align="center" align="right" width="120" sortable>
@@ -160,6 +165,7 @@
             previouscloserate: 0,
             vwaprate: 0,
             underoverrate: 0,
+            marketorderrate: 0,
             limitorderrate: 0,
             vwapslope: 0,
             bidsign: "",
@@ -180,18 +186,36 @@
       symbols[code].data.push(data);
       setTimeout(() => { data.flash = false; }, 100);
       // 約定通知時に約定回数をインクリメントする
+      const rankdata = ranklist[code];
       if (notice.order == null && notice.status == "opening") {
-        const rankdata = ranklist[code];
         if (notice.sob > 0) {
           rankdata.buyCount++
           ElNotification({
+            title: notice.time,
             message: h("b", {style: "color: #f44336"}, `買約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
         } else if (notice.sob < 0) {
           rankdata.sellCount++
           ElNotification({
+            title: notice.time,
             message: h("b", {style: "color: #2196f3"}, `売約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
+            onClick: () => copyToClipboard(rankdata.code)
+          });
+        }
+      } else if (notice.order != null) {
+        if (notice.order.type > 0 && notice.order.price == null) {
+          // 成行買い
+          ElNotification({
+            title: notice.time,
+            message: h("b", {style: "color: #f44336"}, `成行買 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
+            onClick: () => copyToClipboard(rankdata.code)
+          });
+        } else if (notice.order.type < 0 && notice.order.price == null) {
+          // 成行売り
+          ElNotification({
+            title: notice.time,
+            message: h("b", {style: "color: #2196f3"}, `成行売 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
         }
@@ -209,6 +233,7 @@
       rankdata.previouscloserate = notice.previouscloserate;
       rankdata.vwaprate = notice.vwaprate;
       rankdata.underoverrate = notice.underoverrate;
+      rankdata.marketorderrate = notice.marketorderrate;
       rankdata.limitorderrate = notice.limitorderrate;
       rankdata.vwapslope = notice.vwapslope;
       rankdata.bidsign = notice.bidsign;
