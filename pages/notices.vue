@@ -204,14 +204,14 @@
           });
         }
       } else if (notice.order != null) {
-        if (notice.order.type > 0 && notice.order.price == null) {
+        if (notice.order.type > 0 && notice.order.price == null && notice.order.qty > 0) {
           // 成行買い
           ElNotification({
             title: notice.time,
             message: h("b", {style: "color: #f44336"}, `成行買 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
-        } else if (notice.order.type < 0 && notice.order.price == null) {
+        } else if (notice.order.type < 0 && notice.order.price == null && notice.order.qty > 0) {
           // 成行売り
           ElNotification({
             title: notice.time,
