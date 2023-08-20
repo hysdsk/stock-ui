@@ -13,10 +13,22 @@
           <el-table-column type="selection" header-align="center" align="center" width="50" reserve-selection fixed/>
           <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable fixed/>
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" width="320" sortable fixed/>
-          <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
-            <template #default="scope">
-              <span>{{ formatVolume(scope.row.threshold) }}</span>
-            </template>
+          <el-table-column label="大約定" header-align="center">
+            <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
+              <template #default="scope">
+                <span>{{ formatVolume(scope.row.threshold) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="sellCount" label="売" header-align="center" align="center" width="80" sortable>
+              <template #default="scope">
+                <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="buyCount" label="買" header-align="center" align="center" width="80" sortable>
+              <template #default="scope">
+                <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
+              </template>
+            </el-table-column>
           </el-table-column>
           <el-table-column label="板更新" header-align="center">
             <el-table-column prop="tickcountbyminute" label="分" header-align="center" align="right" width="80" sortable>
@@ -42,16 +54,6 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="sellCount" label="売約定" header-align="center" align="center" width="100" sortable>
-            <template #default="scope">
-              <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="buyCount" label="買約定" header-align="center" align="center" width="100" sortable>
-            <template #default="scope">
-              <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
-            </template>
-          </el-table-column>
           <el-table-column label="気配" header-align="center" align="center" width="80">
             <template #default="scope">
               <span :class="colorFirstSign(scope.row.bidsign, scope.row.asksign)">{{ formatFirstSign(scope.row.bidsign, scope.row.asksign) }}</span>
@@ -63,34 +65,43 @@
               <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="previouscloserate" label="前日比" header-align="center" align="right" width="100" sortable>
-            <template #default="scope">
-              <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
-            </template>
+          <el-table-column label="現値対比" header-align="center">
+            <el-table-column prop="previouscloserate" label="前日" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="previouscloserate" label="始値" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="vwaprate" label="VWAP" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
+              </template>
+            </el-table-column>
           </el-table-column>
-          <el-table-column prop="vwaprate" label="vwap比" header-align="center" align="right" width="110" sortable>
-            <template #default="scope">
-              <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
-            </template>
+          <el-table-column label="注文" header-align="center">
+            <el-table-column prop="marketorderrate" label="成行比" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.marketorderrate / 10)">{{ formatRate(scope.row.marketorderrate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="limitorderrate" label="指値比" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.limitorderrate / 10)">{{ formatRate(scope.row.limitorderrate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="underoverrate" label="圧比" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.underoverrate / 10)">{{ formatRate(scope.row.underoverrate) }}</span>
+              </template>
+            </el-table-column>
           </el-table-column>
-          <el-table-column prop="vwapslope" label="vwap傾き" header-align="center" align="right" width="120" sortable>
+          <el-table-column prop="vwapslope" label="VWAP傾き" header-align="center" align="right" width="130" sortable>
             <template #default="scope">
               <span :class="colorRate(scope.row.vwapslope)">{{ formatRate(scope.row.vwapslope) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="underoverrate" label="売買圧比" header-align="center" align="right" width="120" sortable>
-            <template #default="scope">
-              <span :class="colorRate(scope.row.underoverrate / 10)">{{ formatRate(scope.row.underoverrate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="marketorderrate" label="成行比" header-align="center" align="right" width="120" sortable>
-            <template #default="scope">
-              <span :class="colorRate(scope.row.marketorderrate / 10)">{{ formatRate(scope.row.marketorderrate) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="limitorderrate" label="売買板比" header-align="center" align="right" width="120" sortable>
-            <template #default="scope">
-              <span :class="colorRate(scope.row.limitorderrate / 10)">{{ formatRate(scope.row.limitorderrate) }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -163,6 +174,7 @@
             tradingvaluetotal: 0,
             tradingvaluebyminute: 0,
             previouscloserate: 0,
+            openingrate: 0,
             vwaprate: 0,
             underoverrate: 0,
             marketorderrate: 0,
@@ -204,14 +216,14 @@
           });
         }
       } else if (notice.order != null) {
-        if (notice.order.type > 0 && notice.order.price == null) {
+        if (notice.order.type > 0 && notice.order.price == null && notice.order.qty > 0) {
           // 成行買い
           ElNotification({
             title: notice.time,
             message: h("b", {style: "color: #f44336"}, `成行買 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
             onClick: () => copyToClipboard(rankdata.code)
           });
-        } else if (notice.order.type < 0 && notice.order.price == null) {
+        } else if (notice.order.type < 0 && notice.order.price == null && notice.order.qty > 0) {
           // 成行売り
           ElNotification({
             title: notice.time,
@@ -231,6 +243,7 @@
       rankdata.tradingvaluetotal = notice.tradingvaluetotal;
       rankdata.tradingvaluebyminute = notice.tradingvaluebyminute;
       rankdata.previouscloserate = notice.previouscloserate;
+      rankdata.openingrate = notice.openingrate;
       rankdata.vwaprate = notice.vwaprate;
       rankdata.underoverrate = notice.underoverrate;
       rankdata.marketorderrate = notice.marketorderrate;
