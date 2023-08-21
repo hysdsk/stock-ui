@@ -71,7 +71,7 @@
                 <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="previouscloserate" label="始値" header-align="center" align="right" width="100" sortable>
+            <el-table-column prop="openingrate" label="始値" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
                 <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
               </template>
