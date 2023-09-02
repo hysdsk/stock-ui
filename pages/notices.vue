@@ -155,7 +155,7 @@
   const symbols = reactive({});
   const ranklist = reactive({});
 
-  onMounted(() => {
+  onMounted(async () => {
     const socket = io(config.wsBaseURL);
     socket.on("initial-notice", notices => {
       for (const notice of notices) {
