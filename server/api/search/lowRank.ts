@@ -76,7 +76,7 @@ export default defineEventHandler(async (event: any) => {
         INNER JOIN (
             SELECT
                 sdi.symbol_code symbol_code,
-                TRUNCATE(AVG(sdi.trading_volume) * 1000, 0) average_volume,
+                TRUNCATE(AVG(sdi.trading_value) * 1000, 0) average_volume,
                 MAX(sdi.first_high_price) - MIN(sdi.first_high_price) +
                 MAX(sdi.latter_high_price) - MIN(sdi.latter_high_price) diff_range
             FROM
@@ -95,7 +95,7 @@ export default defineEventHandler(async (event: any) => {
         AND
             recent.closing_price <= 500
         AND
-            aggregated.average_volume < 500000
+            aggregated.average_volume < 100000000
         ORDER BY
             aggregated.diff_range
         `

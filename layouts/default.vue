@@ -62,7 +62,7 @@ const isDark = useDark({"dark": false, "light": true});
 const toggleDark = useToggle(isDark);
 
 const goHome = () => window.location.href = "/";
-const goSearched = (key: string) => window.location.href = `/searched/${key}`;
+const goSearched = (key: string) => window.location.href = `/search/${key}`;
 const goNotices = () => window.location.href = "/notices";
 const goSymbol = code => window.location.href = `/symbol/${code}`;
 

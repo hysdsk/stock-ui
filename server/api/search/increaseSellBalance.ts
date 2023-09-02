@@ -49,7 +49,7 @@ export default defineEventHandler(async (event: any) => {
             s.name symbol_name,
             d.name division_name,
             b.name bis_category_name,
-            d.trading_volume average_volume,
+            daily.average_volume average_volume,
             c.sell_balance,
             c.buy_balance,
             truncate(c.buy_balance / c.sell_balance, 3) balance_rate
@@ -70,18 +70,19 @@ export default defineEventHandler(async (event: any) => {
         INNER JOIN (
             SELECT
                 symbol_code,
-                truncate(avg(trading_volume) * 1000, 0) trading_volume
+                truncate(avg(trading_value) * 1000, 0) average_volume
             FROM
                 kabu.symbol_daily_info
             GROUP BY
-                symbol_code) d
+                symbol_code) daily
         ON
-            c.symbol_code = d.symbol_code
+            c.symbol_code = daily.symbol_code
         INNER JOIN (
             SELECT
                 symbol_code,
                 buy_balance,
-                sell_balance
+                sell_balance,
+                lend_balance
             FROM
                 kabu.symbol_weekly_info
             WHERE
@@ -90,10 +91,11 @@ export default defineEventHandler(async (event: any) => {
             c.symbol_code = p.symbol_code
         WHERE
             c.weekend_date = ?
-        AND c.buy_balance < p.buy_balance
+        AND c.buy_balance  < p.buy_balance
         AND c.sell_balance > p.sell_balance
-        AND c.sell_balance > c.buy_balance
-        AND c.sell_balance > 1000000
+        AND c.sell_balance > p.buy_balance
+        AND c.lend_balance > p.lend_balance
+        AND daily.average_volume > 100000000
         ORDER BY
             balance_rate;
         `

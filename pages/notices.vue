@@ -2,6 +2,19 @@
   <el-row :gutter="10" >
     <el-col :span="24">
       <el-card>
+        <el-descriptions :column="5" border>
+          <el-descriptions-item label="総板更新数" label-align="center" align="right" width="200">
+            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tickcounttotal).reduce((a, b) => a + b).toLocaleString() : 0 }}
+          </el-descriptions-item>
+          <el-descriptions-item label="総売買代金" label-align="center" align="right" width="200">
+            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tradingvaluetotal).reduce((a, b) => a + b).toLocaleString() : 0 }}
+          </el-descriptions-item>
+          <el-descriptions-item label="陽線数" label-align="center" align="center" width="100">
+            {{ Object.values(ranklist).filter(e => e.previouscloserate > 0).length }} ／ {{ Object.keys(ranklist).length }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </el-card>
+      <el-card>
         <el-table
           row-key="code"
           ref="realtimeTableRef"

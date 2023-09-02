@@ -51,9 +51,9 @@ export default defineEventHandler(async (event: any) => {
             bc.name bis_category_name,
             today.latter_closing_price closing_price,
             truncate(
-                ( today.trading_volume
-                + yesterday.trading_volume
-                + two_days_ago.trading_volume) * 1000 / 3,
+                ( today.trading_value
+                + yesterday.trading_value
+                + two_days_ago.trading_value) * 1000 / 3,
             0) average_volume,
             ROUND(today.latter_closing_price / two_days_ago.first_opening_price * 100 - 100, 0) increase_rate
         FROM
@@ -71,7 +71,7 @@ export default defineEventHandler(async (event: any) => {
                 symbol_code,
                 first_opening_price,
                 latter_closing_price,
-                trading_volume
+                trading_value
             FROM
                 kabu.symbol_daily_info
             WHERE
@@ -84,7 +84,7 @@ export default defineEventHandler(async (event: any) => {
                 symbol_code,
                 first_opening_price,
                 latter_closing_price,
-                trading_volume
+                trading_value
             FROM
                 kabu.symbol_daily_info
             WHERE
@@ -97,7 +97,7 @@ export default defineEventHandler(async (event: any) => {
                 symbol_code,
                 first_opening_price,
                 latter_closing_price,
-                trading_volume
+                trading_value
             FROM
                 kabu.symbol_daily_info
             WHERE
@@ -116,9 +116,9 @@ export default defineEventHandler(async (event: any) => {
         AND
             two_days_ago.latter_closing_price > two_days_ago.first_opening_price
         AND
-            ( today.trading_volume
-            + yesterday.trading_volume
-            + two_days_ago.trading_volume)
+            ( today.trading_value
+            + yesterday.trading_value
+            + two_days_ago.trading_value)
             / 3 > 100
         ORDER BY
             increase_rate DESC

@@ -6,18 +6,21 @@
         <el-icon><InfoFilled /></el-icon> <b>抽出条件</b><br/>
         {{ terms[camelize(key)].desc }}
       </el-card>
+      <el-descriptions>
+        <el-descriptions-item label="件数">{{ data.symbols ? data.symbols.length : 0 }}</el-descriptions-item>
+      </el-descriptions>
       <el-table :data="data.symbols" @row-click="moveTo">
-        <el-table-column prop="symbolCode"      label="銘柄コード" width="100"/>
+        <el-table-column prop="symbolCode"      label="銘柄コード"   width="100"/>
         <el-table-column prop="symbolName"      label="銘柄名"/>
-        <el-table-column prop="divisionName"    label="市場"       width="80"  :formatter="formatDivision" sortable/>
-        <el-table-column prop="bisCategoryName" label="業種名"     width="180" sortable/>
-        <el-table-column prop="closingPrice"    label="終値"       width="120" :formatter="formatNum" align="right" sortable/>
-        <el-table-column prop="recentVolume"    label="直近出来高" width="120" :formatter="formatNum"  align="right" sortable/>
-        <el-table-column prop="averageVolume"   label="平均出来高" width="120" :formatter="formatNum"  align="right" sortable/>
-        <el-table-column prop="increaseRate"    label="増加率"     width="120" :formatter="formatRate" align="right" sortable/>
-        <el-table-column prop="sellBalance"     label="信用売り残" width="120" :formatter="formatNum" align="right" sortable/>
-        <el-table-column prop="buyBalance"      label="信用買い残" width="120" :formatter="formatNum" align="right" sortable/>
-        <el-table-column prop="balanceRate"     label="信用倍率"   width="120" :formatter="formatRate" align="right" sortable/>
+        <el-table-column prop="divisionName"    label="市場"         width="80"  :formatter="formatDivision" sortable/>
+        <el-table-column prop="bisCategoryName" label="業種名"       width="180" sortable/>
+        <el-table-column prop="closingPrice"    label="終値"         width="120" :formatter="formatNum" align="right" sortable/>
+        <el-table-column prop="recentVolume"    label="直近売買代金" width="150" :formatter="formatNum"  align="right" sortable/>
+        <el-table-column prop="averageVolume"   label="平均売買代金" width="150" :formatter="formatNum"  align="right" sortable/>
+        <el-table-column prop="increaseRate"    label="増加率"       width="120" :formatter="formatRate" align="right" sortable/>
+        <el-table-column prop="sellBalance"     label="信用売り残"   width="120" :formatter="formatNum" align="right" sortable/>
+        <el-table-column prop="buyBalance"      label="信用買い残"   width="120" :formatter="formatNum" align="right" sortable/>
+        <el-table-column prop="balanceRate"     label="信用倍率"     width="120" :formatter="formatRate" align="right" sortable/>
       </el-table>
     </el-main>
   </el-container>
