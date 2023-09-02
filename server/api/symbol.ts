@@ -62,7 +62,7 @@ export default defineEventHandler(async (event: any) => {
             e.name exchange_name,
             d.name division_name,
             bc.name bis_category_name,
-            s.total_stocks * sdi.latter_closing_price * 1000 market_capitalization,
+            s.total_market_value market_capitalization,
             s.fiscal_year_end_basic
         FROM
             kabu.symbols s

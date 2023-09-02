@@ -50,7 +50,7 @@ export default defineEventHandler(async (event: any) => {
         INNER JOIN (
             SELECT
                 symbol_code,
-                AVG(trading_volume) avg_volume
+                AVG(trading_value) avg_volume
             FROM kabu.symbol_daily_info
                 WHERE opening_date >= ?
             GROUP BY symbol_code
@@ -60,7 +60,7 @@ export default defineEventHandler(async (event: any) => {
         INNER JOIN (
             SELECT
                 symbol_code,
-                AVG(trading_volume) avg_volume
+                AVG(trading_value) avg_volume
             FROM kabu.symbol_daily_info
                 WHERE opening_date BETWEEN ? AND ?
             GROUP BY symbol_code
@@ -68,7 +68,7 @@ export default defineEventHandler(async (event: any) => {
         ON
             s.code = past.symbol_code
         WHERE
-            recent.avg_volume > 500
+            recent.avg_volume > 100000
         AND
             recent.avg_volume > past.avg_volume * 2
         AND
