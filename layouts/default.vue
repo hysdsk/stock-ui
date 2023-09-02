@@ -1,7 +1,13 @@
 <template>
   <el-page-header title="Home" @back="goHome">
     <template #content>
-      <el-select v-model="target" filterable placeholder="銘柄選択">
+    <el-space wrap>
+      <el-select
+        filterable
+        placeholder="銘柄選択"
+        :loading="pending"
+        @change="goSymbol"
+      >
         <el-option
           v-for="symbol in data.symbols"
           :key="symbol.code"
@@ -9,12 +15,23 @@
           :value="symbol.code"
         />
       </el-select>
-      <el-button text @click="goSymbol">
-        銘柄情報へ
+      <el-dropdown @command="goSearched">
+        <el-button>
+          銘柄一覧<el-icon class="el-icon--right"><arrow-down /></el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="increase-volume">出来高増加</el-dropdown-item>
+            <el-dropdown-item command="increase-price">上昇中</el-dropdown-item>
+            <el-dropdown-item command="increase-sell-balance">踏み上げ期待</el-dropdown-item>
+            <el-dropdown-item command="low-rank">仕手上げ期待</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      <el-button @click="goNotices">
+        通知受信
       </el-button>
-      <el-button text @click="goNotices">
-        通知受信へ
-      </el-button>
+    </el-space>
     </template>
     <template #extra>
       <div style="padding-right: 1em;">
@@ -34,31 +51,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
 import { useDark, useToggle } from '@vueuse/core'
-import { Moon, Sunny } from '@element-plus/icons-vue'
+import { Search, Moon, Sunny, ArrowDown } from '@element-plus/icons-vue'
 import 'element-plus/theme-chalk/dark/css-vars.css'
+
+const { data, pending } = useFetch("/api/symbols", { lazy: true });
 
 const isDark = useDark({"dark": false, "light": true});
 const toggleDark = useToggle(isDark);
 
-const { data } = useFetch("/api/symbols");
-const target = ref('');
+const goHome = () => window.location.href = "/";
+const goSearched = (key: string) => window.location.href = `/searched/${key}`;
+const goNotices = () => window.location.href = "/notices";
+const goSymbol = code => window.location.href = `/symbol/${code}`;
 
-const goHome = () => {
-  window.location.href = "/";
-}
-
-const goSymbol = () => {
-  const exists = data.value.symbols?.map(s => s.code).includes(target.value);
-  if (exists) {
-    window.location.href = `/symbol/${target.value}`;
-  } else {
-    ElMessage.error("Not found symbol.")
-  }
-}
-
-const goNotices = () => {
-  window.location.href = "/notices";
-}
 </script>
