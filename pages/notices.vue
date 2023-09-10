@@ -10,7 +10,7 @@
             {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tradingvaluetotal).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
           <el-descriptions-item label="陽線数" label-align="center" align="center" width="100">
-            {{ Object.values(ranklist).filter(e => e.previouscloserate > 0).length }} ／ {{ Object.keys(ranklist).length }}
+            {{ Object.values(ranklist).filter(e => e.openingrate > 0).length }} ／ {{ Object.keys(ranklist).length }}
           </el-descriptions-item>
         </el-descriptions>
       </el-card>
