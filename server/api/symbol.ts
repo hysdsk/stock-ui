@@ -10,6 +10,7 @@ interface Symbol {
     divisionName: string;
     bisCategoryName: string;
     marketCapitalization: number;
+    totalStocks: number;
     fiscalYearEndBasic: number
 }
 
@@ -63,6 +64,7 @@ export default defineEventHandler(async (event: any) => {
             d.name division_name,
             bc.name bis_category_name,
             s.total_market_value market_capitalization,
+            s.total_stocks * 1000 total_stocks,
             s.fiscal_year_end_basic
         FROM
             kabu.symbols s
@@ -106,6 +108,7 @@ export default defineEventHandler(async (event: any) => {
             divisionName: String(e.division_name),
             bisCategoryName: String(e.bis_category_name),
             marketCapitalization: Number(e.market_capitalization),
+            totalStocks: Number(e.total_stocks),
             fiscalYearEndBasic: Number(e.fiscal_year_end_basic)
         })[0];
     });

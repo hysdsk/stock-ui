@@ -22,6 +22,9 @@
             <el-descriptions-item label="時価総額">
               {{ data.symbol.marketCapitalization.toLocaleString() }}円
             </el-descriptions-item>
+            <el-descriptions-item label="発行済株式数">
+              {{ data.symbol.totalStocks.toLocaleString() }}株
+            </el-descriptions-item>
           </el-descriptions>
         </el-col>
         <el-col :span="2">
