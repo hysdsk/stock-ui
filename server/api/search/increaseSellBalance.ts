@@ -14,6 +14,11 @@ interface Symbol {
     buyBalance: number;
     balanceRate: number;
     marketPrice: number;
+    lendBalance: number;
+    lendSlope: number;
+    lendIntercept: number;
+    buySlope: number;
+    buyIntercept: number;
 }
 
 const pool = mysql.createPool({
@@ -26,93 +31,92 @@ const pool = mysql.createPool({
 export default defineEventHandler(async (event: any) => {
     let p: Promise<any> = new Promise((resolve, reject) => {
         const sql: string = `
-        SELECT DISTINCT
-            weekend_date
-        FROM
-        	kabu.symbol_weekly_info
-        ORDER BY
-            weekend_date DESC
-        LIMIT 5
+            SELECT
+                s.code symbol_code,
+                s.name symbol_name,
+                d.name division_name,
+                latest_swi.lend_balance lend_balance,
+                latest_swi.buy_balance buy_balance,
+                rl.lend_slope lend_slope,
+                rl.lend_intercept lend_intercept,
+                rl.buy_slope buy_slope,
+                rl.buy_intercept buy_intercept
+            FROM
+                kabu.symbols s
+            INNER JOIN
+                kabu.divisions d
+            ON
+                s.division_code = d.code
+            AND
+                s.division_code in ('02', '03')
+            INNER JOIN (
+                SELECT
+                    symbol_code,
+                    lend_balance,
+                    buy_balance
+                FROM
+                    symbol_weekly_info
+                WHERE
+                    weekend_date = (
+                        SELECT MAX(weekend_date) FROM symbol_weekly_info
+                    )
+            ) latest_swi
+            ON
+                s.code = latest_swi.symbol_code
+            AND
+                latest_swi.lend_balance > 0
+            AND
+                latest_swi.buy_balance > 0
+            INNER JOIN (
+                SELECT
+                    swi.symbol_code,
+                    count(*) weeks_count,
+                    (COUNT(*) * SUM(swi.row_no * swi.lend_balance) - SUM(swi.row_no) * SUM(swi.lend_balance)) / (COUNT(*) * SUM(swi.row_no * swi.row_no) - SUM(swi.row_no) * SUM(swi.row_no)) AS lend_slope,
+                    (SUM(swi.lend_balance) - ((COUNT(*) * SUM(swi.row_no * swi.lend_balance) - SUM(swi.row_no) * SUM(swi.lend_balance)) / (COUNT(*) * SUM(swi.row_no * swi.row_no) - SUM(swi.row_no) * SUM(swi.row_no))) * SUM(swi.row_no)) / COUNT(*) AS lend_intercept,
+                    (COUNT(*) * SUM(swi.row_no * swi.buy_balance) - SUM(swi.row_no) * SUM(swi.buy_balance)) / (COUNT(*) * SUM(swi.row_no * swi.row_no) - SUM(swi.row_no) * SUM(swi.row_no)) AS buy_slope,
+                    (SUM(swi.buy_balance) - ((COUNT(*) * SUM(swi.row_no * swi.buy_balance) - SUM(swi.row_no) * SUM(swi.buy_balance)) / (COUNT(*) * SUM(swi.row_no * swi.row_no) - SUM(swi.row_no) * SUM(swi.row_no))) * SUM(swi.row_no)) / COUNT(*) AS buy_intercept
+                FROM
+                    (
+                        SELECT
+                            ROW_NUMBER() OVER(ORDER BY weekend_date) AS row_no,
+                            symbol_code,
+                            weekend_date,
+                            lend_balance + sell_balance lend_balance,
+                            buy_balance
+                        FROM
+                            symbol_weekly_info
+                        WHERE
+                            weekend_date >= DATE_FORMAT(CURDATE() - INTERVAL 6 MONTH, "%Y%m%d")
+                    ) AS swi
+                GROUP BY
+                    swi.symbol_code
+            ) rl
+            ON
+                s.code = rl.symbol_code
+            AND
+                rl.lend_slope > 0
+            AND
+                rl.buy_slope > 0
+            AND
+                latest_swi.lend_balance >= rl.lend_intercept + (rl.lend_slope * (rl.weeks_count - 1))
+            AND
+                (latest_swi.lend_balance / (s.total_stocks * 1000)) * 100 >= 20
         `
         pool.query(sql, [], (err, rows, fields) => {
             resolve(rows);
         });
     });
-    const weekEndDates: string[] = await p.then((result) => {
-        return result?.map((row: any) => { return row.weekend_date });
-    });
-
-    p = new Promise((resolve, reject) => {
-        const sql: string = `
-        SELECT
-            c.symbol_code,
-            s.name symbol_name,
-            d.name division_name,
-            b.name bis_category_name,
-            daily.average_volume average_volume,
-            c.sell_balance,
-            c.buy_balance,
-            truncate(c.buy_balance / c.sell_balance, 3) balance_rate
-        FROM
-            kabu.symbol_weekly_info c 
-        INNER JOIN
-            kabu.symbols s
-        ON
-            c.symbol_code = s.code
-        INNER JOIN
-            kabu.divisions d
-        ON
-            d.code = s.division_code
-        INNER JOIN
-            kabu.bis_categories b
-        ON
-            s.bis_category_code = b.code
-        INNER JOIN (
-            SELECT
-                symbol_code,
-                truncate(avg(trading_value) * 1000, 0) average_volume
-            FROM
-                kabu.symbol_daily_info
-            GROUP BY
-                symbol_code) daily
-        ON
-            c.symbol_code = daily.symbol_code
-        INNER JOIN (
-            SELECT
-                symbol_code,
-                buy_balance,
-                sell_balance,
-                lend_balance
-            FROM
-                kabu.symbol_weekly_info
-            WHERE
-                weekend_date = ?) p
-        ON
-            c.symbol_code = p.symbol_code
-        WHERE
-            c.weekend_date = ?
-        AND c.buy_balance  < p.buy_balance
-        AND c.sell_balance > p.sell_balance
-        AND c.sell_balance > p.buy_balance
-        AND c.lend_balance > p.lend_balance
-        AND daily.average_volume > 100000000
-        ORDER BY
-            balance_rate;
-        `
-        pool.query(sql, [weekEndDates.pop(), weekEndDates.shift()], (err, rows, fields) => {
-            resolve(rows);
-        });
-    });
-    const symbols: Symbol[] = await p.then((reslut) => {
-        return reslut?.map((row: any) => <Symbol> {
-            symbolCode: String(row.symbol_code),
-            symbolName: String(row.symbol_name),
-            divisionName: String(row.division_name),
-            bisCategoryName: String(row.bis_category_name),
-            averageVolume: Number(row.average_volume),
-            sellBalance: Number(row.sell_balance),
-            buyBalance: Number(row.buy_balance),
-            balanceRate: Number(row.balance_rate)
+    let symbols: Symbol[] = await p.then((result) => {
+        return result?.map((row: any) => <Symbol>{
+            symbolCode: row.symbol_code,
+            symbolName: row.symbol_name,
+            divisionName: row.division_name,
+            lendBalance: row.lend_balance,
+            buyBalance: row.buy_balance,
+            lendSlope: row.lend_slope,
+            lendIntercept: row.lend_intercept,
+            buySlope: row.buy_slope,
+            buyIntercept: row.buy_intercept
         });
     });
 
