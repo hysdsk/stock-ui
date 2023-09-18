@@ -195,6 +195,18 @@
       data: {
         labels: data._value.weeklyInfoForChart.weekendDate,
         datasets: [{
+          type: 'line',
+          label: "貸付残高回帰直線",
+          data: data._value.weeklyInfoForChart.lendBalanceRegressionLine,
+          pointRadius: 0,
+          borderColor: "#2979FF"
+        },{
+          type: 'line',
+          label: "信用買残回帰直線",
+          data: data._value.weeklyInfoForChart.buyBalanceRegressionLine,
+          pointRadius: 0,
+          borderColor: "#ff1744"
+        },{
           type: "bar",
           label: "信用売残",
           data: data._value.weeklyInfoForChart.sellBalance,
