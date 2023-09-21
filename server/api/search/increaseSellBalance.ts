@@ -14,7 +14,6 @@ interface Symbol {
     buyBalance: number;
     balanceRate: number;
     marketPrice: number;
-    lendBalance: number;
     lendSlope: number;
     lendIntercept: number;
     buySlope: number;
@@ -37,6 +36,7 @@ export default defineEventHandler(async (event: any) => {
                 d.name division_name,
                 latest_swi.lend_balance lend_balance,
                 latest_swi.buy_balance buy_balance,
+                latest_swi.sell_balance sell_balance,
                 rl.lend_slope lend_slope,
                 rl.lend_intercept lend_intercept,
                 rl.buy_slope buy_slope,
@@ -48,12 +48,13 @@ export default defineEventHandler(async (event: any) => {
             ON
                 s.division_code = d.code
             AND
-                s.division_code in ('02', '03')
+                s.division_code in ('01', '02', '03')
             INNER JOIN (
                 SELECT
                     symbol_code,
                     lend_balance,
-                    buy_balance
+                    buy_balance,
+                    sell_balance
                 FROM
                     symbol_weekly_info
                 WHERE
@@ -100,7 +101,7 @@ export default defineEventHandler(async (event: any) => {
             AND
                 latest_swi.lend_balance >= rl.lend_intercept + (rl.lend_slope * (rl.weeks_count - 1))
             AND
-                (latest_swi.lend_balance / (s.total_stocks * 1000)) * 100 >= 20
+                (latest_swi.lend_balance / (s.total_stocks * 1000)) * 100 >= 15
         `
         pool.query(sql, [], (err, rows, fields) => {
             resolve(rows);
@@ -111,8 +112,8 @@ export default defineEventHandler(async (event: any) => {
             symbolCode: row.symbol_code,
             symbolName: row.symbol_name,
             divisionName: row.division_name,
-            lendBalance: row.lend_balance,
             buyBalance: row.buy_balance,
+            sellBalance: row.lend_balance + row.sell_balance,
             lendSlope: row.lend_slope,
             lendIntercept: row.lend_intercept,
             buySlope: row.buy_slope,
