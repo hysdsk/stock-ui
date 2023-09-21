@@ -12,7 +12,6 @@ interface Symbol {
     increaseRate: number;
     sellBalance: number;
     buyBalance: number;
-    balanceRate: number;
     marketPrice: number;
     lendSlope: number;
     lendIntercept: number;

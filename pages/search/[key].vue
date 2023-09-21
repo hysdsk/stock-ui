@@ -20,7 +20,6 @@
         <el-table-column prop="increaseRate"    label="増加率"       width="120" :formatter="formatRate" align="right" sortable/>
         <el-table-column prop="sellBalance"     label="信用売り残"   width="120" :formatter="formatNum" align="right" sortable/>
         <el-table-column prop="buyBalance"      label="信用買い残"   width="120" :formatter="formatNum" align="right" sortable/>
-        <el-table-column prop="balanceRate"     label="信用倍率"     width="120" :formatter="formatRate" align="right" sortable/>
       </el-table>
     </el-main>
   </el-container>
