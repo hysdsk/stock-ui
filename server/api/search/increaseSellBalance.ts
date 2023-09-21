@@ -32,6 +32,7 @@ export default defineEventHandler(async (event: any) => {
             SELECT
                 s.code symbol_code,
                 s.name symbol_name,
+                b.name bis_category_name,
                 d.name division_name,
                 latest_swi.lend_balance lend_balance,
                 latest_swi.buy_balance buy_balance,
@@ -42,6 +43,10 @@ export default defineEventHandler(async (event: any) => {
                 rl.buy_intercept buy_intercept
             FROM
                 kabu.symbols s
+            INNER JOIN
+                kabu.bis_categories b
+            ON
+                s.bis_category_code = b.code
             INNER JOIN
                 kabu.divisions d
             ON
@@ -110,6 +115,7 @@ export default defineEventHandler(async (event: any) => {
         return result?.map((row: any) => <Symbol>{
             symbolCode: row.symbol_code,
             symbolName: row.symbol_name,
+            bisCategoryName: row.bis_category_name,
             divisionName: row.division_name,
             buyBalance: row.buy_balance,
             sellBalance: row.lend_balance + row.sell_balance,
