@@ -20,7 +20,6 @@
         <el-table-column prop="increaseRate"    label="増加率"       width="120" :formatter="formatRate" align="right" sortable/>
         <el-table-column prop="sellBalance"     label="信用売り残"   width="120" :formatter="formatNum" align="right" sortable/>
         <el-table-column prop="buyBalance"      label="信用買い残"   width="120" :formatter="formatNum" align="right" sortable/>
-        <el-table-column prop="balanceRate"     label="信用倍率"     width="120" :formatter="formatRate" align="right" sortable/>
       </el-table>
     </el-main>
   </el-container>
@@ -50,7 +49,7 @@
     },
     increaseSellBalance: {
       title: "踏み上げ期待銘柄",
-      desc: "直近半年間で貸株残高と信用買残が上昇傾向 かつ 直近の貸株残高が発行済株式数の2割以上"
+      desc: "直近半年間で貸株残高と信用買残が上昇傾向 かつ 直近の貸株残高が発行済株式数の15%以上"
     },
     lowRank: {
       title: "仕手上げ期待銘柄",
