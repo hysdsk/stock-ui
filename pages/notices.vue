@@ -3,13 +3,16 @@
     <el-col :span="24">
       <el-card>
         <el-descriptions :column="5" border>
-          <el-descriptions-item label="総板更新数" label-align="center" align="right" width="200">
+          <el-descriptions-item label="総板更新数" label-align="center" align="right" width="10%">
             {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tickcounttotal).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
-          <el-descriptions-item label="総売買代金" label-align="center" align="right" width="200">
+          <el-descriptions-item label="総売買代金" label-align="center" align="right" width="10%">
             {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tradingvaluetotal).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
-          <el-descriptions-item label="陽線数" label-align="center" align="center" width="100">
+          <el-descriptions-item label="前日超数" label-align="center" align="center" width="10%">
+            {{ Object.values(ranklist).filter(e => e.previouscloserate > 0).length }} ／ {{ Object.keys(ranklist).length }}
+          </el-descriptions-item>
+          <el-descriptions-item label="陽線数" label-align="center" align="center" width="10%">
             {{ Object.values(ranklist).filter(e => e.openingrate > 0).length }} ／ {{ Object.keys(ranklist).length }}
           </el-descriptions-item>
         </el-descriptions>
