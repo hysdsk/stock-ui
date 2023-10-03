@@ -97,6 +97,16 @@
                 <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
               </template>
             </el-table-column>
+            <el-table-column prop="highPriceRate" label="高値比" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorHighRate(scope.row.highPriceRate)">{{ formatRate(scope.row.highPriceRate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="lowPriceRate" label="安値比" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorLowRate(scope.row.lowPriceRate)">{{ formatRate(scope.row.lowPriceRate) }}</span>
+              </template>
+            </el-table-column>
           </el-table-column>
           <el-table-column label="注文" header-align="center">
             <el-table-column prop="marketorderrate" label="成行比" header-align="center" align="right" width="100" sortable>
@@ -198,6 +208,8 @@
             vwapslope: 0,
             bidsign: "",
             asksign: "",
+            highPriceRate: 0,
+            lowPriceRate: 0,
             threshold: notice.threshold
           }
         }
@@ -267,6 +279,8 @@
       rankdata.vwapslope = notice.vwapslope;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
+      rankdata.highPriceRate = notice.highPriceRate;
+      rankdata.lowPriceRate = notice.lowPriceRate;
     });
   })
 
@@ -360,6 +374,32 @@
     if (r <  -4) return "text-blue3";
     if (r <  -2) return "text-blue2";
     if (r <   0) return "text-blue1";
+    return ""
+  }
+
+  const colorHighRate = (v) => {
+    if (v < 0.2) return  "text-red9";
+    if (v < 0.5) return  "text-red8";
+    if (v < 0.8) return  "text-red7";
+    if (v < 1.2) return  "text-red6";
+    if (v < 1.5) return  "text-red5";
+    if (v < 2.0) return  "text-red4";
+    if (v < 2.5) return  "text-red3";
+    if (v < 3.0) return  "text-red2";
+    if (v < 3.5) return  "text-red1";
+    return ""
+  }
+
+  const colorLowRate = (v) => {
+    if (v > -0.2) return "text-blue9";
+    if (v > -0.5) return "text-blue8";
+    if (v > -0.8) return "text-blue7";
+    if (v > -1.2) return "text-blue6";
+    if (v > -1.5) return "text-blue5";
+    if (v > -2.0) return "text-blue4";
+    if (v > -2.5) return "text-blue3";
+    if (v > -3.0) return "text-blue2";
+    if (v > -3.5) return "text-blue1";
     return ""
   }
 
