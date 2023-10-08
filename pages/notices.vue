@@ -59,9 +59,14 @@
             </el-table-column>
           </el-table-column>
           <el-table-column label="売買代金" header-align="center">
-            <el-table-column prop="tradingvaluebyminute" label="分" header-align="center" align="right" width="80" sortable>
+            <el-table-column prop="tradingvaluebyminuteforbuy" label="分（買）" header-align="center" align="right" width="120" sortable>
               <template #default="scope">
-                <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluebyminute) }}</span>
+                <span :class="colorValue(scope.row.tradingvaluebyminuteforbuy, 1)">{{ formatVolume(scope.row.tradingvaluebyminuteforbuy) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="tradingvaluebyminuteforsell" label="分（売）" header-align="center" align="right" width="120" sortable>
+              <template #default="scope">
+                <span :class="colorValue(scope.row.tradingvaluebyminuteforsell, -1)">{{ formatVolume(scope.row.tradingvaluebyminuteforsell) }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="tradingvaluetotal" label="総" header-align="center" align="right" width="80" sortable>
@@ -198,7 +203,8 @@
             tickcountbyminute: 0,
             currentprice: 0,
             tradingvaluetotal: 0,
-            tradingvaluebyminute: 0,
+            tradingvaluebyminuteforbuy: 0,
+            tradingvaluebyminuteforsell: 0,
             previouscloserate: 0,
             openingrate: 0,
             vwaprate: 0,
@@ -269,7 +275,8 @@
       rankdata.tickcounttotal = notice.tickcounttotal;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
       rankdata.tradingvaluetotal = notice.tradingvaluetotal;
-      rankdata.tradingvaluebyminute = notice.tradingvaluebyminute;
+      rankdata.tradingvaluebyminuteforbuy = notice.tradingvaluebyminuteforbuy;
+      rankdata.tradingvaluebyminuteforsell = notice.tradingvaluebyminuteforsell;
       rankdata.previouscloserate = notice.previouscloserate;
       rankdata.openingrate = notice.openingrate;
       rankdata.vwaprate = notice.vwaprate;
@@ -428,25 +435,27 @@
     if (sob < 0 && t >     0) return "text-blue1";
     return ""
   }
-  const colorValue = (v) => {
-    if (v >= 200000000) return "text-red9";
-    if (v >= 180000000) return "text-red8";
-    if (v >= 150000000) return "text-red7";
-    if (v >= 120000000) return "text-red6";
-    if (v >= 100000000) return "text-red5";
-    if (v >=  75000000) return "text-red4";
-    if (v >=  55000000) return "text-red3";
-    if (v >=  40000000) return "text-red2";
-    if (v >=  30000000) return "text-red1";
-    if (v >=  25000000) return "text-blue1";
-    if (v >=  20000000) return "text-blue2";
-    if (v >=  17000000) return "text-blue3";
-    if (v >=  13000000) return "text-blue4";
-    if (v >=  10000000) return "text-blue5";
-    if (v >=   7000000) return "text-blue6";
-    if (v >=   4000000) return "text-blue7";
-    if (v >=   2000000) return "text-blue8";
-    return                     "text-blue9";
+  const colorValue = (v, sob) => {
+    if (sob > 0 && v >= 150000000) return "text-red9";
+    if (sob > 0 && v >= 130000000) return "text-red8";
+    if (sob > 0 && v >= 110000000) return "text-red7";
+    if (sob > 0 && v >=  90000000) return "text-red6";
+    if (sob > 0 && v >=  70000000) return "text-red5";
+    if (sob > 0 && v >=  50000000) return "text-red4";
+    if (sob > 0 && v >=  30000000) return "text-red3";
+    if (sob > 0 && v >=  10000000) return "text-red2";
+    if (sob > 0 && v >=         0) return "text-red1";
+
+    if (sob < 0 && v >= 150000000) return "text-blue9";
+    if (sob < 0 && v >= 130000000) return "text-blue8";
+    if (sob < 0 && v >= 110000000) return "text-blue7";
+    if (sob < 0 && v >=  90000000) return "text-blue6";
+    if (sob < 0 && v >=  70000000) return "text-blue5";
+    if (sob < 0 && v >=  50000000) return "text-blue4";
+    if (sob < 0 && v >=  30000000) return "text-blue3";
+    if (sob < 0 && v >=  10000000) return "text-blue2";
+    if (sob < 0 && v >=         0) return "text-blue1";
+    return "";
   }
   const colorTick = (v) => {
     if (v >= 600) return "text-red9";
