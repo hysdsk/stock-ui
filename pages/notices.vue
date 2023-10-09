@@ -59,12 +59,12 @@
             </el-table-column>
           </el-table-column>
           <el-table-column label="売買代金" header-align="center">
-            <el-table-column prop="tradingvaluebyminuteforbuy" label="分（買）" header-align="center" align="right" width="120" sortable>
+            <el-table-column prop="tradingvaluebyminuteforbuy" label="買／分" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
                 <span :class="colorValue(scope.row.tradingvaluebyminuteforbuy, 1)">{{ formatVolume(scope.row.tradingvaluebyminuteforbuy) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="tradingvaluebyminuteforsell" label="分（売）" header-align="center" align="right" width="120" sortable>
+            <el-table-column prop="tradingvaluebyminuteforsell" label="売／分" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
                 <span :class="colorValue(scope.row.tradingvaluebyminuteforsell, -1)">{{ formatVolume(scope.row.tradingvaluebyminuteforsell) }}</span>
               </template>
@@ -300,12 +300,10 @@
     if (rows.length > 0 && rows.filter(row => row.code == v.row.code).length > 0) {
       return "bg-selected";
     }
-    const tc = v.row.tickcountbyminute >= 200;
-    const tv = v.row.tradingvaluebyminute / 1000000 >= 100;
-    const vr = v.row.vwaprate < 3;
-    const vs = v.row.vwapslope > 0;
-    const vd = v.row.buyCount - v.row.sellCount > 0;
-    return (tc && tv && vr && vs && vd) ? "bg-chance" : "";
+    const tc = v.row.tickcountbyminute >= 50;
+    const tvb = v.row.tradingvaluebyminuteforbuy >= 30000000;
+    const tvr = v.row.tradingvaluebyminuteforbuy > (v.row.tradingvaluebyminuteforsell * 2);
+    return (tc && tvb && tvr) ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
