@@ -293,9 +293,8 @@
     if (rows.length > 0 && rows.filter(row => row.code == v.row.code).length > 0) {
       return "bg-selected";
     }
-    const tc = v.row.tickcountbyminute >= 50;
-    const tvbm = v.row.tradingvaluebyminute >= 25000000;
-    return (tc && tvbm) ? "bg-chance" : "";
+    const tvbm = v.row.tradingvaluebyminute >= (v.row.threshold / 2);
+    return tvbm ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
