@@ -26,32 +26,6 @@ interface SymbolDailyInfo {
     latterClosingPrice: number;
     previousClosingPrice: number;
     tradingVolume: number;
-    vwap: number;
-    loaningAmount: number;
-    paidLoaningAmount: number;
-    loaningBalance: number;
-    lendingAmount: number;
-    paidLendingAmount: number;
-    lendingBalance: number;
-}
-
-interface SymbolWeeklyInfo {
-    weekendDate: string;
-    sellBalance: number;
-    buyBalance: number;
-    lendBalance: number;
-    lendBalanceRegressionLine: number;
-    buyBalanceRegressionLine: number;
-}
-
-interface RegressionLine {
-    slope: number;
-    intercept: number;
-}
-
-interface RegressionLines {
-    lendBalance: RegressionLine;
-    buyBalance: RegressionLine;
 }
 
 const pool = mysql.createPool({
@@ -139,14 +113,7 @@ export default defineEventHandler(async (event: any) => {
             latter_high_price,
             latter_low_price,
             latter_closing_price,
-            trading_volume * 1000 trading_volume,
-            vwap,
-            loaning_amount,
-            paid_loaning_amount,
-            loaning_balance,
-            lending_amount,
-            paid_lending_amount,
-            lending_balance
+            trading_volume * 1000 trading_volume
         FROM
             kabu.symbol_daily_info
         WHERE
@@ -172,94 +139,12 @@ export default defineEventHandler(async (event: any) => {
             latterClosingPrice: Number(e.latter_closing_price),
             previousClosingPrice: Number(e.first_opening_price),
             tradingVolume: Number(e.trading_volume),
-            vwap: Number(e.vwap),
-            loaningAmount: Number(e.loaning_amount),
-            paidLoaningAmount: Number(e.paid_loaning_amount),
-            loaningBalance: Number(e.loaning_balance),
-            lendingAmount: Number(e.lending_amount),
-            paidLendingAmount: Number(e.paid_lending_amount),
-            lendingBalance: Number(e.lending_balance)
         });
     });
-
-    p = new Promise((resolve, reject) => {
-        const sql: string = `
-        SELECT
-            weekend_date,
-            sell_balance,
-            buy_balance,
-            lend_balance
-        FROM
-            kabu.symbol_weekly_info
-        WHERE
-            symbol_code = ?
-        AND
-            weekend_date >= ?
-        `;
-        pool.query(sql, [symbolCode, startDate], (err, rows, fields) => {
-            resolve(rows);
-        });
-    });
-    let symbolWeeklyInfo: SymbolWeeklyInfo[] = [];
-    await p.then((result) => {
-        symbolWeeklyInfo = result?.map((e: any) => <SymbolWeeklyInfo>{
-            weekendDate: String(e.weekend_date),
-            sellBalance: Number(e.sell_balance),
-            buyBalance: Number(e.buy_balance),
-            lendBalance: Number(e.lend_balance)
-        });
-    });
-
-    p = new Promise((resolve, reject) => {
-        const sql: string = `
-        SELECT
-            (COUNT(*) * SUM(t.row_no * t.lend_balance) - SUM(t.row_no) * SUM(t.lend_balance)) / (COUNT(*) * SUM(t.row_no * t.row_no) - SUM(t.row_no) * SUM(t.row_no)) AS lend_slope,
-            (SUM(t.lend_balance) - ((COUNT(*) * SUM(t.row_no * t.lend_balance) - SUM(t.row_no) * SUM(t.lend_balance)) / (COUNT(*) * SUM(t.row_no * t.row_no) - SUM(t.row_no) * SUM(t.row_no))) * SUM(t.row_no)) / COUNT(*) AS lend_intercept,
-            (COUNT(*) * SUM(t.row_no * t.buy_balance) - SUM(t.row_no) * SUM(t.buy_balance)) / (COUNT(*) * SUM(t.row_no * t.row_no) - SUM(t.row_no) * SUM(t.row_no)) AS buy_slope,
-            (SUM(t.buy_balance) - ((COUNT(*) * SUM(t.row_no * t.buy_balance) - SUM(t.row_no) * SUM(t.buy_balance)) / (COUNT(*) * SUM(t.row_no * t.row_no) - SUM(t.row_no) * SUM(t.row_no))) * SUM(t.row_no)) / COUNT(*) AS buy_intercept
-        FROM
-            (
-                SELECT
-                    ROW_NUMBER() OVER(ORDER BY weekend_date) AS row_no,
-                    weekend_date,
-                    lend_balance,
-                    buy_balance
-                FROM
-                    symbol_weekly_info
-                WHERE
-                    symbol_code = ?
-                AND weekend_date >= ?
-            ) AS t
-        `;
-        pool.query(sql, [symbolCode, startDate], (err, rows, fields) => {
-            resolve(rows);
-        });
-    });
-    let regressionLines: RegressionLines;
-    await p.then((result) => {
-        regressionLines = result?.map((e: any) => <RegressionLines>{
-            lendBalance: <RegressionLine> {
-                slope: Number(e.lend_slope),
-                intercept: Number(e.lend_intercept)
-            },
-            buyBalance: <RegressionLine> {
-                slope: Number(e.buy_slope),
-                intercept: Number(e.buy_intercept)
-            }
-        })[0];
-    });
-
-    symbolWeeklyInfo?.forEach((e: SymbolWeeklyInfo, i: number) => {
-        const rl = regressionLines
-        e.lendBalanceRegressionLine = rl.lendBalance.intercept + (rl.lendBalance.slope * i)
-        e.buyBalanceRegressionLine = rl.buyBalance.intercept + (rl.buyBalance.slope * i)
-    });
-
 
     // 表示対象期間内に短縮している
     startDate = dayjs().subtract(month, "M").format("YYYYMMDD");
     symbolDailyInfo = symbolDailyInfo.filter(e => Number(e.openingDate) >= Number(startDate));
-    symbolWeeklyInfo = symbolWeeklyInfo.filter(e => Number(e.weekendDate) >= Number(startDate));
 
     const dailyInfoForChart = {
         openingDate: symbolDailyInfo?.map((e) => {
@@ -282,38 +167,11 @@ export default defineEventHandler(async (event: any) => {
             let lowPrice: number = e.firstLowPrice > e.latterLowPrice ? e.latterLowPrice : e.firstLowPrice;
             lowPrice = lowPrice == 0 ? highPrice : lowPrice;
             return [highPrice, lowPrice];
-        }),
-        vwap: symbolDailyInfo?.map((e) => {return e.vwap}),
-        loaningBalance: symbolDailyInfo?.map((e) => {return e.loaningBalance}),
-        lendingBalance: symbolDailyInfo?.map((e) => {return e.lendingBalance}),
-        rotationDays: symbolDailyInfo?.map((e) => {
-            // ｛（融資残＋貸株残）×2 ｝÷（融資新規＋融資返済＋貸株新規＋貸株返済）
-            const divider = e.loaningAmount + e.paidLoaningAmount + e.lendingAmount + e.paidLendingAmount;
-            if (divider) {
-                return ((e.loaningBalance + e.lendingBalance) * 2 / divider).toFixed(1)
-            } else {
-                return ((e.loaningBalance + e.lendingBalance) * 2 / 1).toFixed(1)
-            }
         })
     };
 
-    const weeklyInfoForChart = {
-        weekendDate: symbolWeeklyInfo?.map((e) => {
-            const year = e.weekendDate.substring(0, 4);
-            const month = e.weekendDate.substring(4, 6);
-            const day = e.weekendDate.substring(6, 8);
-            return dayjs(`${year}-${month}-${day}`).format("YYYY/MM/DD（dd）");
-        }),
-        sellBalance: symbolWeeklyInfo?.map((e) => {return e.sellBalance}),
-        buyBalance: symbolWeeklyInfo?.map((e) => {return e.buyBalance}),
-        lendBalance: symbolWeeklyInfo?.map((e) => {return e.lendBalance}),
-        lendBalanceRegressionLine: symbolWeeklyInfo?.map((e) => {return e.lendBalanceRegressionLine}),
-        buyBalanceRegressionLine: symbolWeeklyInfo?.map((e) => {return e.buyBalanceRegressionLine})
-    }
-
     return {
         symbol,
-        dailyInfoForChart,
-        weeklyInfoForChart
+        dailyInfoForChart
     }
 });
