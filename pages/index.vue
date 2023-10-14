@@ -44,7 +44,6 @@
   }
 
   onMounted(() => {
-    console.log(barData)
     new Chart(document.getElementById("chart"), {
       type: "bar",
       data: barData,

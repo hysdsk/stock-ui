@@ -81,4 +81,5 @@
 
   const { key } = useRoute().params;
   const { data, pending } = useFetch(`/api/search/${camelize(key)}`);
+  useHead({title: `${terms[camelize(key)].title}`})
 </script>

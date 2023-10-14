@@ -66,4 +66,9 @@ const goSearched = (key: string) => window.location.href = `/search/${key}`;
 const goNotices = () => window.location.href = "/notices";
 const goSymbol = code => window.location.href = `/symbol/${code}`;
 
+useHead({
+  titleTemplate: (title) => {
+    return title == "Lorenzini" ? "Lorenzini" : `${title} - Lorenzini`
+  },
+})
 </script>
