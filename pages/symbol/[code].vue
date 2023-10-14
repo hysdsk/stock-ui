@@ -59,18 +59,17 @@
 </template>
 
 <script lang="ts" setup>
-  import Chart from 'chart.js/auto';
-  import { onMounted } from 'vue';
-  import { Link } from '@element-plus/icons-vue'
+  import Chart from "chart.js/auto";
+  import { onMounted } from "vue";
+  import { Link } from "@element-plus/icons-vue"
 
   const route = useRoute();
   const { code } = route.params;
   const queryParams = route.query;
-  const { data } = useFetch("/api/symbol", {params: {
+  const { data } = await useFetch("/api/symbol", {params: {
     code: code,
     period: queryParams.period === undefined ? 1 : queryParams.period
   }});
-
   useHead({title: `${data._value.symbol.symbolName}`})
 
   onMounted(() => {
