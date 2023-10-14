@@ -43,39 +43,52 @@
           <el-icon><Link /></el-icon> <el-link :href="`${route.path}?period=3`">直近三ヵ月</el-link>
         </el-col>
       </el-row>
-      <el-tabs>
-        <el-tab-pane label="価格と出来高の推移">
-          <canvas id="stockChart"></canvas>
+      <el-tabs
+        v-model="activeName"
+        @tab-change="tabChange"
+      >
+        <el-tab-pane name="daily-price" label="価格と出来高の推移">
         </el-tab-pane>
-        <el-tab-pane label="融資貸株残高と出来高の推移">
-          <canvas id="volumeChart"></canvas>
+        <el-tab-pane name="daily-balance" label="融資貸株残高と出来高の推移">
         </el-tab-pane>
-        <el-tab-pane label="信用残高の推移">
-          <canvas id="balanceChart"></canvas>
+        <el-tab-pane name="weekly-balance" label="信用残高の推移">
         </el-tab-pane>
+        <canvas id="chart"></canvas>
       </el-tabs>
     </el-main>
   </el-container>
 </template>
 
 <script lang="ts" setup>
-  import Chart from 'chart.js/auto';
-  import { onMounted } from 'vue';
-  import { Link } from '@element-plus/icons-vue'
-
+  import Chart from "chart.js/auto";
+  import { onMounted } from "vue";
+  import { Link } from "@element-plus/icons-vue"
+  definePageMeta({
+    validate: async(route) => {
+      return [
+        "daily-price",
+        "daily-balance",
+        "weekly-balance"
+      ].includes(route.params.chart)
+    }
+  })
+  const camelize = (s) => {
+    return s.replace(/-./g, x => x[1].toUpperCase())
+  }
   const route = useRoute();
-  const { code } = route.params;
+  const { code, chart } = route.params;
   const queryParams = route.query;
-  const { data } = useFetch("/api/symbol", {params: {
+  const { data, pending } = await useFetch(`/api/symbol/${chart ? camelize(chart) : "daily-price"}`, {params: {
     code: code,
     period: queryParams.period === undefined ? 1 : queryParams.period
   }});
-
   useHead({title: `${data._value.symbol.symbolName}`})
+  const activeName = ref(chart)
+  const tabChange = (name) => window.location.href = `/symbol/${code}/${name}?period=${queryParams.period === undefined ? 1 : queryParams.period}`;
 
-  onMounted(() => {
-    new Chart(document.getElementById("stockChart"), {
-      data: {
+  const createData = (chart) => {
+    if (chart == "daily-price") {
+      return {
         labels: data._value.dailyInfoForChart.openingDate,
         datasets: [{
           type: 'bar',
@@ -94,14 +107,6 @@
           yAxisID: "price",
           barPercentage: 0.1
         },{
-          type: 'line',
-          label: "VWAP",
-          data: data._value.dailyInfoForChart.vwap,
-          borderColor: "#CFD8DC",
-          backgroundColor: "#CFD8DC",
-          order: 1,
-          yAxisID: "price"
-        },{
           type: "bar",
           label: "出来高",
           data: data._value.dailyInfoForChart.tradingVolume,
@@ -110,32 +115,11 @@
           yAxisID: "volume",
           barPercentage: 0.8
         }]
-      },
-      options: {
-        scales: {
-          price: { 
-            type: "linear",
-            position: "right",
-            beginAtZero: false
-          },
-          volume: {
-            type: "linear",
-            position: "left"
-          },
-          x: {
-            stacked: true
-          }
-        },
-        plugins: {
-          legend: {
-            position: "bottom"
-          }
-        }
-      }
-    });
+      } 
+    }
 
-    new Chart(document.getElementById("volumeChart"), {
-      data: {
+    if (chart == "daily-balance") {
+      return {
         labels: data._value.dailyInfoForChart.openingDate,
         datasets: [{
           type: "bar",
@@ -171,31 +155,11 @@
           yAxisID: "days",
           stack: "Volume"
         }]
-      },
-      options: {
-        scales: {
-          days: { 
-            type: "linear",
-            position: "right"
-          },
-          volume: {
-            type: "linear",
-            position: "left"
-          },
-          x: {
-            stacked: true
-          }
-        },
-        plugins: {
-          legend: {
-            position: "bottom"
-          }
-        }
       }
-    });
+    }
 
-    new Chart(document.getElementById("balanceChart"), {
-      data: {
+    if (chart == "weekly-balance") {
+      return {
         labels: data._value.weeklyInfoForChart.weekendDate,
         datasets: [{
           type: 'line',
@@ -225,14 +189,74 @@
           data: data._value.weeklyInfoForChart.lendBalance,
           backgroundColor: "#82b1ff"
         }]
-      },
-      options: {
+      }
+    }
+
+    return {};
+  }
+
+  const createOptions = (chart) => {
+    if (chart == "daily-price") {
+      return {
+        scales: {
+          price: { 
+            type: "linear",
+            position: "right",
+            beginAtZero: false
+          },
+          volume: {
+            type: "linear",
+            position: "left"
+          },
+          x: {
+            stacked: true
+          }
+        },
         plugins: {
           legend: {
             position: "bottom"
           }
         }
       }
+    }
+    if (chart == "daily-balance") {
+      return {
+        scales: {
+          days: { 
+            type: "linear",
+            position: "right"
+          },
+          volume: {
+            type: "linear",
+            position: "left"
+          },
+          x: {
+            stacked: true
+          }
+        },
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
+        }
+      }
+    }
+    if (chart == "weekly-balance") {
+      return {
+        plugins: {
+          legend: {
+            position: "bottom"
+          }
+        }
+      }
+    }
+    return {}
+  }
+
+  onMounted(() => {
+    new Chart(document.getElementById("chart"), {
+      data: createData(chart),
+      options: createOptions(chart),
     });
   });
 </script>

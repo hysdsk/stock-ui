@@ -29,14 +29,13 @@
   import { InfoFilled } from '@element-plus/icons-vue'
   definePageMeta({
     validate: async(route) => {
-      // const nuxtApp = useNuxtApp()
-          return [
-            "increase-volume",
-            "increase-price",
-            "increase-sell-balance",
-            "low-rank"
-            ].includes(route.params.key)
-      }
+      return [
+        "increase-volume",
+        "increase-price",
+        "increase-sell-balance",
+        "low-rank"
+      ].includes(route.params.key)
+    }
   })
   const terms = {
     increaseVolume: {
