@@ -70,6 +70,9 @@
     code: code,
     period: queryParams.period === undefined ? 1 : queryParams.period
   }});
+
+  useHead({title: `${data._value.symbol.symbolName}`})
+
   onMounted(() => {
     new Chart(document.getElementById("stockChart"), {
       data: {

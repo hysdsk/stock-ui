@@ -174,6 +174,7 @@
   import { reactive, ref, onMounted, h } from "vue";
   import { io } from "socket.io-client";
 
+  useHead({title: "通知受信"})
   const config = useRuntimeConfig().public;
   const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
   const filtered = ref(false);
