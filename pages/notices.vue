@@ -67,9 +67,9 @@
             </el-table-column>
           </el-table-column>
           <el-table-column label="売買代金" header-align="center">
-            <el-table-column prop="tradingvaluebyminute" label="分" header-align="center" align="right" width="80" sortable>
+            <el-table-column prop="trading_value_by_min" label="分" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
-                <span :class="colorValue(scope.row.tradingvaluebyminute)">{{ formatVolume(scope.row.tradingvaluebyminute) }}</span>
+                <span :class="colorValue(scope.row.trading_value_by_min)">{{ formatVolume(scope.row.trading_value_by_min) }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="tradingvaluetotal" label="総" header-align="center" align="right" width="80" sortable>
@@ -98,6 +98,11 @@
             <el-table-column prop="openingrate" label="始値" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
                 <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="price_deviation" label="偏差" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.price_deviation)">{{ formatRate(scope.row.price_deviation) }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="vwaprate" label="VWAP" header-align="center" align="right" width="100" sortable>
@@ -206,8 +211,9 @@
             tickcounttotal: 0,
             tickcountbyminute: 0,
             currentprice: 0,
+            price_deviation: 0,
             tradingvaluetotal: 0,
-            tradingvaluebyminute: 0,
+            trading_value_by_min: 0,
             previouscloserate: 0,
             openingrate: 0,
             vwaprate: 0,
@@ -275,10 +281,11 @@
       if (!symbols[code]) return;
       const rankdata = ranklist[code];
       rankdata.currentprice = notice.currentprice;
+      rankdata.price_deviation = notice.price_deviation;
       rankdata.tickcounttotal = notice.tickcounttotal;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
       rankdata.tradingvaluetotal = notice.tradingvaluetotal;
-      rankdata.tradingvaluebyminute = notice.tradingvaluebyminuteforbuy - notice.tradingvaluebyminuteforsell;
+      rankdata.trading_value_by_min = notice.trading_value_by_min;
       rankdata.previouscloserate = notice.previouscloserate;
       rankdata.openingrate = notice.openingrate;
       rankdata.vwaprate = notice.vwaprate;
@@ -304,7 +311,7 @@
     }
   }
   const colorRows = (v) => {
-    const tvbm = v.row.tradingvaluebyminute >= (v.row.threshold / 2);
+    const tvbm = v.row.trading_value_by_min >= (v.row.threshold / 2);
     return tvbm ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
