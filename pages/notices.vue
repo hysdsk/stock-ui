@@ -27,8 +27,16 @@
           height="896"
         >
           <el-table-column type="selection" header-align="center" align="center" width="50" reserve-selection fixed/>
-          <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable fixed/>
-          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" width="320" sortable fixed/>
+          <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable fixed>
+            <template #default="scope">
+              <span :class="colorSelectedText(scope.row.code)">{{ scope.row.code }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" width="320" sortable fixed>
+            <template #default="scope">
+              <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name }}</span>
+            </template>
+          </el-table-column>
           <el-table-column label="大約定" header-align="center">
             <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
@@ -289,11 +297,13 @@
     const rows = realtimeTableRef.value!.getSelectionRows();
     return (rows.length > 0 && rows.filter(row => row.code == code).length > 0);
   }
-  const colorRows = (v) => {
+  const colorSelectedText = (v) => {
     const rows = realtimeTableRef.value!.getSelectionRows();
-    if (rows.length > 0 && rows.filter(row => row.code == v.row.code).length > 0) {
-      return "bg-selected";
+    if (rows.length > 0 && rows.filter(row => row.code == v).length > 0) {
+      return "text-selected";
     }
+  }
+  const colorRows = (v) => {
     const tvbm = v.row.tradingvaluebyminute >= (v.row.threshold / 2);
     return tvbm ? "bg-chance" : "";
   }
