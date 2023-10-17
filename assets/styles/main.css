@@ -39,6 +39,6 @@
     --el-table-tr-bg-color: rgba(255, 0, 0, 0.1);
 }
 
-.bg-selected {
-    --el-table-tr-bg-color: rgba(255, 225, 0, 0.1);
+.text-selected {
+    color: rgba(255, 225, 0, 1);
 }
