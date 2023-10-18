@@ -138,9 +138,9 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="vwapslope" label="VWAP傾き" header-align="center" align="right" width="130" sortable>
+          <el-table-column prop="vwap_slope_by_min" label="VWAP傾き" header-align="center" align="right" width="130" sortable>
             <template #default="scope">
-              <span :class="colorRate(scope.row.vwapslope)">{{ formatRate(scope.row.vwapslope) }}</span>
+              <span class="">{{ scope.row.vwap_slope_by_min }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -220,7 +220,7 @@
             underoverrate: 0,
             marketorderrate: 0,
             limitorderrate: 0,
-            vwapslope: 0,
+            vwap_slope_by_min: 0,
             bidsign: "",
             asksign: "",
             highPriceRate: 0,
@@ -292,7 +292,7 @@
       rankdata.underoverrate = notice.underoverrate;
       rankdata.marketorderrate = notice.marketorderrate;
       rankdata.limitorderrate = notice.limitorderrate;
-      rankdata.vwapslope = notice.vwapslope;
+      rankdata.vwap_slope_by_min = notice.vwap_slope_by_min;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
       rankdata.highPriceRate = notice.highPriceRate;
