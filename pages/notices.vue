@@ -3,11 +3,14 @@
     <el-col :span="24">
       <el-card>
         <el-descriptions :column="5" border>
+          <el-descriptions-item label="現在時刻" label-align="center" align="right" width="10%">
+            {{ now }}
+          </el-descriptions-item>
           <el-descriptions-item label="総板更新数" label-align="center" align="right" width="10%">
-            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tickcounttotal).reduce((a, b) => a + b).toLocaleString() : 0 }}
+            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tickcountbyminute).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
           <el-descriptions-item label="総売買代金" label-align="center" align="right" width="10%">
-            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tradingvaluetotal).reduce((a, b) => a + b).toLocaleString() : 0 }}
+            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.trading_value_by_min).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
           <el-descriptions-item label="前日超数" label-align="center" align="center" width="10%">
             {{ Object.values(ranklist).filter(e => e.previouscloserate > 0).length }} ／ {{ Object.keys(ranklist).length }}
@@ -194,6 +197,7 @@
   const selectedSymbols = ref([]);
   const symbols = reactive({});
   const ranklist = reactive({});
+  const now = ref("08:00:00");
 
   onMounted(async () => {
     const socket = io(config.wsBaseURL);
@@ -277,6 +281,7 @@
       }
     });
     socket.on("regular-notice", notice => {
+      now.value = notice.time;
       const code = notice.code;
       if (!symbols[code]) return;
       const rankdata = ranklist[code];
