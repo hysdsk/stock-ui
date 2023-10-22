@@ -40,12 +40,24 @@
               <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="大約定" header-align="center">
+          <el-table-column label="各種情報" header-align="center">
             <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
                 <span>{{ formatVolume(scope.row.threshold) }}</span>
               </template>
             </el-table-column>
+            <el-table-column prop="sellBalance" label="売残" header-align="center" align="right" width="80" sortable>
+              <template #default="scope">
+                <span>{{ formatVolume(scope.row.sellBalance) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="buyBalance" label="買残" header-align="center" align="right" width="80" sortable>
+              <template #default="scope">
+                <span>{{ formatVolume(scope.row.buyBalance) }}</span>
+              </template>
+            </el-table-column>
+          </el-table-column>
+          <el-table-column label="大約定" header-align="center">
             <el-table-column prop="sellCount" label="売" header-align="center" align="center" width="80" sortable>
               <template #default="scope">
                 <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
@@ -57,27 +69,15 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column label="板更新" header-align="center">
-            <el-table-column prop="tickcountbyminute" label="分" header-align="center" align="right" width="80" sortable>
+          <el-table-column label="毎分" header-align="center">
+            <el-table-column prop="tickcountbyminute" label="板" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
                 <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="tickcounttotal" label="総" header-align="center" align="right" width="80" sortable>
-              <template #default="scope">
-                <span>{{ formatVolume(scope.row.tickcounttotal) }}</span>
-              </template>
-            </el-table-column>
-          </el-table-column>
-          <el-table-column label="売買代金" header-align="center">
-            <el-table-column prop="trading_value_by_min" label="分" header-align="center" align="right" width="80" sortable>
+            <el-table-column prop="trading_value_by_min" label="金" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
                 <span :class="colorValue(scope.row.trading_value_by_min)">{{ formatVolume(scope.row.trading_value_by_min) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="tradingvaluetotal" label="総" header-align="center" align="right" width="80" sortable>
-              <template #default="scope">
-                <span>{{ formatVolume(scope.row.tradingvaluetotal) }}</span>
               </template>
             </el-table-column>
           </el-table-column>
@@ -113,37 +113,47 @@
                 <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="highPriceRate" label="高値比" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorHighRate(scope.row.highPriceRate)">{{ formatRate(scope.row.highPriceRate) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="lowPriceRate" label="安値比" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorLowRate(scope.row.lowPriceRate)">{{ formatRate(scope.row.lowPriceRate) }}</span>
-              </template>
-            </el-table-column>
           </el-table-column>
           <el-table-column label="注文" header-align="center">
-            <el-table-column prop="marketorderrate" label="成行比" header-align="center" align="right" width="100" sortable>
+            <el-table-column prop="spreadPoint" label="隙間" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
-                <span :class="colorRate(scope.row.marketorderrate / 10)">{{ formatRate(scope.row.marketorderrate) }}</span>
+                <span :class="colorRate(scope.row.spreadPoint * 2)">{{ scope.row.spreadPoint }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="limitorderrate" label="指値比" header-align="center" align="right" width="100" sortable>
+            <el-table-column prop="avgLimitOrderSellQty" label="売指" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
-                <span :class="colorRate(scope.row.limitorderrate / 10)">{{ formatRate(scope.row.limitorderrate) }}</span>
+                <span class="text-blue3">{{ formatVolume(scope.row.avgLimitOrderSellQty) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="underoverrate" label="圧比" header-align="center" align="right" width="100" sortable>
+            <el-table-column prop="avgLimitOrderBuyQty" label="買指" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
-                <span :class="colorRate(scope.row.underoverrate / 10)">{{ formatRate(scope.row.underoverrate) }}</span>
+                <span class="text-red3">{{ formatVolume(scope.row.avgLimitOrderBuyQty) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="marketOrderSellQty" label="売成" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span class="text-blue3">{{ formatVolume(scope.row.marketOrderSellQty) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="marketOrderBuyQty" label="買成" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span class="text-red3">{{ formatVolume(scope.row.marketOrderBuyQty) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="overSellQty" label="売圧" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span class="text-blue3">{{ formatVolume(scope.row.overSellQty) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="underBuyQty" label="買圧" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span class="text-red3">{{ formatVolume(scope.row.underBuyQty) }}</span>
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="vwap_slope_by_min" label="VWAP傾き" header-align="center" align="right" width="130" sortable>
+          <el-table-column prop="vwapSlopeByMin" label="VWAP傾き" header-align="center" align="right" width="130" sortable>
             <template #default="scope">
-              <span class="">{{ scope.row.vwap_slope_by_min }}</span>
+              <span class="">{{ scope.row.vwapSlopeByMin }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -210,26 +220,28 @@
           ranklist[code] = {
             code: code,
             name: name,
+            threshold: notice.threshold,
+            sellBalance: notice.sell_balance,
+            buyBalance: notice.buy_balance,
             buyCount: 0,
             sellCount: 0,
-            tickcounttotal: 0,
-            tickcountbyminute: 0,
             currentprice: 0,
             price_deviation: 0,
-            tradingvaluetotal: 0,
+            tickcountbyminute: 0,
             trading_value_by_min: 0,
             previouscloserate: 0,
             openingrate: 0,
             vwaprate: 0,
-            underoverrate: 0,
-            marketorderrate: 0,
-            limitorderrate: 0,
-            vwap_slope_by_min: 0,
+            spreadPoint: 0,
+            overSellQty: 0,
+            underBuyQty: 0,
+            marketOrderSellQty: 0,
+            marketOrderBuyQty: 0,
+            avgLimitOrderSellQty: 0,
+            avgLimitOrderBuyQty: 0,
+            vwapSlopeByMin: 0,
             bidsign: "",
-            asksign: "",
-            highPriceRate: 0,
-            lowPriceRate: 0,
-            threshold: notice.threshold
+            asksign: ""
           }
         }
       }
@@ -287,21 +299,21 @@
       const rankdata = ranklist[code];
       rankdata.currentprice = notice.currentprice;
       rankdata.price_deviation = notice.price_deviation;
-      rankdata.tickcounttotal = notice.tickcounttotal;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
-      rankdata.tradingvaluetotal = notice.tradingvaluetotal;
       rankdata.trading_value_by_min = notice.trading_value_by_min;
       rankdata.previouscloserate = notice.previouscloserate;
       rankdata.openingrate = notice.openingrate;
       rankdata.vwaprate = notice.vwaprate;
-      rankdata.underoverrate = notice.underoverrate;
-      rankdata.marketorderrate = notice.marketorderrate;
-      rankdata.limitorderrate = notice.limitorderrate;
-      rankdata.vwap_slope_by_min = notice.vwap_slope_by_min;
+      rankdata.spreadPoint = notice.spread_point;
+      rankdata.overSellQty = notice.over_sell_qty;
+      rankdata.underBuyQty = notice.under_buy_qty;
+      rankdata.marketOrderSellQty = notice.market_order_sell_qty;
+      rankdata.marketOrderBuyQty = notice.market_order_buy_qty;
+      rankdata.avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
+      rankdata.avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
+      rankdata.vwapSlopeByMin = notice.vwap_slope_by_min;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
-      rankdata.highPriceRate = notice.highPriceRate;
-      rankdata.lowPriceRate = notice.lowPriceRate;
     });
   })
 
