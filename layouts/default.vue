@@ -22,7 +22,7 @@
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item command="increase-volume">出来高増加</el-dropdown-item>
-            <el-dropdown-item command="increase-price">上昇中</el-dropdown-item>
+            <el-dropdown-item command="increase-price">支持線上</el-dropdown-item>
             <el-dropdown-item command="increase-sell-balance">踏み上げ期待</el-dropdown-item>
             <el-dropdown-item command="low-rank">仕手上げ期待</el-dropdown-item>
           </el-dropdown-menu>

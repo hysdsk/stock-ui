@@ -31,7 +31,7 @@ export default defineEventHandler(async (event: any) => {
         	kabu.symbol_daily_info
         ORDER BY
         	opening_date DESC
-        LIMIT 60
+        LIMIT 30
         `
         pool.query(sql, [], (err, rows, fields) => {
             resolve(rows);
@@ -43,86 +43,73 @@ export default defineEventHandler(async (event: any) => {
     
     p = new Promise((resolve, reject) => {
         const sql: string = `
-        SELECT
-            s.code symbol_code,
-            s.name symbol_name,
-            d.name division_name,
-            bc.name bis_category_name,
-            today.latter_closing_price closing_price,
-            truncate(
-                ( today.trading_value
-                + yesterday.trading_value
-                + two_days_ago.trading_value) * 1000 / 3,
-            0) average_volume,
-            ROUND(today.latter_closing_price / two_days_ago.first_opening_price * 100 - 100, 0) increase_rate
-        FROM
-            kabu.symbols s
-        INNER JOIN
-            kabu.divisions d
-        ON
-            d.code = s.division_code
-        INNER JOIN
-            kabu.bis_categories bc
-        ON
-            s.bis_category_code = bc.code
-        INNER JOIN (
+            WITH max_vols AS (
+                SELECT
+                    t.symbol_code,
+                    t.vwap,
+                    ROUND(SUM(t.trading_value) * 1000) trading_value
+                FROM (
+                    SELECT
+                        opening_date,
+                        symbol_code,
+                        ROUND(vwap/10)*10 vwap,
+                        trading_value
+                    FROM symbol_daily_info WHERE opening_date >= ?
+                ) t
+                GROUP BY
+                    t.symbol_code, t.vwap
+            )
+                
             SELECT
-                symbol_code,
-                first_opening_price,
-                latter_closing_price,
-                trading_value
+                s.code symbol_code,
+                s.name symbol_name,
+                d.name division_name,
+                bc.name bis_category_name,
+                sdi.trading_value trading_value,
+                sdi.latter_closing_price closing_price
             FROM
-                kabu.symbol_daily_info
+                symbol_daily_info sdi
+            INNER JOIN
+                kabu.symbols s
+            ON
+                sdi.symbol_code = s.code
+            INNER JOIN
+                kabu.divisions d
+            ON
+                d.code = s.division_code
+            AND d.code IN ('01', '02', '03')
+            INNER JOIN
+                kabu.bis_categories bc
+            ON
+                s.bis_category_code = bc.code
+            INNER JOIN (
+                SELECT 
+                    main.symbol_code,
+                    main.vwap,
+                    main.trading_value
+                FROM
+                    max_vols main
+                INNER JOIN (
+                    SELECT
+                        symbol_code,
+                        MAX(trading_value) trading_value
+                    FROM
+                        max_vols
+                    GROUP BY
+                        symbol_code
+                ) max
+                ON
+                    main.symbol_code = max.symbol_code
+                AND main.trading_value = max.trading_value
+            ) i
+            ON
+                sdi.symbol_code = i.symbol_code
+            AND sdi.latter_closing_price >= i.vwap
             WHERE
-                opening_date = ?
-        ) today
-        ON
-            s.code = today.symbol_code
-        INNER JOIN (
-            SELECT
-                symbol_code,
-                first_opening_price,
-                latter_closing_price,
-                trading_value
-            FROM
-                kabu.symbol_daily_info
-            WHERE
-                opening_date = ?
-        ) yesterday
-        ON
-            s.code = yesterday.symbol_code
-        INNER JOIN (
-            SELECT
-                symbol_code,
-                first_opening_price,
-                latter_closing_price,
-                trading_value
-            FROM
-                kabu.symbol_daily_info
-            WHERE
-                opening_date = ?
-        ) two_days_ago
-        ON
-            s.code = two_days_ago.symbol_code
-        WHERE
-            today.latter_closing_price > today.first_opening_price
-        AND
-            today.latter_closing_price > yesterday.latter_closing_price
-        AND
-            yesterday.latter_closing_price > yesterday.first_opening_price
-        AND
-            yesterday.latter_closing_price > two_days_ago.latter_closing_price
-        AND
-            two_days_ago.latter_closing_price > two_days_ago.first_opening_price
-        AND
-            ( today.trading_value
-            + yesterday.trading_value
-            + two_days_ago.trading_value)
-            / 3 > 100
-        ORDER BY
-            increase_rate DESC
+                sdi.opening_date = ?
+            AND i.trading_value > ?
         `
-        pool.query(sql, [days[0], days[1], days[2]], (err, rows, fields) => {
+        pool.query(sql, [days[days.length-1], days[0], 1000000000], (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -133,8 +120,7 @@ export default defineEventHandler(async (event: any) => {
             divisionName: String(row.division_name),
             bisCategoryName: String(row.bis_category_name),
             closingPrice: Number(row.closing_price),
-            averageVolume: Number(row.average_volume),
-            increaseRate: Number(row.increase_rate)
+            averageVolume: Number(row.trading_value)
         });
     });
 
