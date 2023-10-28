@@ -7,7 +7,8 @@ const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
-    database: config.dbName
+    database: config.dbName,
+    namedPlaceholders: true
 });
 
 interface TradingValueByDivision {
@@ -25,8 +26,9 @@ const getOpeningDates = (tvbd: TradingValueByDivision) => {
 }
 
 export default defineEventHandler(async (event: any) => {
-    let p: Promise<any> = new Promise((resolve, reject) => {
-        const query: string = `
+    const query = getQuery(event);
+    const p: Promise<any> = new Promise((resolve, reject) => {
+        const sql: string = `
             SELECT
                 main.opening_date,
                 IFNULL(d.code, '00') division_code,
@@ -40,28 +42,14 @@ export default defineEventHandler(async (event: any) => {
                         SUM(sdi.trading_value) trading_value
                     FROM
                         symbol_daily_info sdi
-                        INNER JOIN
-                            symbols s
-                        ON  sdi.symbol_code = s.code
+                    INNER JOIN
+                        symbols s
+                    ON
+                        sdi.symbol_code = s.code
                     WHERE
-                        EXISTS(
-                            SELECT
-                                *
-                            FROM
-                                (
-                                    SELECT
-                                        opening_date
-                                    FROM
-                                        symbol_daily_info
-                                    GROUP BY
-                                        opening_date
-                                    ORDER BY
-                                        opening_date DESC
-                                    LIMIT 20
-                                ) t
-                            WHERE
-                                t.opening_date = sdi.opening_date
-                        )
+                        sdi.opening_date >= :from_date
+                    AND
+                        sdi.opening_date <= :to_date
                     GROUP BY
                         sdi.opening_date,
                         s.division_code
@@ -73,7 +61,11 @@ export default defineEventHandler(async (event: any) => {
                 main.opening_date,
                 d.code
         `;
-        pool.query(query, [], (err, rows, fields) => {
+        const statements = {
+            from_date: query.from,
+            to_date: query.to
+        }
+        pool.query(sql, statements, (err, rows, fields) => {
             resolve(rows);
         });
     });

@@ -1,5 +1,5 @@
 import * as mysql from "mysql2";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 dayjs.locale("ja");
 const config = useRuntimeConfig()
 
@@ -26,17 +26,12 @@ const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
-    database: config.dbName
+    database: config.dbName,
+    namedPlaceholders: true
 });
 
 export default defineEventHandler(async (event: any) => {
     const query = getQuery(event);
-    if (query.code === undefined || query.period === undefined) {
-        return [];
-    }
-    const symbolCode = query.code;
-    const month: number = Number(query.period);
-    let startDate: string = dayjs().subtract(month + 1, "M").format("YYYYMMDD");
     let p: Promise<any> = new Promise((resolve, reject) => {
         const sql: string = `
         SELECT
@@ -47,11 +42,18 @@ export default defineEventHandler(async (event: any) => {
         FROM
             kabu.symbol_weekly_info
         WHERE
-            symbol_code = ?
+            symbol_code = :symbol_code
         AND
-            weekend_date >= ?
+            weekend_date >= :from_date
+        AND
+            weekend_date <= :to_date
         `;
-        pool.query(sql, [symbolCode, startDate], (err, rows, fields) => {
+        const statements = {
+            symbol_code: query.code,
+            from_date: query.from,
+            to_date: query.to
+        }
+        pool.query(sql, statements, (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -82,11 +84,19 @@ export default defineEventHandler(async (event: any) => {
                 FROM
                     symbol_weekly_info
                 WHERE
-                    symbol_code = ?
-                AND weekend_date >= ?
+                    symbol_code = :symbol_code
+                AND
+                    weekend_date >= :from_date
+                AND
+                    weekend_date <= :to_date
             ) AS t
         `;
-        pool.query(sql, [symbolCode, startDate], (err, rows, fields) => {
+        const statements = {
+            symbol_code: query.code,
+            from_date: query.from,
+            to_date: query.to
+        }
+        pool.query(sql, statements, (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -109,11 +119,6 @@ export default defineEventHandler(async (event: any) => {
         e.lendBalanceRegressionLine = rl.lendBalance.intercept + (rl.lendBalance.slope * i)
         e.buyBalanceRegressionLine = rl.buyBalance.intercept + (rl.buyBalance.slope * i)
     });
-
-
-    // 表示対象期間内に短縮している
-    startDate = dayjs().subtract(month, "M").format("YYYYMMDD");
-    symbolWeeklyInfo = symbolWeeklyInfo.filter(e => Number(e.weekendDate) >= Number(startDate));
 
     const weeklyInfoForChart = {
         weekendDate: symbolWeeklyInfo?.map((e) => {

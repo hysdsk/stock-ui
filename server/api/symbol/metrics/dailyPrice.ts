@@ -1,5 +1,5 @@
 import * as mysql from "mysql2";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 dayjs.locale("ja");
 const config = useRuntimeConfig()
 
@@ -21,17 +21,12 @@ const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
-    database: config.dbName
+    database: config.dbName,
+    namedPlaceholders: true
 });
 
 export default defineEventHandler(async (event: any) => {
     const query = getQuery(event);
-    if (query.code === undefined || query.period === undefined) {
-        return [];
-    }
-    const symbolCode = query.code;
-    const month: number = Number(query.period);
-    let startDate: string = dayjs().subtract(month + 1, "M").format("YYYYMMDD");
     const p: Promise<any> = new Promise((resolve, reject) => {
         const daily_info_sql: string = `
         SELECT
@@ -48,11 +43,18 @@ export default defineEventHandler(async (event: any) => {
         FROM
             kabu.symbol_daily_info
         WHERE
-            symbol_code = ?
+            symbol_code = :symbol_code
         AND
-            opening_date >= ?
+            opening_date >= :from_date
+        AND
+            opening_date <= :to_date
         `;
-        pool.query(daily_info_sql, [symbolCode, startDate], (err, rows, fields) => {
+        const statements = {
+            symbol_code: query.code,
+            from_date: query.from,
+            to_date: query.to
+        }
+        pool.query(daily_info_sql, statements, (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -72,10 +74,6 @@ export default defineEventHandler(async (event: any) => {
             tradingVolume: Number(e.trading_volume),
         });
     });
-
-    // 表示対象期間内に短縮している
-    startDate = dayjs().subtract(month, "M").format("YYYYMMDD");
-    symbolDailyInfo = symbolDailyInfo.filter(e => Number(e.openingDate) >= Number(startDate));
 
     const dailyInfoForChart = {
         openingDate: symbolDailyInfo?.map((e) => {

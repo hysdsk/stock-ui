@@ -18,12 +18,6 @@ const pool = mysql.createPool({
 
 export default defineEventHandler(async (event: any) => {
     const query = getQuery(event);
-    if (query.code === undefined || query.period === undefined) {
-        return [];
-    }
-    const symbolCode = query.code;
-    const month: number = Number(query.period);
-    let startDate: string = dayjs().subtract(month, "M").format("YYYYMMDD");
     const p: Promise<any> = new Promise((resolve, reject) => {
         const daily_info_sql: string = `
             SELECT
@@ -44,7 +38,9 @@ export default defineEventHandler(async (event: any) => {
                 WHERE
                     symbol_code = :symbol_code
                 AND
-                    opening_date >= :start_date
+                    opening_date >= :from_date
+                AND
+                    opening_date <= :to_date
             ) filterd
             GROUP BY
                 filterd.vwap
@@ -52,8 +48,9 @@ export default defineEventHandler(async (event: any) => {
                 filterd.vwap DESC
         `;
         const statements = {
-            symbol_code: symbolCode,
-            start_date: startDate
+            symbol_code: query.code,
+            from_date: query.from,
+            to_date: query.to
         }
         pool.query(daily_info_sql, statements, (err, rows, fields) => {
             resolve(rows);

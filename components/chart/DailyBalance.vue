@@ -5,19 +5,22 @@
 <script lang="ts" setup>
   import Chart from "chart.js/auto";
   import { onMounted } from "vue";
-  import { Link } from "@element-plus/icons-vue"
+  import dayjs from "dayjs";
+  dayjs.locale("ja");
 
   interface Props {
     code: string,
-    period: number
+    from: string,
+    to: string
   }
 
-  const props = withDefaults(defineProps<Props>(), { code: null, period: null })
+  const props = withDefaults(defineProps<Props>(), {})
   const { data, pending } = useFetch(
     `/api/symbol/metrics/dailyBalance`, {
       params: {
         code: props.code,
-        period: props.period
+        from: dayjs(props.from).format("YYYYMMDD"),
+        to: dayjs(props.to).format("YYYYMMDD")
       }
     }
   );
@@ -25,11 +28,11 @@
   onMounted(() => {
     new Chart(document.getElementById("chart-daily-balance"), {
       data: {
-        labels: data._value.dailyInfoForChart.openingDate,
+        labels: data.value?.dailyInfoForChart.openingDate,
         datasets: [{
           type: "bar",
           label: "出来高",
-          data: data._value.dailyInfoForChart.tradingVolume,
+          data: data.value?.dailyInfoForChart.tradingVolume,
           backgroundColor: "#FFEE58",
           order: 2,
           yAxisID: "volume",
@@ -37,7 +40,7 @@
         },{
           type: 'bar',
           label: "融資残",
-          data: data._value.dailyInfoForChart.loaningBalance,
+          data: data.value?.dailyInfoForChart.loaningBalance,
           backgroundColor: "#ff1744",
           order: 2,
           yAxisID: "volume",
@@ -45,7 +48,7 @@
         },{
           type: 'bar',
           label: "貸株残",
-          data: data._value.dailyInfoForChart.lendingBalance,
+          data: data.value?.dailyInfoForChart.lendingBalance,
           backgroundColor: "#00E676",
           order: 2,
           yAxisID: "volume",
@@ -53,7 +56,7 @@
         },{
           type: "line",
           label: "回転日数",
-          data: data._value.dailyInfoForChart.rotationDays,
+          data: data.value?.dailyInfoForChart.rotationDays,
           borderColor: "#CFD8DC",
           backgroundColor: "#CFD8DC",
           order: 1,
