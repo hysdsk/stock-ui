@@ -54,7 +54,10 @@ export default defineEventHandler(async (event: any) => {
                         symbol_code,
                         ROUND(vwap/10)*10 vwap,
                         trading_value
-                    FROM symbol_daily_info WHERE opening_date >= ?
+                    FROM
+                        symbol_daily_info
+                    WHERE
+                        opening_date >= ?
                 ) t
                 GROUP BY
                     t.symbol_code, t.vwap

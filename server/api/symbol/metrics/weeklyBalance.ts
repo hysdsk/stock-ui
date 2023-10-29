@@ -1,18 +1,7 @@
 import * as mysql from "mysql2";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 dayjs.locale("ja");
 const config = useRuntimeConfig()
-
-interface Symbol {
-    symbolCode: string;
-    symbolName: string;
-    exchangeName: string;
-    divisionName: string;
-    bisCategoryName: string;
-    marketCapitalization: number;
-    totalStocks: number;
-    fiscalYearEndBasic: number
-}
 
 interface SymbolWeeklyInfo {
     weekendDate: string;
@@ -37,77 +26,13 @@ const pool = mysql.createPool({
     host: config.dbHost,
     user: config.dbUser,
     password: config.dbPswd,
-    database: config.dbName
+    database: config.dbName,
+    namedPlaceholders: true
 });
 
 export default defineEventHandler(async (event: any) => {
     const query = getQuery(event);
-    if (query.code === undefined || query.period === undefined) {
-        return [];
-    }
-    const symbolCode = query.code;
     let p: Promise<any> = new Promise((resolve, reject) => {
-        const symbol_detail_sql: string = `
-        SELECT
-            s.code,
-            s.name symbol_name,
-            e.name exchange_name,
-            d.name division_name,
-            bc.name bis_category_name,
-            s.total_market_value market_capitalization,
-            s.total_stocks * 1000 total_stocks,
-            s.fiscal_year_end_basic
-        FROM
-            kabu.symbols s
-        INNER JOIN
-            kabu.bis_categories bc
-        ON
-            s.bis_category_code = bc.code
-        INNER JOIN
-            kabu.exchanges e
-        ON
-            s.exchange_code = e.code
-        LEFT JOIN
-            kabu.divisions d
-        ON
-            s.division_code = d.code
-        INNER JOIN (
-            SELECT
-                symbol_code,
-                latter_closing_price
-            FROM
-                kabu.symbol_daily_info
-            WHERE
-                symbol_code = ?
-            ORDER BY
-                opening_date DESC
-            LIMIT 1) sdi
-        ON
-            s.code = sdi.symbol_code
-        WHERE
-            s.code = ? 
-        `;
-        pool.query(symbol_detail_sql, [symbolCode, symbolCode], (err, rows, fields) => {
-            resolve(rows);
-        });
-    });
-    let symbol: Symbol = await p.then((result) => {
-        return result?.map((e: any) => <Symbol>{
-            symbolCode: String(e.code),
-            symbolName: String(e.symbol_name),
-            exchangeName: String(e.exchange_name),
-            divisionName: String(e.division_name),
-            bisCategoryName: String(e.bis_category_name),
-            marketCapitalization: Number(e.market_capitalization),
-            totalStocks: Number(e.total_stocks),
-            fiscalYearEndBasic: Number(e.fiscal_year_end_basic)
-        })[0];
-    });
-
-    const month: number = Number(query.period);
-    let startDate: string = dayjs().subtract(month + 1, "M").format("YYYYMMDD");
-
-    p = new Promise((resolve, reject) => {
         const sql: string = `
         SELECT
             weekend_date,
@@ -117,11 +42,18 @@ export default defineEventHandler(async (event: any) => {
         FROM
             kabu.symbol_weekly_info
         WHERE
-            symbol_code = ?
+            symbol_code = :symbol_code
         AND
-            weekend_date >= ?
+            weekend_date >= :from_date
+        AND
+            weekend_date <= :to_date
         `;
-        pool.query(sql, [symbolCode, startDate], (err, rows, fields) => {
+        const statements = {
+            symbol_code: query.code,
+            from_date: query.from,
+            to_date: query.to
+        }
+        pool.query(sql, statements, (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -152,11 +84,19 @@ export default defineEventHandler(async (event: any) => {
                 FROM
                     symbol_weekly_info
                 WHERE
-                    symbol_code = ?
-                AND weekend_date >= ?
+                    symbol_code = :symbol_code
+                AND
+                    weekend_date >= :from_date
+                AND
+                    weekend_date <= :to_date
             ) AS t
         `;
-        pool.query(sql, [symbolCode, startDate], (err, rows, fields) => {
+        const statements = {
+            symbol_code: query.code,
+            from_date: query.from,
+            to_date: query.to
+        }
+        pool.query(sql, statements, (err, rows, fields) => {
             resolve(rows);
         });
     });
@@ -180,11 +120,6 @@ export default defineEventHandler(async (event: any) => {
         e.buyBalanceRegressionLine = rl.buyBalance.intercept + (rl.buyBalance.slope * i)
     });
 
-
-    // 表示対象期間内に短縮している
-    startDate = dayjs().subtract(month, "M").format("YYYYMMDD");
-    symbolWeeklyInfo = symbolWeeklyInfo.filter(e => Number(e.weekendDate) >= Number(startDate));
-
     const weeklyInfoForChart = {
         weekendDate: symbolWeeklyInfo?.map((e) => {
             const year = e.weekendDate.substring(0, 4);
@@ -199,8 +134,5 @@ export default defineEventHandler(async (event: any) => {
         buyBalanceRegressionLine: symbolWeeklyInfo?.map((e) => {return e.buyBalanceRegressionLine})
     }
 
-    return {
-        symbol,
-        weeklyInfoForChart
-    }
+    return { weeklyInfoForChart }
 });

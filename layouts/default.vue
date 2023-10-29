@@ -2,19 +2,7 @@
   <el-page-header title="Home" @back="goHome">
     <template #content>
     <el-space wrap>
-      <el-select
-        filterable
-        placeholder="銘柄選択"
-        :loading="pending"
-        @change="goSymbol"
-      >
-        <el-option
-          v-for="symbol in data.symbols"
-          :key="symbol.code"
-          :label="`${symbol.code}:${symbol.name}`"
-          :value="symbol.code"
-        />
-      </el-select>
+      <SelectSymbols />
       <el-dropdown @command="goSearched">
         <el-button>
           銘柄一覧<el-icon class="el-icon--right"><arrow-down /></el-icon>
@@ -56,15 +44,12 @@ import { useDark, useToggle } from '@vueuse/core'
 import { Search, Moon, Sunny, ArrowDown } from '@element-plus/icons-vue'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 
-const { data, pending } = useFetch("/api/symbols", { lazy: true });
-
-const isDark = useDark({"dark": false, "light": true});
-const toggleDark = useToggle(isDark);
+const isDark = useDark()
+const toggleDark = useToggle(isDark)
 
 const goHome = () => window.location.href = "/";
 const goSearched = (key: string) => window.location.href = `/search/${key}`;
 const goNotices = () => window.location.href = "/notices";
-const goSymbol = code => window.location.href = `/symbol/${code}`;
 
 useHead({
   titleTemplate: (title) => {
