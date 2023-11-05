@@ -2,7 +2,9 @@
   <el-container>
     <el-main>
       <el-space wrap>
-        <el-text size="large" tag="b" type="primary">市場別売買代金推移</el-text>
+        <el-text size="large" tag="b" type="primary"
+          >市場別売買代金推移</el-text
+        >
         <DatePicker :from="from" :to="to" :selected="selected" />
       </el-space>
       <canvas id="chart" style="width: 100%; height: 1024px"></canvas>
@@ -28,52 +30,58 @@ const selected = (val: any) => {
   window.location.href = `?from=${from}&to=${to}`;
 };
 
-const { data } = await useFetch("/api/market/tradingValues", {
+const { data, pending } = useFetch("/api/market/tradingValues", {
+  lazy: true,
   params: {
-    from: dayjs(from).format("YYYYMMDD"),
-    to: dayjs(to).format("YYYYMMDD"),
-  },
+    from: dayjs(from.toString()).format("YYYYMMDD"),
+    to: dayjs(to.toString()).format("YYYYMMDD"),
+  }
 });
-const barData = {
-  labels: data.value?.prime.openingDate,
-  datasets: [
-    { label: "Prime", data: data._value.prime.tradingValue, backgroundColor: "#ff4569" },
-    {
-      label: "Standard",
-      data: data._value.standard.tradingValue,
-      backgroundColor: "#33eb91",
-    },
-    {
-      label: "Growth",
-      data: data._value.growth.tradingValue,
-      backgroundColor: "#33eaff",
-    },
-  ],
-};
-
-const options = {
-  responsive: false,
-  title: {
-    text: "",
-  },
-  scales: {
-    y: {
-      title: { display: true, text: "売買代金（千円）" },
-      stacked: true,
-    },
-    x: {
-      title: { display: true, text: "開場日" },
-      stacked: true,
-    },
-  },
-  plugins: {
-    legend: {
-      position: "top",
-    },
-  },
-};
 
 onMounted(() => {
+  const barData = {
+    labels: data.value?.prime.openingDate,
+    datasets: [
+      {
+        label: "Prime",
+        data: data.value?.prime.tradingValue,
+        backgroundColor: "#ff4569",
+      },
+      {
+        label: "Standard",
+        data: data.value?.standard.tradingValue,
+        backgroundColor: "#33eb91",
+      },
+      {
+        label: "Growth",
+        data: data.value?.growth.tradingValue,
+        backgroundColor: "#33eaff",
+      },
+    ],
+  };
+
+  const options = {
+    responsive: false,
+    title: {
+      text: "",
+    },
+    scales: {
+      y: {
+        title: { display: true, text: "売買代金（千円）" },
+        stacked: true,
+      },
+      x: {
+        title: { display: true, text: "開場日" },
+        stacked: true,
+      },
+    },
+    plugins: {
+      legend: {
+        position: "top",
+      },
+    },
+  };
+
   new Chart(document.getElementById("chart"), {
     type: "bar",
     data: barData,

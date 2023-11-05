@@ -1,12 +1,13 @@
 <template>
   <el-select
-    filterable
     placeholder="銘柄選択"
-    :loading="pending"
+    filterable
+    remote
+    :remote-method="candidate"
     @change="goSymbol"
   >
     <el-option
-      v-for="symbol in data.symbols"
+      v-for="symbol in symbols"
       :key="symbol.code"
       :label="`${symbol.code}:${symbol.name}`"
       :value="symbol.code"
@@ -15,6 +16,16 @@
 </template>
 
 <script lang="ts" setup>
-const { data, pending } = useFetch("/api/symbols");
-const goSymbol = code => window.location.href = `/symbol/${code}`;
+const symbols = ref([]);
+const { data, pending } = useFetch("/api/symbols", { lazy: true });
+const candidate = (input: string) => {
+  if (input && !pending.value) {
+    symbols.value = data.value?.symbols.filter((s: any) => {
+      return s.code.includes(input) || s.name.toLowerCase().includes(input.toLowerCase());
+    });
+  } else {
+    symbols.value = [];
+  }
+}
+const goSymbol = (code: string) => window.location.href = `/symbol/${code}`;
 </script>
