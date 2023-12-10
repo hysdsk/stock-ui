@@ -297,6 +297,7 @@
       const code = notice.code;
       if (!symbols[code]) return;
       const rankdata = ranklist[code];
+      rankdata.threshold = notice.threshold;
       rankdata.currentprice = notice.currentprice;
       rankdata.price_deviation = notice.price_deviation;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
