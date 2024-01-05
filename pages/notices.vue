@@ -366,7 +366,11 @@
   }
   const colorRows = (v) => {
     const tvbm = v.row.trading_value_by_min >= (v.row.threshold * 2);
-    return tvbm && v.row.score > 0 ? "bg-chance" : "";
+    if (v.row.scores.length > 2) {
+      const scoreDiff = v.row.scores[v.row.scores.length-1] - v.row.scores[v.row.scores.length-3];
+      return tvbm && scoreDiff >= 2 ? "bg-chance" : "";
+    }
+    return "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
