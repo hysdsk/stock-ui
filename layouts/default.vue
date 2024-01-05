@@ -36,7 +36,6 @@
           inline-prompt
           :active-icon="Moon"
           :inactive-icon="Sunny"
-          :change="toggleDark"
         />
       </div>
     </template>
@@ -46,12 +45,11 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { useDark, useToggle } from "@vueuse/core";
+import { useDark } from "@vueuse/core";
 import { ArrowDown, Moon, Sunny } from "@element-plus/icons-vue";
 import "element-plus/theme-chalk/dark/css-vars.css";
 
 const isDark = useDark();
-const toggleDark = useToggle(isDark);
 
 const goHome = () => (window.location.href = "/");
 const goSearched = (key: string) => (window.location.href = `/search/${key}`);
