@@ -144,11 +144,6 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="vwapSlopeByMin" label="VWAP傾き" header-align="center" align="right" width="130" sortable>
-            <template #default="scope">
-              <span class="">{{ scope.row.vwapSlopeByMin }}</span>
-            </template>
-          </el-table-column>
         </el-table>
       </el-card>
     </el-col>
@@ -258,7 +253,6 @@
             marketOrderBuyQty: 0,
             avgLimitOrderSellQty: 0,
             avgLimitOrderBuyQty: 0,
-            vwapSlopeByMin: 0,
             bidsign: "",
             asksign: "",
             score: null,
@@ -333,7 +327,6 @@
       rankdata.marketOrderBuyQty = notice.market_order_buy_qty;
       rankdata.avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
       rankdata.avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
-      rankdata.vwapSlopeByMin = notice.vwap_slope_by_min;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
       if (rankdata.score != notice.score) {
@@ -366,8 +359,9 @@
   }
   const colorRows = (v) => {
     const tvbm = v.row.trading_value_by_min >= (v.row.threshold * 2);
-    if (v.row.scores.length > 2) {
-      const scoreDiff = v.row.scores[v.row.scores.length-1] - v.row.scores[v.row.scores.length-3];
+    const scores = symbols[v.row.code].scores;
+    if (scores.length > 2) {
+      const scoreDiff = scores[scores.length-1].score - scores[scores.length-3].score;
       return tvbm && scoreDiff >= 2 ? "bg-chance" : "";
     }
     return "";
