@@ -359,8 +359,9 @@
   }
   const colorRows = (v) => {
     const tvbm = v.row.trading_value_by_min >= (v.row.threshold * 2);
-    if (v.row.scores.length > 2) {
-      const scoreDiff = v.row.scores[v.row.scores.length-1] - v.row.scores[v.row.scores.length-3];
+    const scores = symbols[v.row.code].scores;
+    if (scores.length > 2) {
+      const scoreDiff = scores[scores.length-1].score - scores[scores.length-3].score;
       return tvbm && scoreDiff >= 2 ? "bg-chance" : "";
     }
     return "";
