@@ -3,7 +3,7 @@
     <template #content>
       <el-space wrap>
         <SelectSymbols />
-        <el-dropdown @command="goSearched">
+        <el-dropdown @command="goSearched" :teleported="false">
           <el-button>
             銘柄一覧<el-icon class="el-icon--right"><arrow-down /></el-icon>
           </el-button>
