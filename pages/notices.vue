@@ -103,11 +103,6 @@
             </template>
           </el-table-column>
           <el-table-column label="注文" header-align="center">
-            <el-table-column prop="spreadPoint" label="隙間" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.spreadPoint * 2)">{{ scope.row.spreadPoint }}</span>
-              </template>
-            </el-table-column>
             <el-table-column prop="avgLimitOrderSellQty" label="売指" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
                 <span class="text-blue3">{{ formatVolume(scope.row.avgLimitOrderSellQty) }}</span>
@@ -240,7 +235,6 @@
             previouscloserate: 0,
             openingrate: 0,
             vwaprate: 0,
-            spreadPoint: 0,
             overSellQty: 0,
             underBuyQty: 0,
             marketOrderSellQty: 0,
@@ -313,7 +307,6 @@
       rankdata.previouscloserate = notice.previouscloserate;
       rankdata.openingrate = notice.openingrate;
       rankdata.vwaprate = notice.vwaprate;
-      rankdata.spreadPoint = notice.spread_point;
       rankdata.overSellQty = notice.over_sell_qty;
       rankdata.underBuyQty = notice.under_buy_qty;
       rankdata.marketOrderSellQty = notice.market_order_sell_qty;
