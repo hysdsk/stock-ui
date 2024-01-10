@@ -372,9 +372,9 @@
   }
   const formatVolume = (v) => {
     const t = v < 0 ? v * -1 : v;
-    if (t >= 1000000000) return `${Math.round(v / 1000000000)}g`;
-    if (t >=    1000000) return `${Math.round(v /    1000000)}m`;
-    if (t >=       1000) return `${Math.round(v /       1000)}k`;
+    if (t >= 1000000000) return `${Math.round(v / 100000000)/10}g`;
+    if (t >=    1000000) return `${Math.round(v /    100000)/10}m`;
+    if (t >=       1000) return `${Math.round(v /       100)/10}k`;
     return v;
   }
   const formatOrder = (v) => {
