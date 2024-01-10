@@ -40,6 +40,34 @@
               <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name }}</span>
             </template>
           </el-table-column>
+          <el-table-column label="気配" header-align="center" align="center" width="80">
+            <template #default="scope">
+              <span :class="colorFirstSign(scope.row.bidsign, scope.row.asksign)">{{ formatFirstSign(scope.row.bidsign, scope.row.asksign) }}</span>
+              <span :class="colorSecondSign(scope.row.bidsign, scope.row.asksign)">{{ formatSecondSign(scope.row.bidsign, scope.row.asksign) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="currentprice" label="現値" header-align="center" align="right" width="100" sortable>
+            <template #default="scope">
+              <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="現値対比" header-align="center">
+            <el-table-column prop="previouscloserate" label="前日" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="openingrate" label="始値" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="vwaprate" label="VWAP" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
+              </template>
+            </el-table-column>
+          </el-table-column>
           <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
             <template #default="scope">
               <span>{{ formatVolume(scope.row.threshold) }}</span>
@@ -69,38 +97,10 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="score" label="スコア" header-align="center" align="right" width="130" sortable>
+          <el-table-column prop="score" label="スコア" header-align="center" align="right" width="150" sortable>
             <template #default="scope">
               <span class="">{{ scope.row.scoreHistory.join(" ← ") }}</span>
             </template>
-          </el-table-column>
-          <el-table-column label="気配" header-align="center" align="center" width="80">
-            <template #default="scope">
-              <span :class="colorFirstSign(scope.row.bidsign, scope.row.asksign)">{{ formatFirstSign(scope.row.bidsign, scope.row.asksign) }}</span>
-              <span :class="colorSecondSign(scope.row.bidsign, scope.row.asksign)">{{ formatSecondSign(scope.row.bidsign, scope.row.asksign) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="currentprice" label="現値" header-align="center" align="right" width="100" sortable>
-            <template #default="scope">
-              <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="現値対比" header-align="center">
-            <el-table-column prop="previouscloserate" label="前日" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="openingrate" label="始値" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="vwaprate" label="VWAP" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
-              </template>
-            </el-table-column>
           </el-table-column>
           <el-table-column label="注文" header-align="center">
             <el-table-column prop="spreadPoint" label="隙間" header-align="center" align="right" width="100" sortable>
