@@ -27,7 +27,7 @@
           :data="Object.values(ranklist)"
           :row-class-name="colorRows"
           @row-click="(r, c, e) => { copyToClipboard(r.code) }"
-          height="896"
+          height="1024"
         >
           <el-table-column type="selection" header-align="center" align="center" width="50" reserve-selection fixed/>
           <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable fixed>
@@ -39,6 +39,34 @@
             <template #default="scope">
               <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name }}</span>
             </template>
+          </el-table-column>
+          <el-table-column label="気配" header-align="center" align="center" width="80">
+            <template #default="scope">
+              <span :class="colorFirstSign(scope.row.bidsign, scope.row.asksign)">{{ formatFirstSign(scope.row.bidsign, scope.row.asksign) }}</span>
+              <span :class="colorSecondSign(scope.row.bidsign, scope.row.asksign)">{{ formatSecondSign(scope.row.bidsign, scope.row.asksign) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="currentprice" label="現値" header-align="center" align="right" width="100" sortable>
+            <template #default="scope">
+              <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="現値対比" header-align="center">
+            <el-table-column prop="previouscloserate" label="前日" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="openingrate" label="始値" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="vwaprate" label="VWAP" header-align="center" align="right" width="100" sortable>
+              <template #default="scope">
+                <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
+              </template>
+            </el-table-column>
           </el-table-column>
           <el-table-column prop="threshold" label="閾値" header-align="center" align="right" width="80" sortable>
             <template #default="scope">
@@ -69,50 +97,12 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="score" label="スコア" header-align="center" align="right" width="130" sortable>
+          <el-table-column prop="score" label="スコア" header-align="center" align="right" width="150" sortable>
             <template #default="scope">
               <span class="">{{ scope.row.scoreHistory.join(" ← ") }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="気配" header-align="center" align="center" width="80">
-            <template #default="scope">
-              <span :class="colorFirstSign(scope.row.bidsign, scope.row.asksign)">{{ formatFirstSign(scope.row.bidsign, scope.row.asksign) }}</span>
-              <span :class="colorSecondSign(scope.row.bidsign, scope.row.asksign)">{{ formatSecondSign(scope.row.bidsign, scope.row.asksign) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="currentprice" label="現値" header-align="center" align="right" width="100" sortable>
-            <template #default="scope">
-              <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="現値対比" header-align="center">
-            <el-table-column prop="previouscloserate" label="前日" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.previouscloserate)">{{ formatRate(scope.row.previouscloserate) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="openingrate" label="始値" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="price_deviation" label="偏差" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.price_deviation)">{{ formatRate(scope.row.price_deviation) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="vwaprate" label="VWAP" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
-              </template>
-            </el-table-column>
-          </el-table-column>
           <el-table-column label="注文" header-align="center">
-            <el-table-column prop="spreadPoint" label="隙間" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.spreadPoint * 2)">{{ scope.row.spreadPoint }}</span>
-              </template>
-            </el-table-column>
             <el-table-column prop="avgLimitOrderSellQty" label="売指" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
                 <span class="text-blue3">{{ formatVolume(scope.row.avgLimitOrderSellQty) }}</span>
@@ -240,13 +230,11 @@
             buyCount: 0,
             sellCount: 0,
             currentprice: 0,
-            price_deviation: 0,
             tickcountbyminute: 0,
             trading_value_by_min: 0,
             previouscloserate: 0,
             openingrate: 0,
             vwaprate: 0,
-            spreadPoint: 0,
             overSellQty: 0,
             underBuyQty: 0,
             marketOrderSellQty: 0,
@@ -314,13 +302,11 @@
       const rankdata = ranklist[code];
       rankdata.threshold = notice.threshold;
       rankdata.currentprice = notice.currentprice;
-      rankdata.price_deviation = notice.price_deviation;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
       rankdata.trading_value_by_min = notice.trading_value_by_min;
       rankdata.previouscloserate = notice.previouscloserate;
       rankdata.openingrate = notice.openingrate;
       rankdata.vwaprate = notice.vwaprate;
-      rankdata.spreadPoint = notice.spread_point;
       rankdata.overSellQty = notice.over_sell_qty;
       rankdata.underBuyQty = notice.under_buy_qty;
       rankdata.marketOrderSellQty = notice.market_order_sell_qty;
@@ -504,15 +490,15 @@
     if (v >=   70000000) return "text-red3";
     if (v >=   50000000) return "text-red2";
     if (v >=   30000000) return "text-red1";
-    if (v >=   25000000) return "text-blue9";
-    if (v >=   20000000) return "text-blue8";
-    if (v >=   15000000) return "text-blue7";
-    if (v >=   10000000) return "text-blue6";
+    if (v >=   25000000) return "text-blue1";
+    if (v >=   20000000) return "text-blue2";
+    if (v >=   15000000) return "text-blue3";
+    if (v >=   10000000) return "text-blue4";
     if (v >=    8000000) return "text-blue5";
-    if (v >=    6000000) return "text-blue4";
-    if (v >=    4000000) return "text-blue3";
-    if (v >=    2000000) return "text-blue2";
-    return                      "text-blue1";
+    if (v >=    6000000) return "text-blue6";
+    if (v >=    4000000) return "text-blue7";
+    if (v >=    2000000) return "text-blue8";
+    return                      "text-blue9";
   }
   const colorTick = (v) => {
     if (v >= 600) return "text-red9";
