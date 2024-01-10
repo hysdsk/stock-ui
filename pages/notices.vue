@@ -27,7 +27,7 @@
           :data="Object.values(ranklist)"
           :row-class-name="colorRows"
           @row-click="(r, c, e) => { copyToClipboard(r.code) }"
-          height="896"
+          height="1024"
         >
           <el-table-column type="selection" header-align="center" align="center" width="50" reserve-selection fixed/>
           <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable fixed>
@@ -490,15 +490,15 @@
     if (v >=   70000000) return "text-red3";
     if (v >=   50000000) return "text-red2";
     if (v >=   30000000) return "text-red1";
-    if (v >=   25000000) return "text-blue9";
-    if (v >=   20000000) return "text-blue8";
-    if (v >=   15000000) return "text-blue7";
-    if (v >=   10000000) return "text-blue6";
+    if (v >=   25000000) return "text-blue1";
+    if (v >=   20000000) return "text-blue2";
+    if (v >=   15000000) return "text-blue3";
+    if (v >=   10000000) return "text-blue4";
     if (v >=    8000000) return "text-blue5";
-    if (v >=    6000000) return "text-blue4";
-    if (v >=    4000000) return "text-blue3";
-    if (v >=    2000000) return "text-blue2";
-    return                      "text-blue1";
+    if (v >=    6000000) return "text-blue6";
+    if (v >=    4000000) return "text-blue7";
+    if (v >=    2000000) return "text-blue8";
+    return                      "text-blue9";
   }
   const colorTick = (v) => {
     if (v >= 600) return "text-red9";
