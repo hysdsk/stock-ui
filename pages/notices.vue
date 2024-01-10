@@ -96,11 +96,6 @@
                 <span :class="colorRate(scope.row.openingrate)">{{ formatRate(scope.row.openingrate) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="price_deviation" label="偏差" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span :class="colorRate(scope.row.price_deviation)">{{ formatRate(scope.row.price_deviation) }}</span>
-              </template>
-            </el-table-column>
             <el-table-column prop="vwaprate" label="VWAP" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
                 <span :class="colorRate(scope.row.vwaprate)">{{ formatRate(scope.row.vwaprate) }}</span>
@@ -240,7 +235,6 @@
             buyCount: 0,
             sellCount: 0,
             currentprice: 0,
-            price_deviation: 0,
             tickcountbyminute: 0,
             trading_value_by_min: 0,
             previouscloserate: 0,
@@ -314,7 +308,6 @@
       const rankdata = ranklist[code];
       rankdata.threshold = notice.threshold;
       rankdata.currentprice = notice.currentprice;
-      rankdata.price_deviation = notice.price_deviation;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
       rankdata.trading_value_by_min = notice.trading_value_by_min;
       rankdata.previouscloserate = notice.previouscloserate;
