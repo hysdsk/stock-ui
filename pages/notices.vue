@@ -10,7 +10,7 @@
             {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tickcountbyminute).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
           <el-descriptions-item label="総売買代金" label-align="center" align="right" width="10%">
-            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.trading_value_by_min).reduce((a, b) => a + b).toLocaleString() : 0 }}
+            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tradingValueByMin).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
           <el-descriptions-item label="前日超数" label-align="center" align="center" width="10%">
             {{ Object.values(ranklist).filter(e => e.previouscloserate > 0).length }} ／ {{ Object.keys(ranklist).length }}
@@ -91,15 +91,20 @@
                 <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="trading_value_by_min" label="金" header-align="center" align="right" width="80" sortable>
+            <el-table-column prop="tradingValueByMin" label="金" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
-                <span :class="colorValue(scope.row.trading_value_by_min)">{{ formatVolume(scope.row.trading_value_by_min) }}</span>
+                <span :class="colorValue(scope.row.tradingValueByMin)">{{ formatVolume(scope.row.tradingValueByMin) }}</span>
               </template>
             </el-table-column>
           </el-table-column>
           <el-table-column prop="score" label="スコア" header-align="center" align="right" width="150" sortable>
             <template #default="scope">
               <span class="">{{ scope.row.scoreHistory.join(" ← ") }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="avgLimitOrderRate" label="指値比" header-align="center" align="right" width="100" sortable>
+            <template #default="scope">
+              <span :class="colorLimitOrderRate(scope.row.avgLimitOrderRate)">{{ scope.row.avgLimitOrderRate }}%</span>
             </template>
           </el-table-column>
           <el-table-column label="注文" header-align="center">
@@ -231,7 +236,7 @@
             sellCount: 0,
             currentprice: 0,
             tickcountbyminute: 0,
-            trading_value_by_min: 0,
+            tradingValueByMin: 0,
             previouscloserate: 0,
             openingrate: 0,
             vwaprate: 0,
@@ -241,6 +246,7 @@
             marketOrderBuyQty: 0,
             avgLimitOrderSellQty: 0,
             avgLimitOrderBuyQty: 0,
+            avgLimitOrderRate: 0,
             bidsign: "",
             asksign: "",
             score: null,
@@ -303,7 +309,7 @@
       rankdata.threshold = notice.threshold;
       rankdata.currentprice = notice.currentprice;
       rankdata.tickcountbyminute = notice.tickcountbyminute;
-      rankdata.trading_value_by_min = notice.trading_value_by_min;
+      rankdata.tradingValueByMin = notice.trading_value_by_min;
       rankdata.previouscloserate = notice.previouscloserate;
       rankdata.openingrate = notice.openingrate;
       rankdata.vwaprate = notice.vwaprate;
@@ -313,6 +319,7 @@
       rankdata.marketOrderBuyQty = notice.market_order_buy_qty;
       rankdata.avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
       rankdata.avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
+      rankdata.avgLimitOrderRate = notice.avg_limit_order_rate;
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
       if (rankdata.score != notice.score) {
@@ -344,7 +351,7 @@
     }
   }
   const colorRows = (v) => {
-    const tvbm = v.row.trading_value_by_min >= (v.row.threshold * 2);
+    const tvbm = v.row.tradingValueByMin >= (v.row.threshold * 2);
     const scores = symbols[v.row.code].scores;
     if (scores.length > 2) {
       const scoreDiff = scores[scores.length-1].score - scores[scores.length-3].score;
@@ -519,6 +526,27 @@
     if (v >=  10) return "text-blue7";
     if (v >=   5) return "text-blue8";
     return               "text-blue9";
+  }
+  const colorLimitOrderRate = (v) => {
+    if (v >= 500) return "text-red9";
+    if (v >= 400) return "text-red8";
+    if (v >= 300) return "text-red7";
+    if (v >= 250) return "text-red6";
+    if (v >= 200) return "text-red5";
+    if (v >= 150) return "text-red4";
+    if (v >= 100) return "text-red3";
+    if (v >=  50) return "text-red2";
+    if (v >=  10) return "text-red1";
+    if (v <= -500) return "text-blue9";
+    if (v <= -400) return "text-blue8";
+    if (v <= -300) return "text-blue7";
+    if (v <= -250) return "text-blue6";
+    if (v <= -200) return "text-blue5";
+    if (v <= -150) return "text-blue4";
+    if (v <= -100) return "text-blue3";
+    if (v <=  -50) return "text-blue2";
+    if (v <=  -10) return "text-blue1";
+    return                "";
   }
   const colorPrice = (v) => {
     if (v == "nowopened") return "text-green";
