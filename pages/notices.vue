@@ -97,9 +97,9 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="score" label="スコア" header-align="center" align="right" width="150" sortable>
+          <el-table-column prop="score" label="スコア" header-align="center" align="right" width="100" sortable>
             <template #default="scope">
-              <span class="">{{ scope.row.scoreHistory.join(" ← ") }}</span>
+              <span class="">{{ scope.row.score }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="avgLimitOrderRate" label="指値比" header-align="center" align="right" width="100" sortable>
@@ -249,8 +249,7 @@
             avgLimitOrderRate: 0,
             bidsign: "",
             asksign: "",
-            score: null,
-            scoreHistory: []
+            score: 0,
           }
         }
       }
@@ -323,16 +322,12 @@
       rankdata.bidsign = notice.bidsign;
       rankdata.asksign = notice.asksign;
       if (rankdata.score != notice.score) {
-        rankdata.scoreHistory.unshift(notice.score);
         rankdata.score = notice.score;
         symbols[code].scores.push({
           time: notice.time,
           price: notice.currentprice,
           score: notice.score,
         })
-        while (rankdata.scoreHistory.length > 3) {
-          rankdata.scoreHistory.pop();
-        }
         while (symbols[code].scores.length > 5) {
           symbols[code].scores.shift();
         }
@@ -352,12 +347,7 @@
   }
   const colorRows = (v) => {
     const tvbm = v.row.tradingValueByMin >= (v.row.threshold * 2);
-    const scores = symbols[v.row.code].scores;
-    if (scores.length > 2) {
-      const scoreDiff = scores[scores.length-1].score - scores[scores.length-3].score;
-      return tvbm && scoreDiff >= 2 ? "bg-chance" : "";
-    }
-    return "";
+    return tvbm && v.row.score >= 2 ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
