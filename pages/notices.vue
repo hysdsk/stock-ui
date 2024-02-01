@@ -48,7 +48,8 @@
           </el-table-column>
           <el-table-column prop="currentprice" label="現値" header-align="center" align="right" width="100" sortable>
             <template #default="scope">
-              <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
+              <span v-if="scope.row.bidsign == '0107' && scope.row.asksign == '0107'" class="text-gray">{{ scope.row.currentprice }}</span>
+              <span v-else :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
           <el-table-column label="現値対比" header-align="center">
@@ -142,40 +143,6 @@
         </el-table>
       </el-card>
     </el-col>
-    <!-- <el-col :span="6" v-show="showEachSymbol(k)" v-for="v, k in symbols">
-      <el-card>
-          <template #header>
-            <div class="card-header">
-              <el-tooltip
-                content="Copied!!"
-                trigger="click"
-                placement="top"
-                effect="light">
-                <el-button size="large" text @click="copyToClipboard(k)">{{ k }}: {{ v.name }}</el-button>
-              </el-tooltip>
-            </div>
-          </template>
-        <el-table :data="v.data" style="width: 100%" :row-class-name="flashLatestRow">
-          <el-table-column prop="time" label="時刻" width="100"/>
-          <el-table-column label="現値" align="right">
-            <template #default="scope">
-              <span :class="colorPrice(scope.row.status)">{{ scope.row.currentprice }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="約定" align="right">
-            <template #default="scope">
-              <span :class="colorVolume(scope.row.tradingvolume, scope.row.sob)">{{ formatVolume(scope.row.tradingvolume) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="注文" align="right">
-            <template #default="scope">
-              <span v-if="scope.row.order != null" :class="colorVolume(scope.row.order.qty, scope.row.order.type)">{{ formatOrder(scope.row.order) }}</span>
-              <span v-else></span>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </el-col> -->
     <el-col :span="6" v-show="showEachSymbol(k)" v-for="v, k in symbols">
       <el-card>
           <template #header>
@@ -211,6 +178,30 @@
   import { reactive, ref, onMounted, h } from "vue";
   import { io } from "socket.io-client";
 
+  interface Symbol {
+    code: string;
+    name: string;
+    threshold: number;
+    buyCount: number;
+    sellCount: number;
+    currentprice: number;
+    tickcountbyminute: number;
+    tradingValueByMin: number;
+    previouscloserate: number;
+    openingrate: number;
+    vwaprate: number;
+    overSellQty: number;
+    underBuyQty: number;
+    marketOrderSellQty: number;
+    marketOrderBuyQty: number;
+    avgLimitOrderSellQty: number;
+    avgLimitOrderBuyQty: number;
+    avgLimitOrderRate: number;
+    bidsign: string;
+    asksign: string;
+    score: number;
+  }
+
   useHead({title: "通知受信"})
   const config = useRuntimeConfig().public;
   const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
@@ -222,38 +213,6 @@
 
   onMounted(async () => {
     const socket = io(config.wsBaseURL);
-    socket.on("initial-notice", notices => {
-      for (const notice of notices) {
-        const code = notice.code;
-        const name = notice.name;
-        if (!symbols[code]) {
-          symbols[code] = { name: name, data: [], scores: [] };
-          ranklist[code] = {
-            code: code,
-            name: name,
-            threshold: notice.threshold,
-            buyCount: 0,
-            sellCount: 0,
-            currentprice: 0,
-            tickcountbyminute: 0,
-            tradingValueByMin: 0,
-            previouscloserate: 0,
-            openingrate: 0,
-            vwaprate: 0,
-            overSellQty: 0,
-            underBuyQty: 0,
-            marketOrderSellQty: 0,
-            marketOrderBuyQty: 0,
-            avgLimitOrderSellQty: 0,
-            avgLimitOrderBuyQty: 0,
-            avgLimitOrderRate: 0,
-            bidsign: "",
-            asksign: "",
-            score: 0,
-          }
-        }
-      }
-    })
     socket.on("action-notice", notice => {
       const code = notice.code;
       if (!symbols[code]) return
@@ -303,34 +262,28 @@
     socket.on("regular-notice", notice => {
       now.value = notice.time;
       const code = notice.code;
-      if (!symbols[code]) return;
-      const rankdata = ranklist[code];
-      rankdata.threshold = notice.threshold;
-      rankdata.currentprice = notice.currentprice;
-      rankdata.tickcountbyminute = notice.tickcountbyminute;
-      rankdata.tradingValueByMin = notice.trading_value_by_min;
-      rankdata.previouscloserate = notice.previouscloserate;
-      rankdata.openingrate = notice.openingrate;
-      rankdata.vwaprate = notice.vwaprate;
-      rankdata.overSellQty = notice.over_sell_qty;
-      rankdata.underBuyQty = notice.under_buy_qty;
-      rankdata.marketOrderSellQty = notice.market_order_sell_qty;
-      rankdata.marketOrderBuyQty = notice.market_order_buy_qty;
-      rankdata.avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
-      rankdata.avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
-      rankdata.avgLimitOrderRate = notice.avg_limit_order_rate;
-      rankdata.bidsign = notice.bidsign;
-      rankdata.asksign = notice.asksign;
-      if (rankdata.score != notice.score) {
-        rankdata.score = notice.score;
-        symbols[code].scores.push({
-          time: notice.time,
-          price: notice.currentprice,
-          score: notice.score,
-        })
-        while (symbols[code].scores.length > 5) {
-          symbols[code].scores.shift();
-        }
+      ranklist[code] = <Symbol>{
+        code: code,
+        name: notice.name,
+        threshold: notice.threshold,
+        buyCount: notice.buy_count,
+        sellCount: notice.sell_count,
+        currentprice: notice.currentprice,
+        tickcountbyminute: notice.tickcountbyminute,
+        tradingValueByMin: notice.trading_value_by_min,
+        previouscloserate: notice.previouscloserate,
+        openingrate: notice.openingrate,
+        vwaprate: notice.vwaprate,
+        overSellQty: notice.over_sell_qty,
+        underBuyQty: notice.under_buy_qty,
+        marketOrderSellQty: notice.market_order_sell_qty,
+        marketOrderBuyQty: notice.market_order_buy_qty,
+        avgLimitOrderSellQty: notice.avg_limit_order_sell_qty,
+        avgLimitOrderBuyQty: notice.avg_limit_order_buy_qty,
+        avgLimitOrderRate: notice.avg_limit_order_rate,
+        bidsign: notice.bidsign,
+        asksign: notice.asksign,
+        score: notice.score,
       }
     });
   })
