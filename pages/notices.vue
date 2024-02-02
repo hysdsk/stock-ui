@@ -48,8 +48,7 @@
           </el-table-column>
           <el-table-column prop="currentprice" label="現値" header-align="center" align="right" width="100" sortable>
             <template #default="scope">
-              <span v-if="scope.row.bidsign == '0107' && scope.row.asksign == '0107'" class="text-gray">{{ scope.row.currentprice }}</span>
-              <span v-else :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
+              <span :class="colorRate(scope.row.previouscloserate)">{{ scope.row.currentprice }}</span>
             </template>
           </el-table-column>
           <el-table-column label="現値対比" header-align="center">
@@ -263,25 +262,26 @@
           score: 0,
         }
       }
-      ranklist[code].threshold = notice.threshold;
-      ranklist[code].buyCount = notice.buy_count;
-      ranklist[code].sellCount = notice.sell_count;
-      ranklist[code].currentprice = notice.currentprice;
-      ranklist[code].tickcountbyminute = notice.tickcountbyminute;
-      ranklist[code].tradingValueByMin = notice.trading_value_by_min;
-      ranklist[code].previouscloserate = notice.previouscloserate;
-      ranklist[code].openingrate = notice.openingrate;
-      ranklist[code].vwaprate = notice.vwaprate;
-      ranklist[code].overSellQty = notice.over_sell_qty;
-      ranklist[code].underBuyQty = notice.under_buy_qty;
-      ranklist[code].marketOrderSellQty = notice.market_order_sell_qty;
-      ranklist[code].marketOrderBuyQty = notice.market_order_buy_qty;
-      ranklist[code].avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
-      ranklist[code].avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
-      ranklist[code].avgLimitOrderRate = notice.avg_limit_order_rate;
-      ranklist[code].bidsign = notice.bidsign;
-      ranklist[code].asksign = notice.asksign;
-      ranklist[code].score = notice.score;
+      const rankdata = ranklist[code];
+      rankdata.threshold = notice.threshold;
+      rankdata.buyCount = notice.buy_count;
+      rankdata.sellCount = notice.sell_count;
+      rankdata.currentprice = notice.currentprice;
+      rankdata.tickcountbyminute = notice.tickcountbyminute;
+      rankdata.tradingValueByMin = notice.trading_value_by_min;
+      rankdata.previouscloserate = notice.previouscloserate;
+      rankdata.openingrate = notice.openingrate;
+      rankdata.vwaprate = notice.vwaprate;
+      rankdata.overSellQty = notice.over_sell_qty;
+      rankdata.underBuyQty = notice.under_buy_qty;
+      rankdata.marketOrderSellQty = notice.market_order_sell_qty;
+      rankdata.marketOrderBuyQty = notice.market_order_buy_qty;
+      rankdata.avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
+      rankdata.avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
+      rankdata.avgLimitOrderRate = notice.avg_limit_order_rate;
+      rankdata.bidsign = notice.bidsign;
+      rankdata.asksign = notice.asksign;
+      rankdata.score = notice.score;
     });
   })
 
