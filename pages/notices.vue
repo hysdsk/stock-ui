@@ -262,28 +262,50 @@
     socket.on("regular-notice", notice => {
       now.value = notice.time;
       const code = notice.code;
-      ranklist[code] = <Symbol>{
-        code: code,
-        name: notice.name,
-        threshold: notice.threshold,
-        buyCount: notice.buy_count,
-        sellCount: notice.sell_count,
-        currentprice: notice.currentprice,
-        tickcountbyminute: notice.tickcountbyminute,
-        tradingValueByMin: notice.trading_value_by_min,
-        previouscloserate: notice.previouscloserate,
-        openingrate: notice.openingrate,
-        vwaprate: notice.vwaprate,
-        overSellQty: notice.over_sell_qty,
-        underBuyQty: notice.under_buy_qty,
-        marketOrderSellQty: notice.market_order_sell_qty,
-        marketOrderBuyQty: notice.market_order_buy_qty,
-        avgLimitOrderSellQty: notice.avg_limit_order_sell_qty,
-        avgLimitOrderBuyQty: notice.avg_limit_order_buy_qty,
-        avgLimitOrderRate: notice.avg_limit_order_rate,
-        bidsign: notice.bidsign,
-        asksign: notice.asksign,
-        score: notice.score,
+      if (symbols[code]) {
+        ranklist[code].threshold = notice.threshold;
+        ranklist[code].buyCount = notice.buy_count;
+        ranklist[code].sellCount = notice.sell_count;
+        ranklist[code].currentprice = notice.currentprice;
+        ranklist[code].tickcountbyminute = notice.tickcountbyminute;
+        ranklist[code].tradingValueByMin = notice.trading_value_by_min;
+        ranklist[code].previouscloserate = notice.previouscloserate;
+        ranklist[code].openingrate = notice.openingrate;
+        ranklist[code].vwaprate = notice.vwaprate;
+        ranklist[code].overSellQty = notice.over_sell_qty;
+        ranklist[code].underBuyQty = notice.under_buy_qty;
+        ranklist[code].marketOrderSellQty = notice.market_order_sell_qty;
+        ranklist[code].marketOrderBuyQty = notice.market_order_buy_qty;
+        ranklist[code].avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
+        ranklist[code].avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
+        ranklist[code].avgLimitOrderRate = notice.avg_limit_order_rate;
+        ranklist[code].bidsign = notice.bidsign;
+        ranklist[code].asksign = notice.asksign;
+        ranklist[code].score = notice.score;
+      } else {
+        ranklist[code] = <Symbol>{
+          code: code,
+          name: notice.name,
+          threshold: notice.threshold,
+          buyCount: notice.buy_count,
+          sellCount: notice.sell_count,
+          currentprice: notice.currentprice,
+          tickcountbyminute: notice.tickcountbyminute,
+          tradingValueByMin: notice.trading_value_by_min,
+          previouscloserate: notice.previouscloserate,
+          openingrate: notice.openingrate,
+          vwaprate: notice.vwaprate,
+          overSellQty: notice.over_sell_qty,
+          underBuyQty: notice.under_buy_qty,
+          marketOrderSellQty: notice.market_order_sell_qty,
+          marketOrderBuyQty: notice.market_order_buy_qty,
+          avgLimitOrderSellQty: notice.avg_limit_order_sell_qty,
+          avgLimitOrderBuyQty: notice.avg_limit_order_buy_qty,
+          avgLimitOrderRate: notice.avg_limit_order_rate,
+          bidsign: notice.bidsign,
+          asksign: notice.asksign,
+          score: notice.score,
+        }
       }
     });
   })
