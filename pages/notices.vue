@@ -178,30 +178,6 @@
   import { reactive, ref, onMounted, h } from "vue";
   import { io } from "socket.io-client";
 
-  interface Symbol {
-    code: string;
-    name: string;
-    threshold: number;
-    buyCount: number;
-    sellCount: number;
-    currentprice: number;
-    tickcountbyminute: number;
-    tradingValueByMin: number;
-    previouscloserate: number;
-    openingrate: number;
-    vwaprate: number;
-    overSellQty: number;
-    underBuyQty: number;
-    marketOrderSellQty: number;
-    marketOrderBuyQty: number;
-    avgLimitOrderSellQty: number;
-    avgLimitOrderBuyQty: number;
-    avgLimitOrderRate: number;
-    bidsign: string;
-    asksign: string;
-    score: number;
-  }
-
   useHead({title: "通知受信"})
   const config = useRuntimeConfig().public;
   const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
@@ -262,51 +238,50 @@
     socket.on("regular-notice", notice => {
       now.value = notice.time;
       const code = notice.code;
-      if (symbols[code]) {
-        ranklist[code].threshold = notice.threshold;
-        ranklist[code].buyCount = notice.buy_count;
-        ranklist[code].sellCount = notice.sell_count;
-        ranklist[code].currentprice = notice.currentprice;
-        ranklist[code].tickcountbyminute = notice.tickcountbyminute;
-        ranklist[code].tradingValueByMin = notice.trading_value_by_min;
-        ranklist[code].previouscloserate = notice.previouscloserate;
-        ranklist[code].openingrate = notice.openingrate;
-        ranklist[code].vwaprate = notice.vwaprate;
-        ranklist[code].overSellQty = notice.over_sell_qty;
-        ranklist[code].underBuyQty = notice.under_buy_qty;
-        ranklist[code].marketOrderSellQty = notice.market_order_sell_qty;
-        ranklist[code].marketOrderBuyQty = notice.market_order_buy_qty;
-        ranklist[code].avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
-        ranklist[code].avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
-        ranklist[code].avgLimitOrderRate = notice.avg_limit_order_rate;
-        ranklist[code].bidsign = notice.bidsign;
-        ranklist[code].asksign = notice.asksign;
-        ranklist[code].score = notice.score;
-      } else {
-        ranklist[code] = <Symbol>{
+      if (!symbols[code]) {
+        ranklist[code] = {
           code: code,
           name: notice.name,
-          threshold: notice.threshold,
-          buyCount: notice.buy_count,
-          sellCount: notice.sell_count,
-          currentprice: notice.currentprice,
-          tickcountbyminute: notice.tickcountbyminute,
-          tradingValueByMin: notice.trading_value_by_min,
-          previouscloserate: notice.previouscloserate,
-          openingrate: notice.openingrate,
-          vwaprate: notice.vwaprate,
-          overSellQty: notice.over_sell_qty,
-          underBuyQty: notice.under_buy_qty,
-          marketOrderSellQty: notice.market_order_sell_qty,
-          marketOrderBuyQty: notice.market_order_buy_qty,
-          avgLimitOrderSellQty: notice.avg_limit_order_sell_qty,
-          avgLimitOrderBuyQty: notice.avg_limit_order_buy_qty,
-          avgLimitOrderRate: notice.avg_limit_order_rate,
-          bidsign: notice.bidsign,
-          asksign: notice.asksign,
-          score: notice.score,
+          threshold: 0,
+          buyCount: 0,
+          sellCount: 0,
+          currentprice: 0,
+          tickcountbyminute: 0,
+          tradingValueByMin: 0,
+          previouscloserate: 0,
+          openingrate: 0,
+          vwaprate: 0,
+          overSellQty: 0,
+          underBuyQty: 0,
+          marketOrderSellQty: 0,
+          marketOrderBuyQty: 0,
+          avgLimitOrderSellQty: 0,
+          avgLimitOrderBuyQty: 0,
+          avgLimitOrderRate: 0,
+          bidsign: "",
+          asksign: "",
+          score: 0,
         }
       }
+      ranklist[code].threshold = notice.threshold;
+      ranklist[code].buyCount = notice.buy_count;
+      ranklist[code].sellCount = notice.sell_count;
+      ranklist[code].currentprice = notice.currentprice;
+      ranklist[code].tickcountbyminute = notice.tickcountbyminute;
+      ranklist[code].tradingValueByMin = notice.trading_value_by_min;
+      ranklist[code].previouscloserate = notice.previouscloserate;
+      ranklist[code].openingrate = notice.openingrate;
+      ranklist[code].vwaprate = notice.vwaprate;
+      ranklist[code].overSellQty = notice.over_sell_qty;
+      ranklist[code].underBuyQty = notice.under_buy_qty;
+      ranklist[code].marketOrderSellQty = notice.market_order_sell_qty;
+      ranklist[code].marketOrderBuyQty = notice.market_order_buy_qty;
+      ranklist[code].avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
+      ranklist[code].avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
+      ranklist[code].avgLimitOrderRate = notice.avg_limit_order_rate;
+      ranklist[code].bidsign = notice.bidsign;
+      ranklist[code].asksign = notice.asksign;
+      ranklist[code].score = notice.score;
     });
   })
 
