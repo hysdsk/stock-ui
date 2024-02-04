@@ -237,7 +237,7 @@
     socket.on("regular-notice", notice => {
       now.value = notice.time;
       const code = notice.code;
-      if (!symbols[code]) {
+      if (!ranklist[code]) {
         ranklist[code] = {
           code: code,
           name: notice.name,
