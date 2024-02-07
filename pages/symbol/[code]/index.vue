@@ -2,9 +2,7 @@
   definePageMeta({
     middleware: [
       function (to, from) {
-        const route = useRoute();
-        const { code } = route.params;
-        return navigateTo(`/symbol/${code}/daily-price`);
+        return navigateTo(`/symbol/${to.params.code}/daily-price`);
       }
     ]
   })
