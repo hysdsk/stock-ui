@@ -189,99 +189,79 @@
 
   onMounted(async () => {
     const socket = io(config.wsBaseURL);
-    socket.on("action-notice", notice => {
-      const code = notice.code;
-      if (!symbols[code]) return
-      while (symbols[code].data.length > 5) {
-        symbols[code].data.shift();
-      }
-      const data = reactive(notice);
-      data.flash = true;
-      symbols[code].data.push(data);
-      setTimeout(() => { data.flash = false; }, 100);
-      // 約定通知時に約定回数をインクリメントする
-      const rankdata = ranklist[code];
-      if (notice.order == null && notice.status == "opening") {
-        if (notice.sob > 0) {
-          rankdata.buyCount++
-          ElNotification({
-            title: notice.time,
-            message: h("b", {style: "color: #f44336"}, `買約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
-            onClick: () => copyToClipboard(rankdata.code)
-          });
-        } else if (notice.sob < 0) {
-          rankdata.sellCount++
-          ElNotification({
-            title: notice.time,
-            message: h("b", {style: "color: #2196f3"}, `売約定 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
-            onClick: () => copyToClipboard(rankdata.code)
-          });
-        }
-      } else if (notice.order != null) {
-        if (notice.order.type > 0 && notice.order.price == null && notice.order.qty > 0) {
-          // 成行買い
-          ElNotification({
-            title: notice.time,
-            message: h("b", {style: "color: #f44336"}, `成行買 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
-            onClick: () => copyToClipboard(rankdata.code)
-          });
-        } else if (notice.order.type < 0 && notice.order.price == null && notice.order.qty > 0) {
-          // 成行売り
-          ElNotification({
-            title: notice.time,
-            message: h("b", {style: "color: #2196f3"}, `成行売 ${rankdata.code}: ${rankdata.name.substring(0, 10)}`),
-            onClick: () => copyToClipboard(rankdata.code)
-          });
-        }
-      }
-    });
+    // socket.on("action-notice", notice => {
+    //   const code = notice.code;
+    //   if (!symbols[code]) return
+    //   while (symbols[code].data.length > 5) {
+    //     symbols[code].data.shift();
+    //   }
+    //   const data = reactive(notice);
+    //   data.flash = true;
+    //   symbols[code].data.push(data);
+    //   setTimeout(() => { data.flash = false; }, 100);
+    // });
     socket.on("regular-notice", notice => {
       now.value = notice.time;
       const code = notice.code;
-      if (!ranklist[code]) {
+      if (ranklist[code]) {
+        if (ranklist[code].score < notice.score) {
+          ElNotification({
+            title: `${notice.score} - ${notice.time}`,
+            message: h("b", {style: "color: #f44336"}, `${notice.code}: ${notice.name.substring(0, 12)}`),
+            onClick: () => copyToClipboard(notice.code)
+          });
+        }
+        ranklist[code].threshold = notice.threshold;
+        ranklist[code].buyCount = notice.buy_count;
+        ranklist[code].sellCount = notice.sell_count;
+        ranklist[code].currentprice = notice.currentprice;
+        ranklist[code].tickcountbyminute = notice.tickcountbyminute;
+        ranklist[code].tradingValueByMin = notice.trading_value_by_min;
+        ranklist[code].previouscloserate = notice.previouscloserate;
+        ranklist[code].openingrate = notice.openingrate;
+        ranklist[code].vwaprate = notice.vwaprate;
+        ranklist[code].overSellQty = notice.over_sell_qty;
+        ranklist[code].underBuyQty = notice.under_buy_qty;
+        ranklist[code].marketOrderSellQty = notice.market_order_sell_qty;
+        ranklist[code].marketOrderBuyQty = notice.market_order_buy_qty;
+        ranklist[code].avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
+        ranklist[code].avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
+        ranklist[code].avgLimitOrderRate = notice.avg_limit_order_rate;
+        ranklist[code].bidsign = notice.bidsign;
+        ranklist[code].asksign = notice.asksign;
+        ranklist[code].score = notice.score;
+      } else {
+        if (notice.score > 0) {
+          ElNotification({
+            title: `${notice.score} - ${notice.time}`,
+            message: h("b", {style: "color: #f44336"}, `${notice.code}: ${notice.name.substring(0, 12)}`),
+            onClick: () => copyToClipboard(notice.code)
+          });
+        }
         ranklist[code] = {
           code: code,
           name: notice.name,
-          threshold: 0,
-          buyCount: 0,
-          sellCount: 0,
-          currentprice: 0,
-          tickcountbyminute: 0,
-          tradingValueByMin: 0,
-          previouscloserate: 0,
-          openingrate: 0,
-          vwaprate: 0,
-          overSellQty: 0,
-          underBuyQty: 0,
-          marketOrderSellQty: 0,
-          marketOrderBuyQty: 0,
-          avgLimitOrderSellQty: 0,
-          avgLimitOrderBuyQty: 0,
-          avgLimitOrderRate: 0,
-          bidsign: "",
-          asksign: "",
-          score: 0,
+          threshold: notice.threshold,
+          buyCount: notice.buy_count,
+          sellCount: notice.sell_count,
+          currentprice: notice.currentprice,
+          tickcountbyminute: notice.tickcountbyminute,
+          tradingValueByMin: notice.trading_value_by_min,
+          previouscloserate: notice.previouscloserate,
+          openingrate: notice.openingrate,
+          vwaprate: notice.vwaprate,
+          overSellQty: notice.over_sell_qty,
+          underBuyQty: notice.under_buy_qty,
+          marketOrderSellQty: notice.market_order_sell_qty,
+          marketOrderBuyQty: notice.market_order_buy_qty,
+          avgLimitOrderSellQty: notice.avg_limit_order_sell_qty,
+          avgLimitOrderBuyQty: notice.avg_limit_order_buy_qty,
+          avgLimitOrderRate: notice.avg_limit_order_rate,
+          bidsign: notice.bidsign,
+          asksign: notice.asksign,
+          score: notice.score,
         }
       }
-      ranklist[code].threshold = notice.threshold;
-      ranklist[code].buyCount = notice.buy_count;
-      ranklist[code].sellCount = notice.sell_count;
-      ranklist[code].currentprice = notice.currentprice;
-      ranklist[code].tickcountbyminute = notice.tickcountbyminute;
-      ranklist[code].tradingValueByMin = notice.trading_value_by_min;
-      ranklist[code].previouscloserate = notice.previouscloserate;
-      ranklist[code].openingrate = notice.openingrate;
-      ranklist[code].vwaprate = notice.vwaprate;
-      ranklist[code].overSellQty = notice.over_sell_qty;
-      ranklist[code].underBuyQty = notice.under_buy_qty;
-      ranklist[code].marketOrderSellQty = notice.market_order_sell_qty;
-      ranklist[code].marketOrderBuyQty = notice.market_order_buy_qty;
-      ranklist[code].avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
-      ranklist[code].avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
-      ranklist[code].avgLimitOrderRate = notice.avg_limit_order_rate;
-      ranklist[code].bidsign = notice.bidsign;
-      ranklist[code].asksign = notice.asksign;
-      ranklist[code].score = notice.score;
     });
   })
 
