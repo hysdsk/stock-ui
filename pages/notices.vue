@@ -143,34 +143,6 @@
         </el-table>
       </el-card>
     </el-col>
-    <el-col :span="6" v-show="showEachSymbol(k)" v-for="v, k in symbols">
-      <el-card>
-          <template #header>
-            <div class="card-header">
-              <el-tooltip
-                content="Copied!!"
-                trigger="click"
-                placement="top"
-                effect="light">
-                <el-button size="large" text @click="copyToClipboard(k)">{{ k }}: {{ v.name }}</el-button>
-              </el-tooltip>
-            </div>
-          </template>
-        <el-table :data="v.scores" style="width: 100%" :row-class-name="flashLatestRow">
-          <el-table-column prop="time" label="時刻" width="100"/>
-          <el-table-column label="現値" align="right">
-            <template #default="scope">
-              <span>{{ scope.row.price }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="スコア" align="right">
-            <template #default="scope">
-              <span>{{ scope.row.score }}</span>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
-    </el-col>
   </el-row>
 </template>
 
@@ -189,17 +161,6 @@
 
   onMounted(async () => {
     const socket = io(config.wsBaseURL);
-    // socket.on("action-notice", notice => {
-    //   const code = notice.code;
-    //   if (!symbols[code]) return
-    //   while (symbols[code].data.length > 5) {
-    //     symbols[code].data.shift();
-    //   }
-    //   const data = reactive(notice);
-    //   data.flash = true;
-    //   symbols[code].data.push(data);
-    //   setTimeout(() => { data.flash = false; }, 100);
-    // });
     socket.on("regular-notice", notice => {
       now.value = notice.time;
       const code = notice.code;
@@ -265,10 +226,6 @@
     });
   })
 
-  const showEachSymbol = (code) => {
-    const rows = realtimeTableRef.value!.getSelectionRows();
-    return (rows.length > 0 && rows.filter(row => row.code == code).length > 0);
-  }
   const colorSelectedText = (v) => {
     const rows = realtimeTableRef.value!.getSelectionRows();
     if (rows.length > 0 && rows.filter(row => row.code == v).length > 0) {
@@ -291,9 +248,6 @@
     }
     return v;
   }
-  const formatRatio = (v) => {
-    return `${Math.round(v * 100) / 100}%`;
-  }
   const formatRate = (v) => {
     return `${Math.round(v * 10) / 10}%`;
   }
@@ -303,14 +257,6 @@
     if (t >=    1000000) return `${Math.round(v /    100000)/10}m`;
     if (t >=       1000) return `${Math.round(v /       100)/10}k`;
     return v;
-  }
-  const formatOrder = (v) => {
-    if (!v) {
-      return null
-    }
-    const price = v.price ? v.price : "--- ";
-    const qty = formatVolume(v.qty);
-    return `${price}:${qty}`;
   }
   const colorFirstSign = (bidSign, askSign) => {
     if (bidSign == "0118") return "text-blue5"
@@ -354,36 +300,6 @@
     if (r <  -2) return "text-blue2";
     if (r <   0) return "text-blue1";
     return ""
-  }
-
-  const colorHighRate = (v) => {
-    if (v < 0.2) return  "text-red9";
-    if (v < 0.5) return  "text-red8";
-    if (v < 0.8) return  "text-red7";
-    if (v < 1.2) return  "text-red6";
-    if (v < 1.5) return  "text-red5";
-    if (v < 2.0) return  "text-red4";
-    if (v < 2.5) return  "text-red3";
-    if (v < 3.0) return  "text-red2";
-    if (v < 3.5) return  "text-red1";
-    return ""
-  }
-
-  const colorLowRate = (v) => {
-    if (v > -0.2) return "text-blue9";
-    if (v > -0.5) return "text-blue8";
-    if (v > -0.8) return "text-blue7";
-    if (v > -1.2) return "text-blue6";
-    if (v > -1.5) return "text-blue5";
-    if (v > -2.0) return "text-blue4";
-    if (v > -2.5) return "text-blue3";
-    if (v > -3.0) return "text-blue2";
-    if (v > -3.5) return "text-blue1";
-    return ""
-  }
-
-  const colorOrderRate = (v) => {
-    return colorRate(v / 100);
   }
   const colorVolume = (v, sob) => {
     const t = v < 0 ? v * -1 : v;
@@ -467,18 +383,5 @@
     if (v <=  -50) return "text-blue2";
     if (v <=  -10) return "text-blue1";
     return                "";
-  }
-  const colorPrice = (v) => {
-    if (v == "nowopened") return "text-green";
-    if (v == "reopened")  return "text-green";
-    if (v == "resumed")   return "text-yellow";
-    if (v == "freezing")  return "text-gray";
-    if (v == "preparing") return "text-gray";
-    if (v == "resting")   return "text-gray";
-    return ""
-  }
-  const flashLatestRow = (r, i) => {
-    if (r.row.flash) return "bg-highlight"
-    return ""
   }
 </script>
