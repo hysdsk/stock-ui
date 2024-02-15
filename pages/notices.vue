@@ -209,7 +209,6 @@
           score: notice.score,
         }
       }
-      console.log(parseInt(notice.increased_score))
       if (parseInt(notice.increased_score) > 0) {
         ElNotification({
           title: `${notice.score} - ${notice.time}`,
