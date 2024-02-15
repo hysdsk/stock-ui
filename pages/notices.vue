@@ -165,13 +165,6 @@
       now.value = notice.time;
       const code = notice.code;
       if (ranklist[code]) {
-        if (ranklist[code].score < notice.score) {
-          ElNotification({
-            title: `${notice.score} - ${notice.time}`,
-            message: h("b", {style: "color: #f44336"}, `${notice.code}: ${notice.name.substring(0, 12)}`),
-            onClick: () => copyToClipboard(notice.code)
-          });
-        }
         ranklist[code].threshold = notice.threshold;
         ranklist[code].buyCount = notice.buy_count;
         ranklist[code].sellCount = notice.sell_count;
@@ -192,13 +185,6 @@
         ranklist[code].asksign = notice.asksign;
         ranklist[code].score = notice.score;
       } else {
-        if (notice.score > 0) {
-          ElNotification({
-            title: `${notice.score} - ${notice.time}`,
-            message: h("b", {style: "color: #f44336"}, `${notice.code}: ${notice.name.substring(0, 12)}`),
-            onClick: () => copyToClipboard(notice.code)
-          });
-        }
         ranklist[code] = {
           code: code,
           name: notice.name,
@@ -222,6 +208,15 @@
           asksign: notice.asksign,
           score: notice.score,
         }
+      }
+      console.log(parseInt(notice.increased_score))
+      if (parseInt(notice.increased_score) > 0) {
+        ElNotification({
+          title: `${notice.score} - ${notice.time}`,
+          message: h("b", {style: "color: #f44336"}, `${notice.code}: ${notice.name.substring(0, 12)}`),
+          duration: 6000,
+          onClick: () => copyToClipboard(notice.code)
+        });
       }
     });
   })
