@@ -37,7 +37,7 @@
           </el-table-column>
           <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" width="320" sortable fixed>
             <template #default="scope">
-              <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name }}</span>
+              <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name.substring(0, 20) }}{{ scope.row.name.length > 20 ? "..." : "" }}</span>
             </template>
           </el-table-column>
           <el-table-column label="気配" header-align="center" align="center" width="80">
