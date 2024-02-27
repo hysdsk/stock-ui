@@ -98,12 +98,34 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column prop="score" label="スコア" header-align="center" align="right" width="100" :filters="filterScore" :filter-method="filterScoreMethod" filter-placement="bottom" sortable>
+          <el-table-column
+            prop="score"
+            label="スコア"
+            header-align="center"
+            align="right"
+            width="100"
+            :filters="filterScore"
+            :filter-method="filterScoreMethod"
+            :filter-multiple="false"
+            filter-placement="bottom"
+            sortable
+          >
             <template #default="scope">
               <span class="">{{ scope.row.score }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="avgLimitOrderRate" label="指値比" header-align="center" align="right" width="100" :filters="filterLimitOrderRate" :filter-method="filterLimitOrderRateMethod" filter-placement="bottom" sortable>
+          <el-table-column
+            prop="avgLimitOrderRate"
+            label="指値比"
+            header-align="center"
+            align="right"
+            width="100"
+            :filters="filterLimitOrderRate"
+            :filter-method="filterLimitOrderRateMethod"
+            :filter-multiple="false"
+            filter-placement="bottom"
+            sortable
+          >
             <template #default="scope">
               <span :class="colorLimitOrderRate(scope.row.avgLimitOrderRate)">{{ scope.row.avgLimitOrderRate }}%</span>
             </template>
@@ -176,7 +198,7 @@
     return row.score >= value;
   }
   const filterLimitOrderRate = [
-    {text: "  0% 以上", value:   0},
+    {text:   "0% 以上", value:   0},
     {text: "100% 以上", value: 100},
     {text: "200% 以上", value: 200},
     {text: "300% 以上", value: 300},
