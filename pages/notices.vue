@@ -3,14 +3,8 @@
     <el-col :span="24">
       <el-card>
         <el-descriptions :column="5" border>
-          <el-descriptions-item label="現在時刻" label-align="center" align="right" width="10%">
+          <el-descriptions-item label="現在時刻" label-align="center" align="center" width="10%">
             {{ now }}
-          </el-descriptions-item>
-          <el-descriptions-item label="総板更新数" label-align="center" align="right" width="10%">
-            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tickcountbyminute).reduce((a, b) => a + b).toLocaleString() : 0 }}
-          </el-descriptions-item>
-          <el-descriptions-item label="総売買代金" label-align="center" align="right" width="10%">
-            {{ Object.keys(ranklist).length > 0 ? Object.values(ranklist).map(e => e.tradingValueByMin).reduce((a, b) => a + b).toLocaleString() : 0 }}
           </el-descriptions-item>
           <el-descriptions-item label="前日超数" label-align="center" align="center" width="10%">
             {{ Object.values(ranklist).filter(e => e.previouscloserate > 0).length }} ／ {{ Object.keys(ranklist).length }}
@@ -25,7 +19,6 @@
           row-key="code"
           ref="realtimeTableRef"
           :data="Object.values(ranklist)"
-          :row-class-name="colorRows"
           @row-click="(r, c, e) => { copyToClipboard(r.code) }"
           height="1100"
         >
@@ -99,26 +92,44 @@
             </template>
           </el-table-column>
           <el-table-column label="大約定" header-align="center">
-            <el-table-column prop="sellCount" label="売" header-align="center" align="center" width="80" sortable>
+            <el-table-column prop="sellCount" label="売" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
                 <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="buyCount" label="買" header-align="center" align="center" width="80" sortable>
+            <el-table-column prop="buyCount" label="買" header-align="center" align="right" width="80" sortable>
               <template #default="scope">
                 <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column label="毎分" header-align="center">
-            <el-table-column prop="tickcountbyminute" label="板" header-align="center" align="right" width="80" sortable>
+          <el-table-column label="売買代金／分" header-align="center">
+            <el-table-column
+              prop="sellTradingValueByMin"
+              label="売"
+              header-align="center"
+              align="right"
+              width="80"
+              sortable
+            >
               <template #default="scope">
-                <span :class="colorTick(scope.row.tickcountbyminute)">{{ formatVolume(scope.row.tickcountbyminute) }}</span>
+                <span :class="colorSellValue(scope.row.sellTradingValueByMin)">
+                  {{ formatVolume(scope.row.sellTradingValueByMin) }}
+                </span>
               </template>
             </el-table-column>
-            <el-table-column prop="tradingValueByMin" label="金" header-align="center" align="right" width="80" sortable>
+            <el-table-column
+              prop="buyTradingValueByMin"
+              label="買"
+              header-align="center"
+              align="right"
+              width="80"
+              sortable
+            >
               <template #default="scope">
-                <span :class="colorValue(scope.row.tradingValueByMin)">{{ formatVolume(scope.row.tradingValueByMin) }}</span>
+                <span :class="colorBuyValue(scope.row.buyTradingValueByMin)">
+                  {{ formatVolume(scope.row.buyTradingValueByMin) }}
+                </span>
               </template>
             </el-table-column>
           </el-table-column>
@@ -250,8 +261,8 @@
         ranklist[code].buyCount = notice.buy_count;
         ranklist[code].sellCount = notice.sell_count;
         ranklist[code].currentprice = notice.currentprice;
-        ranklist[code].tickcountbyminute = notice.tickcountbyminute;
-        ranklist[code].tradingValueByMin = notice.trading_value_by_min;
+        ranklist[code].buyTradingValueByMin = notice.buy_trading_value_by_min;
+        ranklist[code].sellTradingValueByMin = notice.sell_trading_value_by_min;
         ranklist[code].previouscloserate = notice.previouscloserate;
         ranklist[code].openingrate = notice.openingrate;
         ranklist[code].vwaprate = notice.vwaprate;
@@ -273,8 +284,8 @@
           buyCount: notice.buy_count,
           sellCount: notice.sell_count,
           currentprice: notice.currentprice,
-          tickcountbyminute: notice.tickcountbyminute,
-          tradingValueByMin: notice.trading_value_by_min,
+          buyTradingValueByMin: notice.buy_trading_value_by_min,
+          sellTradingValueByMin: notice.sell_trading_value_by_min,
           previouscloserate: notice.previouscloserate,
           openingrate: notice.openingrate,
           vwaprate: notice.vwaprate,
@@ -317,10 +328,6 @@
     if (rows.length > 0 && rows.filter(row => row.code == v).length > 0) {
       return "text-selected";
     }
-  }
-  const colorRows = (v) => {
-    const tvbm = v.row.tradingValueByMin >= (v.row.threshold * 2);
-    return tvbm && v.row.score >= 2 ? "bg-chance" : "";
   }
   const copyToClipboard = (v) => {
     if (navigator.clipboard) {
@@ -409,25 +416,27 @@
     if (sob < 0 && t >     0) return "text-blue1";
     return ""
   }
-  const colorValue = (v) => {
-    if (v >=  300000000) return "text-red9";
-    if (v >=  250000000) return "text-red8";
-    if (v >=  200000000) return "text-red7";
-    if (v >=  150000000) return "text-red6";
-    if (v >=  100000000) return "text-red5";
-    if (v >=   90000000) return "text-red4";
-    if (v >=   70000000) return "text-red3";
-    if (v >=   50000000) return "text-red2";
-    if (v >=   30000000) return "text-red1";
-    if (v >=   25000000) return "text-blue1";
-    if (v >=   20000000) return "text-blue2";
-    if (v >=   15000000) return "text-blue3";
-    if (v >=   10000000) return "text-blue4";
-    if (v >=    8000000) return "text-blue5";
-    if (v >=    6000000) return "text-blue6";
-    if (v >=    4000000) return "text-blue7";
-    if (v >=    2000000) return "text-blue8";
-    return                      "text-blue9";
+  const colorBuyValue = (v) => {
+    if (v >= 30000000) return "text-red9";
+    if (v >= 15000000) return "text-red8";
+    if (v >= 10000000) return "text-red7";
+    if (v >=  8000000) return "text-red6";
+    if (v >=  6000000) return "text-red5";
+    if (v >=  4000000) return "text-red4";
+    if (v >=  2000000) return "text-red3";
+    if (v >=  1000000) return "text-red2";
+    return                     "text-red1";
+  }
+  const colorSellValue = (v) => {
+    if (v >= 30000000) return "text-blue9";
+    if (v >= 15000000) return "text-blue8";
+    if (v >= 10000000) return "text-blue7";
+    if (v >=  8000000) return "text-blue6";
+    if (v >=  6000000) return "text-blue5";
+    if (v >=  4000000) return "text-blue4";
+    if (v >=  2000000) return "text-blue3";
+    if (v >=  1000000) return "text-blue2";
+    return                    "text-blue1";
   }
   const colorTick = (v) => {
     if (v >= 600) return "text-red9";
