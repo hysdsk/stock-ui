@@ -29,15 +29,39 @@
           @row-click="(r, c, e) => { copyToClipboard(r.code) }"
           height="1100"
         >
-          <el-table-column type="selection" header-align="center" align="center" width="50" reserve-selection fixed/>
-          <el-table-column prop="code" label="コード" header-align="center" align="center" width="100" sortable fixed>
+          <el-table-column
+            type="selection"
+            header-align="center"
+            align="center"
+            width="50"
+            reserve-selection
+            fixed
+          />
+          <el-table-column
+            prop="code"
+            label="コード"
+            header-align="center"
+            align="center"
+            width="100"
+            :filters="filterCode"
+            :filter-method="filterCodeMethod"
+            filter-placement="bottom"
+            fixed
+          >
             <template #default="scope">
               <span :class="colorSelectedText(scope.row.code)">{{ scope.row.code }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="name" label="銘柄名" header-align="center" :formatter="formatName" width="320" sortable fixed>
+          <el-table-column
+            prop="name"
+            label="銘柄名"
+            header-align="center"
+            width="320"
+            :formatter="formatName"
+            fixed
+          >
             <template #default="scope">
-              <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name.substring(0, 20) }}{{ scope.row.name.length > 20 ? "..." : "" }}</span>
+              <span :class="colorSelectedText(scope.row.code)">{{ scope.row.name }}</span>
             </template>
           </el-table-column>
           <el-table-column label="気配" header-align="center" align="center" width="80">
@@ -108,7 +132,6 @@
             :filter-method="filterScoreMethod"
             :filter-multiple="false"
             filter-placement="bottom"
-            sortable
           >
             <template #default="scope">
               <span class="">{{ scope.row.score }}</span>
@@ -124,7 +147,6 @@
             :filter-method="filterLimitOrderRateMethod"
             :filter-multiple="false"
             filter-placement="bottom"
-            sortable
           >
             <template #default="scope">
               <span :class="colorLimitOrderRate(scope.row.avgLimitOrderRate)">{{ scope.row.avgLimitOrderRate }}%</span>
@@ -182,8 +204,16 @@
   const now = ref("08:00:00");
 
   interface SymbolTable {
+    code: string;
     score: number;
     avgLimitOrderRate: number;
+  }
+  const filterCode = []
+  const filterCodeMethod = (
+    value: string,
+    row: SymbolTable,
+  ) => {
+    return row.code == value;
   }
   const filterScore = [
     {text: "0 以上", value: 0},
@@ -238,7 +268,7 @@
       } else {
         ranklist[code] = {
           code: code,
-          name: notice.name,
+          name: notice.name.length > 20 ? `${notice.name.substring(0, 20)}...` : notice.name,
           threshold: notice.threshold,
           buyCount: notice.buy_count,
           sellCount: notice.sell_count,
@@ -259,6 +289,17 @@
           asksign: notice.asksign,
           score: notice.score,
         }
+        let index = 0;
+        while (filterCode.length > index) {
+          if (filterCode[index].value > code) {
+            break;
+          }
+          index++;
+        }
+        filterCode.splice(index, 0, {
+          text: `${code}: ${ranklist[code].name}`,
+          value: code
+        })
       }
       if (parseInt(notice.increased_score) > 0) {
         ElNotification({
