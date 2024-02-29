@@ -20,7 +20,7 @@
           ref="realtimeTableRef"
           :data="Object.values(ranklist)"
           @row-click="(r, c, e) => { copyToClipboard(r.code) }"
-          height="1100"
+          height="1095"
         >
           <el-table-column
             type="selection"
@@ -103,36 +103,6 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column label="売買代金／分" header-align="center">
-            <el-table-column
-              prop="sellTradingValueByMin"
-              label="売"
-              header-align="center"
-              align="right"
-              width="80"
-              sortable
-            >
-              <template #default="scope">
-                <span :class="colorSellValue(scope.row.sellTradingValueByMin)">
-                  {{ formatVolume(scope.row.sellTradingValueByMin) }}
-                </span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="buyTradingValueByMin"
-              label="買"
-              header-align="center"
-              align="right"
-              width="80"
-              sortable
-            >
-              <template #default="scope">
-                <span :class="colorBuyValue(scope.row.buyTradingValueByMin)">
-                  {{ formatVolume(scope.row.buyTradingValueByMin) }}
-                </span>
-              </template>
-            </el-table-column>
-          </el-table-column>
           <el-table-column
             prop="score"
             label="スコア"
@@ -145,8 +115,38 @@
             filter-placement="bottom"
           >
             <template #default="scope">
-              <span class="">{{ scope.row.score }}</span>
+              <span>{{ scope.row.score }}</span>
             </template>
+          </el-table-column>
+          <el-table-column label="売買代金／分" header-align="center">
+            <el-table-column
+              prop="tradingValueByMin"
+              label="代金"
+              header-align="center"
+              align="right"
+              width="80"
+              sortable
+            >
+              <template #default="scope">
+                <span :class="colorValue(scope.row.tradingValueByMin)">
+                  {{ formatVolume(scope.row.tradingValueByMin) }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="tradingValueByMinRate"
+              label="売買比"
+              header-align="center"
+              align="right"
+              width="100"
+              sortable
+            >
+              <template #default="scope">
+                <span :class="colorLimitOrderRate(scope.row.tradingValueByMinRate)">
+                  {{ formatRate(scope.row.tradingValueByMinRate) }}
+                </span>
+              </template>
+            </el-table-column>
           </el-table-column>
           <el-table-column
             prop="avgLimitOrderRate"
@@ -261,8 +261,8 @@
         ranklist[code].buyCount = notice.buy_count;
         ranklist[code].sellCount = notice.sell_count;
         ranklist[code].currentprice = notice.currentprice;
-        ranklist[code].buyTradingValueByMin = notice.buy_trading_value_by_min;
-        ranklist[code].sellTradingValueByMin = notice.sell_trading_value_by_min;
+        ranklist[code].tradingValueByMin = notice.trading_value_by_min;
+        ranklist[code].tradingValueByMinRate = notice.trading_value_by_min_rate;
         ranklist[code].previouscloserate = notice.previouscloserate;
         ranklist[code].openingrate = notice.openingrate;
         ranklist[code].vwaprate = notice.vwaprate;
@@ -284,8 +284,8 @@
           buyCount: notice.buy_count,
           sellCount: notice.sell_count,
           currentprice: notice.currentprice,
-          buyTradingValueByMin: notice.buy_trading_value_by_min,
-          sellTradingValueByMin: notice.sell_trading_value_by_min,
+          tradingValueByMin: notice.trading_value_by_min,
+          tradingValueByMinRate: notice.trading_value_by_min_rate,
           previouscloserate: notice.previouscloserate,
           openingrate: notice.openingrate,
           vwaprate: notice.vwaprate,
@@ -416,27 +416,25 @@
     if (sob < 0 && t >     0) return "text-blue1";
     return ""
   }
-  const colorBuyValue = (v) => {
-    if (v >= 30000000) return "text-red9";
-    if (v >= 15000000) return "text-red8";
-    if (v >= 10000000) return "text-red7";
-    if (v >=  8000000) return "text-red6";
-    if (v >=  6000000) return "text-red5";
-    if (v >=  4000000) return "text-red4";
-    if (v >=  2000000) return "text-red3";
-    if (v >=  1000000) return "text-red2";
-    return                     "text-red1";
-  }
-  const colorSellValue = (v) => {
-    if (v >= 30000000) return "text-blue9";
-    if (v >= 15000000) return "text-blue8";
-    if (v >= 10000000) return "text-blue7";
-    if (v >=  8000000) return "text-blue6";
-    if (v >=  6000000) return "text-blue5";
-    if (v >=  4000000) return "text-blue4";
-    if (v >=  2000000) return "text-blue3";
-    if (v >=  1000000) return "text-blue2";
-    return                    "text-blue1";
+  const colorValue = (v) => {
+    if (v >=  300000000) return "text-red9";
+    if (v >=  250000000) return "text-red8";
+    if (v >=  200000000) return "text-red7";
+    if (v >=  150000000) return "text-red6";
+    if (v >=  100000000) return "text-red5";
+    if (v >=   90000000) return "text-red4";
+    if (v >=   70000000) return "text-red3";
+    if (v >=   50000000) return "text-red2";
+    if (v >=   30000000) return "text-red1";
+    if (v >=   25000000) return "text-blue1";
+    if (v >=   20000000) return "text-blue2";
+    if (v >=   15000000) return "text-blue3";
+    if (v >=   10000000) return "text-blue4";
+    if (v >=    8000000) return "text-blue5";
+    if (v >=    6000000) return "text-blue6";
+    if (v >=    4000000) return "text-blue7";
+    if (v >=    2000000) return "text-blue8";
+    return                      "text-blue9";
   }
   const colorTick = (v) => {
     if (v >= 600) return "text-red9";
@@ -459,15 +457,15 @@
     return               "text-blue9";
   }
   const colorLimitOrderRate = (v) => {
-    if (v >= 500) return "text-red9";
-    if (v >= 400) return "text-red8";
-    if (v >= 300) return "text-red7";
-    if (v >= 250) return "text-red6";
-    if (v >= 200) return "text-red5";
-    if (v >= 150) return "text-red4";
-    if (v >= 100) return "text-red3";
-    if (v >=  50) return "text-red2";
-    if (v >=  10) return "text-red1";
+    if (v >=  500) return "text-red9";
+    if (v >=  400) return "text-red8";
+    if (v >=  300) return "text-red7";
+    if (v >=  250) return "text-red6";
+    if (v >=  200) return "text-red5";
+    if (v >=  150) return "text-red4";
+    if (v >=  100) return "text-red3";
+    if (v >=   50) return "text-red2";
+    if (v >=   10) return "text-red1";
     if (v <= -500) return "text-blue9";
     if (v <= -400) return "text-blue8";
     if (v <= -300) return "text-blue7";
