@@ -142,56 +142,41 @@
               sortable
             >
               <template #default="scope">
-                <span :class="colorLimitOrderRate(scope.row.tradingValueByMinRate)">
+                <div :style="backgroundStyleRatio(scope.row.tradingValueByMin, scope.row.tradingValueByMinRate)">
                   {{ formatRate(scope.row.tradingValueByMinRate) }}
-                </span>
+                </div>
               </template>
             </el-table-column>
-          </el-table-column>
-          <el-table-column
-            prop="avgLimitOrderRate"
-            label="指値比"
-            header-align="center"
-            align="right"
-            width="100"
-            :filters="filterLimitOrderRate"
-            :filter-method="filterLimitOrderRateMethod"
-            :filter-multiple="false"
-            filter-placement="bottom"
-          >
-            <template #default="scope">
-              <span :class="colorLimitOrderRate(scope.row.avgLimitOrderRate)">{{ scope.row.avgLimitOrderRate }}%</span>
-            </template>
           </el-table-column>
           <el-table-column label="注文" header-align="center">
-            <el-table-column prop="avgLimitOrderSellQty" label="売指" header-align="center" align="right" width="100" sortable>
+            <el-table-column prop="avgLimitOrderQty" label="指値量" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
-                <span class="text-blue3">{{ formatVolume(scope.row.avgLimitOrderSellQty) }}</span>
+                <span class="text-blue3">{{ formatVolume(scope.row.avgLimitOrderQty) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="avgLimitOrderBuyQty" label="買指" header-align="center" align="right" width="100" sortable>
+              <el-table-column
+              prop="avgLimitOrderRatio"
+              label="指値比"
+              header-align="center"
+              align="right"
+              width="100"
+              :filters="filterLimitOrderRate"
+              :filter-method="filterLimitOrderRateMethod"
+              :filter-multiple="false"
+              filter-placement="bottom"
+            >
+            <template #default="scope">
+              <div :style="backgroundStyleRatio(scope.row.avgLimitOrderQty, scope.row.avgLimitOrderRatio)">{{ scope.row.avgLimitOrderRatio }}%</div>
+            </template>
+          </el-table-column>
+            <el-table-column prop="marketOrderValue" label="成行量" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
-                <span class="text-red3">{{ formatVolume(scope.row.avgLimitOrderBuyQty) }}</span>
+                <span class="text-blue3">{{ formatVolume(scope.row.marketOrderValue) }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="marketOrderSellQty" label="売成" header-align="center" align="right" width="100" sortable>
+            <el-table-column prop="marketOrderBuyRatio" label="成行比" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
-                <span class="text-blue3">{{ formatVolume(scope.row.marketOrderSellQty) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="marketOrderBuyQty" label="買成" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span class="text-red3">{{ formatVolume(scope.row.marketOrderBuyQty) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="overSellQty" label="売圧" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span class="text-blue3">{{ formatVolume(scope.row.overSellQty) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="underBuyQty" label="買圧" header-align="center" align="right" width="100" sortable>
-              <template #default="scope">
-                <span class="text-red3">{{ formatVolume(scope.row.underBuyQty) }}</span>
+                <div :style="backgroundStyleRatio(scope.row.marketOrderValue, scope.row.marketOrderBuyRatio)">{{ formatVolume(scope.row.marketOrderBuyRatio) }}</div>
               </template>
             </el-table-column>
           </el-table-column>
@@ -217,7 +202,7 @@
   interface SymbolTable {
     code: string;
     score: number;
-    avgLimitOrderRate: number;
+    avgLimitOrderRatio: number;
   }
   const filterCode = []
   const filterCodeMethod = (
@@ -239,16 +224,16 @@
     return row.score >= value;
   }
   const filterLimitOrderRate = [
-    {text:   "0% 以上", value:   0},
-    {text: "100% 以上", value: 100},
-    {text: "200% 以上", value: 200},
-    {text: "300% 以上", value: 300},
+    {text:  "0% 以上", value:  0},
+    {text: "50% 以上", value: 50},
+    {text: "70% 以上", value: 70},
+    {text: "90% 以上", value: 90},
   ]
   const filterLimitOrderRateMethod = (
     value: string,
     row: SymbolTable,
   ) => {
-    return row.avgLimitOrderRate >= value;
+    return row.avgLimitOrderRatio >= value;
   }
 
   onMounted(async () => {
@@ -262,17 +247,14 @@
         ranklist[code].sellCount = notice.sell_count;
         ranklist[code].currentprice = notice.currentprice;
         ranklist[code].tradingValueByMin = notice.trading_value_by_min;
-        ranklist[code].tradingValueByMinRate = notice.trading_value_by_min_rate;
+        ranklist[code].tradingValueByMinRate = notice.trading_value_by_min_ratio;
         ranklist[code].previouscloserate = notice.previouscloserate;
         ranklist[code].openingrate = notice.openingrate;
         ranklist[code].vwaprate = notice.vwaprate;
-        ranklist[code].overSellQty = notice.over_sell_qty;
-        ranklist[code].underBuyQty = notice.under_buy_qty;
-        ranklist[code].marketOrderSellQty = notice.market_order_sell_qty;
-        ranklist[code].marketOrderBuyQty = notice.market_order_buy_qty;
-        ranklist[code].avgLimitOrderSellQty = notice.avg_limit_order_sell_qty;
-        ranklist[code].avgLimitOrderBuyQty = notice.avg_limit_order_buy_qty;
-        ranklist[code].avgLimitOrderRate = notice.avg_limit_order_rate;
+        ranklist[code].marketOrderValue = notice.market_order_value;
+        ranklist[code].marketOrderBuyRatio = notice.market_order_buy_ratio;
+        ranklist[code].avgLimitOrderQty = notice.avg_limit_order_qty;
+        ranklist[code].avgLimitOrderRatio = notice.avg_limit_order_ratio;
         ranklist[code].bidsign = notice.bidsign;
         ranklist[code].asksign = notice.asksign;
         ranklist[code].score = notice.score;
@@ -285,17 +267,14 @@
           sellCount: notice.sell_count,
           currentprice: notice.currentprice,
           tradingValueByMin: notice.trading_value_by_min,
-          tradingValueByMinRate: notice.trading_value_by_min_rate,
+          tradingValueByMinRate: notice.trading_value_by_min_ratio,
           previouscloserate: notice.previouscloserate,
           openingrate: notice.openingrate,
           vwaprate: notice.vwaprate,
-          overSellQty: notice.over_sell_qty,
-          underBuyQty: notice.under_buy_qty,
-          marketOrderSellQty: notice.market_order_sell_qty,
-          marketOrderBuyQty: notice.market_order_buy_qty,
-          avgLimitOrderSellQty: notice.avg_limit_order_sell_qty,
-          avgLimitOrderBuyQty: notice.avg_limit_order_buy_qty,
-          avgLimitOrderRate: notice.avg_limit_order_rate,
+          marketOrderValue: notice.market_order_value,
+          marketOrderBuyRatio: notice.market_order_buy_ratio,
+          avgLimitOrderQty: notice.avg_limit_order_qty,
+          avgLimitOrderRatio: notice.avg_limit_order_ratio,
           bidsign: notice.bidsign,
           asksign: notice.asksign,
           score: notice.score,
@@ -476,5 +455,12 @@
     if (v <=  -50) return "text-blue2";
     if (v <=  -10) return "text-blue1";
     return                "";
+  }
+
+  const backgroundStyleRatio = (num, ratio) => {
+    if (num) {
+      return `background: linear-gradient(to left, #f44336 ${ratio}%, #2196f3 ${ratio}%)`;
+    }
+    return "";
   }
 </script>
