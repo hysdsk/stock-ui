@@ -91,18 +91,6 @@
               <span>{{ formatVolume(scope.row.threshold) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="大約定" header-align="center">
-            <el-table-column prop="sellCount" label="売" header-align="center" align="right" width="80" sortable>
-              <template #default="scope">
-                <span :class="colorVolume(scope.row.sellCount*10000, -1)">{{ scope.row.sellCount }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column prop="buyCount" label="買" header-align="center" align="right" width="80" sortable>
-              <template #default="scope">
-                <span :class="colorVolume(scope.row.buyCount*10000, 1)">{{ scope.row.buyCount }}</span>
-              </template>
-            </el-table-column>
-          </el-table-column>
           <el-table-column
             prop="score"
             label="スコア"
@@ -117,6 +105,38 @@
             <template #default="scope">
               <span>{{ scope.row.score }}</span>
             </template>
+          </el-table-column>
+          <el-table-column
+            label="大約定"
+            header-align="center"
+          >
+            <el-table-column
+              prop="bigContractCount"
+              label="回数"
+              header-align="center"
+              align="right"
+              width="80"
+              sortable
+            >
+              <template #default="scope">
+                <span :class="colorVolume(scope.row.bigContractCount*1000, 1)">{{ scope.row.bigContractCount }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="bigBuyRatio"
+              label="売買比"
+              header-align="center"
+              align="right"
+              width="100"
+              :filters="filterRatioItems"
+              :filter-method="filterBigBuyRatio"
+              :filter-multiple="false"
+              filter-placement="bottom"
+            >
+              <template #default="scope">
+                <div :style="backgroundStyleRatio(scope.row.bigContractCount, scope.row.bigBuyRatio)">{{ scope.row.bigBuyRatio }}%</div>
+              </template>
+            </el-table-column>
           </el-table-column>
           <el-table-column label="売買代金／分" header-align="center">
             <el-table-column
@@ -160,8 +180,8 @@
               header-align="center"
               align="right"
               width="100"
-              :filters="filterLimitOrderRate"
-              :filter-method="filterLimitOrderRateMethod"
+              :filters="filterRatioItems"
+              :filter-method="filterLimitOrderRatio"
               :filter-multiple="false"
               filter-placement="bottom"
             >
@@ -202,6 +222,7 @@
   interface SymbolTable {
     code: string;
     score: number;
+    bigBuyRatio: number;
     avgLimitOrderRatio: number;
   }
   const filterCode = []
@@ -223,17 +244,37 @@
   ) => {
     return row.score >= value;
   }
-  const filterLimitOrderRate = [
-    {text:  "0% 以上", value:  0},
-    {text: "50% 以上", value: 50},
-    {text: "70% 以上", value: 70},
-    {text: "90% 以上", value: 90},
+  const filterRatioItems = [
+    {text: "超弱気", value: 0},
+    {text: "弱気", value: 1},
+    {text: "強気", value: 2},
+    {text: "超強気", value: 3},
   ]
-  const filterLimitOrderRateMethod = (
+  const filterRatioMethod = (value: number, ratio: number) => {
+    switch (value) {
+      case 0:
+        return ratio <= 25;
+      case 1:
+        return ratio <= 50;
+      case 2:
+        return ratio >= 50;
+      case 3:
+        return ratio >= 75;
+      default:
+        return false;
+    }
+  }
+  const filterBigBuyRatio = (
     value: string,
     row: SymbolTable,
   ) => {
-    return row.avgLimitOrderRatio >= value;
+    return filterRatioMethod(value, row.bigBuyRatio)
+  }
+  const filterLimitOrderRatio = (
+    value: string,
+    row: SymbolTable,
+  ) => {
+    return filterRatioMethod(value, row.avgLimitOrderRatio)
   }
 
   onMounted(async () => {
@@ -243,8 +284,8 @@
       const code = notice.code;
       if (ranklist[code]) {
         ranklist[code].threshold = notice.threshold;
-        ranklist[code].buyCount = notice.buy_count;
-        ranklist[code].sellCount = notice.sell_count;
+        ranklist[code].bigContractCount = notice.big_contract_count;
+        ranklist[code].bigBuyRatio = notice.big_buy_ratio;
         ranklist[code].currentprice = notice.currentprice;
         ranklist[code].tradingValueByMin = notice.trading_value_by_min;
         ranklist[code].tradingValueByMinRate = notice.trading_value_by_min_ratio;
@@ -263,8 +304,8 @@
           code: code,
           name: notice.name.length > 20 ? `${notice.name.substring(0, 20)}...` : notice.name,
           threshold: notice.threshold,
-          buyCount: notice.buy_count,
-          sellCount: notice.sell_count,
+          bigContractCount: notice.big_contract_count,
+          bigBuyRatio: notice.big_buy_ratio,
           currentprice: notice.currentprice,
           tradingValueByMin: notice.trading_value_by_min,
           tradingValueByMinRate: notice.trading_value_by_min_ratio,
