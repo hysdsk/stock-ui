@@ -106,38 +106,105 @@
               <span>{{ scope.row.score }}</span>
             </template>
           </el-table-column>
+
+
           <el-table-column
-            label="大約定"
+            label="一般"
             header-align="center"
           >
             <el-table-column
-              prop="bigContractCount"
-              label="回数"
+              prop="smlContractValue"
+              label="代金"
               header-align="center"
               align="right"
-              width="80"
+              width="100"
               sortable
             >
               <template #default="scope">
-                <span :class="colorVolume(scope.row.bigContractCount*1000, 1)">{{ scope.row.bigContractCount }}</span>
+                <span :class="colorValue(scope.row.smlContractValue/10, 1)">{{ formatVolume(scope.row.smlContractValue) }}</span>
               </template>
             </el-table-column>
             <el-table-column
-              prop="bigBuyRatio"
+              prop="smlContractValueBuyRatio"
               label="売買比"
               header-align="center"
               align="right"
               width="100"
               :filters="filterRatioItems"
-              :filter-method="filterBigBuyRatio"
+              :filter-method="filterSmlContractValueRatio"
               :filter-multiple="false"
               filter-placement="bottom"
             >
               <template #default="scope">
-                <div :style="backgroundStyleRatio(scope.row.bigContractCount, scope.row.bigBuyRatio)">{{ scope.row.bigBuyRatio }}%</div>
+                <div :style="backgroundStyleRatio(scope.row.smlContractValue, scope.row.smlContractValueBuyRatio)">{{ scope.row.smlContractValueBuyRatio }}%</div>
               </template>
             </el-table-column>
           </el-table-column>
+          <el-table-column
+            label="中級"
+            header-align="center"
+          >
+            <el-table-column
+              prop="midContractValue"
+              label="代金"
+              header-align="center"
+              align="right"
+              width="100"
+              sortable
+            >
+              <template #default="scope">
+                <span :class="colorValue(scope.row.midContractValue/5, 1)">{{ formatVolume(scope.row.midContractValue) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="midContractValueBuyRatio"
+              label="売買比"
+              header-align="center"
+              align="right"
+              width="100"
+              :filters="filterRatioItems"
+              :filter-method="filterMidContractValueRatio"
+              :filter-multiple="false"
+              filter-placement="bottom"
+            >
+              <template #default="scope">
+                <div :style="backgroundStyleRatio(scope.row.midContractValue, scope.row.midContractValueBuyRatio)">{{ scope.row.midContractValueBuyRatio }}%</div>
+              </template>
+            </el-table-column>
+          </el-table-column>
+          <el-table-column
+            label="上級"
+            header-align="center"
+          >
+            <el-table-column
+              prop="lrgContractValue"
+              label="代金"
+              header-align="center"
+              align="right"
+              width="100"
+              sortable
+            >
+              <template #default="scope">
+                <span :class="colorValue(scope.row.lrgContractValue/5, 1)">{{ formatVolume(scope.row.lrgContractValue) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="lrgContractValueBuyRatio"
+              label="売買比"
+              header-align="center"
+              align="right"
+              width="100"
+              :filters="filterRatioItems"
+              :filter-method="filterLrgContractValueRatio"
+              :filter-multiple="false"
+              filter-placement="bottom"
+            >
+              <template #default="scope">
+                <div :style="backgroundStyleRatio(scope.row.lrgContractValue, scope.row.lrgContractValueBuyRatio)">{{ scope.row.lrgContractValueBuyRatio }}%</div>
+              </template>
+            </el-table-column>
+          </el-table-column>
+
           <el-table-column label="売買代金／分" header-align="center">
             <el-table-column
               prop="tradingValueByMin"
@@ -222,8 +289,10 @@
   interface SymbolTable {
     code: string;
     score: number;
-    bigBuyRatio: number;
     avgLimitOrderRatio: number;
+    lrgContractValueBuyRatio: number;
+    midContractValueBuyRatio: number;
+    smlContractValueBuyRatio: number;
   }
   const filterCode = []
   const filterCodeMethod = (
@@ -264,17 +333,29 @@
         return false;
     }
   }
-  const filterBigBuyRatio = (
-    value: string,
-    row: SymbolTable,
-  ) => {
-    return filterRatioMethod(value, row.bigBuyRatio)
-  }
   const filterLimitOrderRatio = (
     value: string,
     row: SymbolTable,
   ) => {
     return filterRatioMethod(value, row.avgLimitOrderRatio)
+  }
+  const filterLrgContractValueRatio = (
+    value: string,
+    row: SymbolTable,
+  ) => {
+    return filterRatioMethod(value, row.lrgContractValueBuyRatio)
+  }
+  const filterMidContractValueRatio = (
+    value: string,
+    row: SymbolTable,
+  ) => {
+    return filterRatioMethod(value, row.midContractValueBuyRatio)
+  }
+  const filterSmlContractValueRatio = (
+    value: string,
+    row: SymbolTable,
+  ) => {
+    return filterRatioMethod(value, row.smlContractValueBuyRatio)
   }
 
   onMounted(async () => {
@@ -284,8 +365,6 @@
       const code = notice.code;
       if (ranklist[code]) {
         ranklist[code].threshold = notice.threshold;
-        ranklist[code].bigContractCount = notice.big_contract_count;
-        ranklist[code].bigBuyRatio = notice.big_buy_ratio;
         ranklist[code].currentprice = notice.currentprice;
         ranklist[code].tradingValueByMin = notice.trading_value_by_min;
         ranklist[code].tradingValueByMinRate = notice.trading_value_by_min_ratio;
@@ -299,13 +378,17 @@
         ranklist[code].bidsign = notice.bidsign;
         ranklist[code].asksign = notice.asksign;
         ranklist[code].score = notice.score;
+        ranklist[code].lrgContractValue = notice.lrg_contract_value;
+        ranklist[code].lrgContractValueBuyRatio = notice.lrg_contract_value_buy_ratio;
+        ranklist[code].midContractValue = notice.mid_contract_value;
+        ranklist[code].midContractValueBuyRatio = notice.mid_contract_value_buy_ratio;
+        ranklist[code].smlContractValue = notice.sml_contract_value;
+        ranklist[code].smlContractValueBuyRatio = notice.sml_contract_value_buy_ratio;
       } else {
         ranklist[code] = {
           code: code,
           name: notice.name.length > 20 ? `${notice.name.substring(0, 20)}...` : notice.name,
           threshold: notice.threshold,
-          bigContractCount: notice.big_contract_count,
-          bigBuyRatio: notice.big_buy_ratio,
           currentprice: notice.currentprice,
           tradingValueByMin: notice.trading_value_by_min,
           tradingValueByMinRate: notice.trading_value_by_min_ratio,
@@ -319,6 +402,12 @@
           bidsign: notice.bidsign,
           asksign: notice.asksign,
           score: notice.score,
+          lrgContractValue: notice.lrg_contract_value,
+          lrgContractValueBuyRatio: notice.lrg_contract_value_buy_ratio,
+          midContractValue: notice.mid_contract_value,
+          midContractValueBuyRatio: notice.mid_contract_value_buy_ratio,
+          smlContractValue: notice.sml_contract_value,
+          smlContractValueBuyRatio: notice.sml_contract_value_buy_ratio,
         }
         let index = 0;
         while (filterCode.length > index) {
