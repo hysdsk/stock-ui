@@ -19,7 +19,7 @@
           row-key="code"
           ref="realtimeTableRef"
           :data="Object.values(ranklist)"
-          @row-click="(r, c, e) => { copyToClipboard(r.code) }"
+          @row-click="(r, c, e) => { openDialog(r) }"
           height="1095"
         >
           <el-table-column
@@ -271,6 +271,22 @@
       </el-card>
     </el-col>
   </el-row>
+  <el-dialog v-model="dialogVisible" :title="`${dialogRow.code}: ${dialogRow.name}`" width="512">
+    <el-scrollbar max-height="512">
+      <el-timeline>
+        <el-timeline-item
+          v-for="(score, index) in dialogRow.scores"
+          :key="index"
+          :color="score.point > 0 ? '#f44336' : '#2196f3'"
+          :timestamp="score.time"
+          placement="top"
+          size="large"
+        >
+          {{ score.label }}
+        </el-timeline-item>
+      </el-timeline>
+    </el-scrollbar>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -285,6 +301,8 @@
   const symbols = reactive({});
   const ranklist = reactive({});
   const now = ref("08:00:00");
+  const dialogVisible = ref(false)
+  const dialogRow = ref({})
 
   interface SymbolTable {
     code: string;
@@ -378,6 +396,7 @@
         ranklist[code].bidsign = notice.bidsign;
         ranklist[code].asksign = notice.asksign;
         ranklist[code].score = notice.score;
+        ranklist[code].scores = notice.scores;
         ranklist[code].lrgContractValue = notice.lrg_contract_value;
         ranklist[code].lrgContractValueBuyRatio = notice.lrg_contract_value_buy_ratio;
         ranklist[code].midContractValue = notice.mid_contract_value;
@@ -402,6 +421,7 @@
           bidsign: notice.bidsign,
           asksign: notice.asksign,
           score: notice.score,
+          scores: notice.scores,
           lrgContractValue: notice.lrg_contract_value,
           lrgContractValueBuyRatio: notice.lrg_contract_value_buy_ratio,
           midContractValue: notice.mid_contract_value,
@@ -442,6 +462,10 @@
     if (navigator.clipboard) {
         navigator.clipboard.writeText(v);
     }
+  }
+  const openDialog = (row) => {
+    dialogVisible.value = true
+    dialogRow.value = row
   }
   const formatName = (r, c, v, i) => {
     const limit = 20;
