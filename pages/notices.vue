@@ -205,36 +205,6 @@
             </el-table-column>
           </el-table-column>
 
-          <el-table-column label="売買代金／分" header-align="center">
-            <el-table-column
-              prop="tradingValueByMin"
-              label="代金"
-              header-align="center"
-              align="right"
-              width="80"
-              sortable
-            >
-              <template #default="scope">
-                <span :class="colorValue(scope.row.tradingValueByMin)">
-                  {{ formatVolume(scope.row.tradingValueByMin) }}
-                </span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="tradingValueByMinRate"
-              label="売買比"
-              header-align="center"
-              align="right"
-              width="100"
-              sortable
-            >
-              <template #default="scope">
-                <div :style="backgroundStyleRatio(scope.row.tradingValueByMin, scope.row.tradingValueByMinRate)">
-                  {{ formatRate(scope.row.tradingValueByMinRate) }}
-                </div>
-              </template>
-            </el-table-column>
-          </el-table-column>
           <el-table-column label="注文" header-align="center">
             <el-table-column prop="avgLimitOrderQty" label="指値量" header-align="center" align="right" width="100" sortable>
               <template #default="scope">
@@ -272,6 +242,17 @@
     </el-col>
   </el-row>
   <el-dialog v-model="dialogVisible" :title="`${dialogRow.code}: ${dialogRow.name}`" width="512">
+    <div style="display: grid; place-items: center">
+      <el-space direction="vertical">
+        <div>直近一分間売買代金</div>
+        <el-progress type="dashboard" :percentage="dialogRow.tradingValueByMinRate" :color="dashboardColors">
+          <template #default="{ percentage }">
+            <span style="font-size: 12px">{{ percentage }}%</span><br><br>
+            <span :class="colorValue(dialogRow.tradingValueByMin)">{{ formatVolume(dialogRow.tradingValueByMin) }}円</span>
+          </template>
+        </el-progress>
+      </el-space>
+    </div>
     <el-scrollbar max-height="512">
       <el-timeline>
         <el-timeline-item
@@ -303,6 +284,21 @@
   const now = ref("08:00:00");
   const dialogVisible = ref(false)
   const dialogRow = ref({})
+
+  const dashboardColors = [
+    { color: "#1e88e5", percentage: 25 },
+    { color: "#42a5f5", percentage: 30 },
+    { color: "#64b5f6", percentage: 35 },
+    { color: "#90caf9", percentage: 40 },
+    { color: "#bbdefb", percentage: 45 },
+    { color: "#e3f2fd", percentage: 49 },
+    { color: "#ffebee", percentage: 50 },
+    { color: "#ffcdd2", percentage: 55 },
+    { color: "#ef9a9a", percentage: 60 },
+    { color: "#e57373", percentage: 65 },
+    { color: "#ef5350", percentage: 70 },
+    { color: "#f44336", percentage: 75 },
+  ]
 
   interface SymbolTable {
     code: string;
@@ -450,7 +446,7 @@
         });
       }
     });
-  })
+  });
 
   const colorSelectedText = (v) => {
     const rows = realtimeTableRef.value!.getSelectionRows();
