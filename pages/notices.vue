@@ -4,29 +4,26 @@
       <el-row :gutter="16">
         <el-col :span="3">
           <el-card style="text-align: center">
-            <el-statistic title="現在時刻" :value="now" />
+            <el-space direction="vertical" wrap>
+              <el-text size="small" type="info">現在時刻</el-text>
+              <el-text size="large">{{ now }}</el-text>
+            </el-space>
           </el-card>
         </el-col>
         <el-col :span="3">
           <el-card style="text-align: center">
-            <el-statistic
-              title="前日超数"
-              :value="
-                Object.values(ranklist).filter((e) => e.previouscloserate > 0).length
-              "
-            >
-              <template #suffix>／ {{ Object.keys(ranklist).length }}</template>
-            </el-statistic>
+            <el-space direction="vertical" wrap>
+              <el-text size="small" type="info">前日超数</el-text>
+              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.previouscloserate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+            </el-space>
           </el-card>
         </el-col>
         <el-col :span="3">
           <el-card style="text-align: center">
-            <el-statistic
-              title="陽線数"
-              :value="Object.values(ranklist).filter((e) => e.openingrate > 0).length"
-            >
-              <template #suffix>／ {{ Object.keys(ranklist).length }}</template>
-            </el-statistic>
+            <el-space direction="vertical" wrap>
+              <el-text size="small" type="info">陽線数</el-text>
+              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.openingrate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+            </el-space>
           </el-card>
         </el-col>
         <el-col :span="15"></el-col>

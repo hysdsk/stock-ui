@@ -79,7 +79,7 @@ interface Props {
 
 const route = useRoute();
 const props = withDefaults(defineProps<Props>(), {});
-const { data, pending } = await useFetch(`/api/symbol/infomation`, {
+const { data, pending } = await useFetch("/api/symbol/infomation", {
   params: { code: props.code },
 });
 useHead({ title: `${data.value?.symbol.symbolName}` });
