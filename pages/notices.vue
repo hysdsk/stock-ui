@@ -4,32 +4,55 @@
       <el-row :gutter="16">
         <el-col :span="3">
           <el-card style="text-align: center">
-            <el-statistic title="現在時刻" :value="now" />
+            <el-space direction="vertical" wrap>
+              <el-text size="small" type="info">現在時刻</el-text>
+              <el-text size="large">{{ now }}</el-text>
+            </el-space>
           </el-card>
         </el-col>
         <el-col :span="3">
           <el-card style="text-align: center">
-            <el-statistic
-              title="前日超数"
-              :value="
-                Object.values(ranklist).filter((e) => e.previouscloserate > 0).length
-              "
-            >
-              <template #suffix>／ {{ Object.keys(ranklist).length }}</template>
-            </el-statistic>
+            <el-space direction="vertical" wrap>
+              <el-text size="small" type="info">前日超数</el-text>
+              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.previouscloserate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+            </el-space>
           </el-card>
         </el-col>
         <el-col :span="3">
           <el-card style="text-align: center">
-            <el-statistic
-              title="陽線数"
-              :value="Object.values(ranklist).filter((e) => e.openingrate > 0).length"
-            >
-              <template #suffix>／ {{ Object.keys(ranklist).length }}</template>
-            </el-statistic>
+            <el-space direction="vertical" wrap>
+              <el-text size="small" type="info">陽線数</el-text>
+              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.openingrate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+            </el-space>
           </el-card>
         </el-col>
-        <el-col :span="15"></el-col>
+        <el-col :span="11"></el-col>
+        <el-col :span="4">
+          <el-space direction="vertical">
+            <el-switch
+              v-model="isAudio"
+              size="large"
+              style="--el-switch-on-color: #455a64; --el-switch-off-color: #455a64"
+              inline-prompt
+              :active-icon="Bell"
+              :inactive-icon="MuteNotification"
+            />
+            <el-select
+              v-model="selectedScoreOption"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="Select score label"
+            >
+              <el-option
+                v-for="item in scoreOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-space>
+        </el-col>
       </el-row>
       <el-card>
         <el-table
@@ -42,7 +65,7 @@
               openDialog(r);
             }
           "
-          height="1070"
+          height="1075"
         >
           <el-table-column
             type="selection"
@@ -72,7 +95,7 @@
             label="銘柄名"
             header-align="center"
             width="320"
-            :formatter="formatName"
+            :formatter="formatSymbolName"
             fixed
           >
             <template #default="scope">
@@ -205,7 +228,7 @@
               <template #default="scope">
                 <div
                   :style="
-                    backgroundStyleRatio(
+                    backgroundStrengthRatioV2(
                       scope.row.tradingValueByMin,
                       scope.row.tradingValueByMinRate
                     )
@@ -245,7 +268,7 @@
               <template #default="scope">
                 <div
                   :style="
-                    backgroundStyleRatio(
+                    backgroundStrengthRatioV2(
                       scope.row.avgLimitOrderQty,
                       scope.row.avgLimitOrderRatio
                     )
@@ -280,7 +303,7 @@
               <template #default="scope">
                 <div
                   :style="
-                    backgroundStyleRatio(
+                    backgroundStrengthRatioV2(
                       scope.row.marketOrderValue,
                       scope.row.marketOrderBuyRatio
                     )
@@ -300,183 +323,38 @@
     :title="`${dialogRow.code}: ${dialogRow.name}`"
     width="1024"
   >
-    <el-row style="text-align: center">
-      <el-col :span="6">
-        <div>現値（前日比）</div>
-        <div
-          style="font-size: 1.5em; padding: 5px"
-          :class="colorRate(dialogRow.previouscloserate)"
-        >
-          {{
-            dialogRow.currentprice == null
-              ? " - "
-              : dialogRow.currentprice.toLocaleString()
-          }}（{{ formatRate(dialogRow.previouscloserate) }}）
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div>始値比</div>
-        <div
-          style="font-size: 1.5em; padding: 5px"
-          :class="colorRate(dialogRow.openingrate)"
-        >
-          {{ formatRate(dialogRow.openingrate) }}
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div>VWAP比</div>
-        <div
-          style="font-size: 1.5em; padding: 5px"
-          :class="colorRate(dialogRow.vwaprate)"
-        >
-          {{ formatRate(dialogRow.vwaprate) }}
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div>買指値率（総指値量）</div>
-        <div style="font-size: 1.5em; padding: 5px">
-          <el-progress
-            :percentage="dialogRow.avgLimitOrderRatio"
-            :color="dashboardColors"
-            :text-inside="true"
-            :stroke-width="25"
-          >
-            {{ formatVolume(dialogRow.avgLimitOrderQty) }}
-          </el-progress>
-        </div>
-      </el-col>
-    </el-row>
-    <el-table :data="dialogRow.timeLines" max-height="768">
-      <el-table-column
-        property="hhmm"
-        label="時間"
-        header-align="center"
-        align="center"
-        width="70"
-      />
-      <el-table-column
-        property="close"
-        label="終値"
-        header-align="center"
-        align="right"
-        width="100"
-      />
-      <el-table-column
-        property="close_rate"
-        label="現値変化率"
-        header-align="center"
-        align="right"
-        width="100"
-      >
-        <template #default="scope">
-          <div :class="colorRate(scope.row.close_rate)">{{ scope.row.close_rate }} %</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="一般" header-align="center">
-        <el-table-column
-          property="small_value"
-          label="代金"
-          header-align="center"
-          align="right"
-        >
-          <template #default="scope">
-            <div
-              :style="backgroundStyleVolume(scope.row.small_value, dialogRow.baseValue)"
+    <NoticeSymbolInfo :symbol="dialogRow"/>
+    <el-tabs v-model="activeName">
+      <el-tab-pane label="Table v1" name="1">
+        <NoticeSymbolTable :symbol="dialogRow"/>
+      </el-tab-pane>
+      <el-tab-pane label="Table v2" name="2">
+        <NoticeSymbolTableV2 :symbol="dialogRow"/>
+      </el-tab-pane>
+      <el-tab-pane label="Scores" name="3">
+        <el-scrollbar max-height="768">
+          <el-timeline>
+            <el-timeline-item
+              v-for="(score, index) in dialogRow.scores"
+              :key="index"
+              :color="score.point > 0 ? '#f44336' : '#2196f3'"
+              :timestamp="score.time"
+              placement="top"
+              size="large"
             >
-              {{ formatVolume(scope.row.small_value) }}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          property="small_ratio"
-          label="買率"
-          header-align="center"
-          align="right"
-        >
-          <template #default="scope">
-            <div
-              :style="backgroundStyleRatio(scope.row.small_value, scope.row.small_ratio)"
-            >
-              {{ scope.row.small_value > 0 ? scope.row.small_ratio : "-" }} %
-            </div>
-          </template>
-        </el-table-column>
-      </el-table-column>
-      <el-table-column
-        :label="`中級（${formatVolume(dialogRow.threshold / 6)}）`"
-        header-align="center"
-      >
-        <el-table-column
-          property="middle_value"
-          label="代金"
-          header-align="center"
-          align="right"
-        >
-          <template #default="scope">
-            <div
-              :style="backgroundStyleVolume(scope.row.middle_value, dialogRow.baseValue)"
-            >
-              {{ formatVolume(scope.row.middle_value) }}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          property="middle_ratio"
-          label="買率"
-          header-align="center"
-          align="right"
-        >
-          <template #default="scope">
-            <div
-              :style="
-                backgroundStyleRatio(scope.row.middle_value, scope.row.middle_ratio)
-              "
-            >
-              {{ scope.row.middle_value > 0 ? scope.row.middle_ratio : "-" }} %
-            </div>
-          </template>
-        </el-table-column>
-      </el-table-column>
-      <el-table-column
-        :label="`大口（${formatVolume(dialogRow.threshold / 2)}）`"
-        header-align="center"
-      >
-        <el-table-column
-          property="large_value"
-          label="代金"
-          header-align="center"
-          align="right"
-        >
-          <template #default="scope">
-            <div
-              :style="backgroundStyleVolume(scope.row.large_value, dialogRow.baseValue)"
-            >
-              {{ formatVolume(scope.row.large_value) }}
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          property="large_ratio"
-          label="買率"
-          header-align="center"
-          align="right"
-        >
-          <template #default="scope">
-            <div
-              :style="backgroundStyleRatio(scope.row.large_value, scope.row.large_ratio)"
-            >
-              {{ scope.row.large_value > 0 ? scope.row.large_ratio : "-" }} %
-            </div>
-          </template>
-        </el-table-column>
-      </el-table-column>
-    </el-table>
+              {{ score.label }}
+            </el-timeline-item>
+          </el-timeline>
+        </el-scrollbar>
+      </el-tab-pane>
+    </el-tabs>
   </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import { reactive, ref, onMounted, h } from "vue";
 import { io } from "socket.io-client";
+import { Bell, MuteNotification } from "@element-plus/icons-vue";
 
 useHead({ title: "通知受信" });
 const config = useRuntimeConfig().public;
@@ -488,22 +366,30 @@ const ranklist = reactive({});
 const now = ref("08:00:00");
 const dialogVisible = ref(false);
 const dialogRow = ref({});
-const isAudio = useState("isAudio");
-
-const dashboardColors = [
-  { color: "#1e88e5", percentage: 25 },
-  { color: "#42a5f5", percentage: 30 },
-  { color: "#64b5f6", percentage: 35 },
-  { color: "#90caf9", percentage: 40 },
-  { color: "#bbdefb", percentage: 45 },
-  { color: "#e3f2fd", percentage: 49 },
-  { color: "#ffebee", percentage: 50 },
-  { color: "#ffcdd2", percentage: 55 },
-  { color: "#ef9a9a", percentage: 60 },
-  { color: "#e57373", percentage: 65 },
-  { color: "#ef5350", percentage: 70 },
-  { color: "#f44336", percentage: 75 },
+const activeName = ref("1");
+const isAudio = ref(false);
+const scoreOptions = [
+  {
+    label: "BIG_SELL",
+    value: "BIG_SELL"
+  }, {
+    label: "BIG_BUY",
+    value: "BIG_BUY"
+  }, {
+    label: "APPEARED_BUY_ORDER",
+    value: "APPEARED_BUY_ORDER"
+  }, {
+    label: "APPEARED_SELL_ORDER",
+    value: "APPEARED_SELL_ORDER"
+  }, {
+    label: "DISAPPEARED_BUY_ORDER",
+    value: "DISAPPEARED_BUY_ORDER"
+  }, {
+    label: "DISAPPEARED_SELL_ORDER",
+    value: "DISAPPEARED_SELL_ORDER"
+  }
 ];
+const selectedScoreOption = ref(scoreOptions.map(o => o.value));
 
 interface SymbolTable {
   code: string;
@@ -557,6 +443,31 @@ const filterMidContractValueRatio = (value: string, row: SymbolTable) => {
 };
 const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
   return filterRatioMethod(value, row.smlContractValueBuyRatio);
+};
+
+const colorRows = (v) => {
+  const timeLines = ranklist[v.row.code].timeLines;
+  if (timeLines.length > 0) {
+    const timeLine = timeLines[timeLines.length - 1];
+    if (timeLine.middle_ratio > 50 && timeLine.large_ratio > 75) {
+      return "bg-chance";
+    }
+  }
+};
+const colorSelectedText = (v) => {
+  const rows = realtimeTableRef.value!.getSelectionRows();
+  if (rows.length > 0 && rows.filter((row) => row.code == v).length > 0) {
+    return "text-selected";
+  }
+};
+const copyToClipboard = (v) => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(v);
+  }
+};
+const openDialog = (row) => {
+  dialogVisible.value = true;
+  dialogRow.value = row;
 };
 
 onMounted(() => {
@@ -622,18 +533,17 @@ onMounted(() => {
     const recent_score = parseInt(notice.increased_score);
     if (recent_score != 0) {
       const colorCode = recent_score > 0 ? "#f44336" : "#2196f3";
-      if (isAudio.value) {
+      const latestScore = notice.scores[notice.scores.length - 1];
+      if (isAudio.value && selectedScoreOption.value.includes(latestScore.label)) {
         if (recent_score > 0) {
           bullAudio.play();
         } else {
           bearAudio.play();
         }
         ElNotification({
-          title: `${notice.score} - ${notice.time}`,
+          title: `${notice.code}: ${notice.name.substring(0, 12)}`,
           message: h(
-            "b",
-            { style: `color: ${colorCode}` },
-            `${notice.code}: ${notice.name.substring(0, 12)}`
+            "b", { style: `color: ${colorCode}` }, latestScore.label
           ),
           duration: 6000,
           position: "bottom-right",
@@ -644,70 +554,10 @@ onMounted(() => {
   });
 });
 
-const colorRows = (v) => {
-  const timeLines = ranklist[v.row.code].timeLines;
-  if (timeLines.length > 0) {
-    const timeLine = timeLines[timeLines.length - 1];
-    if (timeLine.middle_ratio > 50 && timeLine.large_ratio > 75) {
-      return "bg-chance";
-    }
-  }
-};
-const colorSelectedText = (v) => {
-  const rows = realtimeTableRef.value!.getSelectionRows();
-  if (rows.length > 0 && rows.filter((row) => row.code == v).length > 0) {
-    return "text-selected";
-  }
-};
-const copyToClipboard = (v) => {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(v);
-  }
-};
-const openDialog = (row) => {
-  dialogVisible.value = true;
-  dialogRow.value = row;
-};
-const formatName = (r, c, v, i) => {
-  const limit = 20;
-  if (v.length > limit) {
-    return `${v.substring(0, limit)}...`;
-  }
-  return v;
-};
-const formatRate = (v) => {
-  return `${Math.round(v * 10) / 10} %`;
-};
-const formatVolume = (v) => {
-  const t = v < 0 ? v * -1 : v;
-  if (t >= 1000000000) return `${Math.round(v / 100000000) / 10}g`;
-  if (t >= 1000000) return `${Math.round(v / 100000) / 10}m`;
-  if (t >= 1000) return `${Math.round(v / 100) / 10}k`;
-  if (t >= 1) return v;
-  return "-";
-};
-const colorFirstSign = (bidSign, askSign) => {
-  if (bidSign == "0118") return "text-blue5";
-  if (askSign == "0118") return "text-red5";
-  if (bidSign == "0102" || askSign == "0102") return "text-yellow";
-  return "";
-};
-const colorSecondSign = (bidSign, askSign) => {
-  if (bidSign == "0118" || bidSign == "0102") return "text-blue5";
-  if (askSign == "0118" || askSign == "0102") return "text-red5";
-  return "";
-};
-const formatFirstSign = (bidSign, askSign) => {
-  if (bidSign == "0118" || askSign == "0118") return "連";
-  if (bidSign == "0102" || askSign == "0102") return "特";
-  return "";
-};
-const formatSecondSign = (bidSign, askSign) => {
-  if (bidSign == "0118" || bidSign == "0102") return "売";
-  if (askSign == "0118" || askSign == "0102") return "買";
-  return "";
-};
-const colorRate = (v) => {
+// import { formatSymbolName, formatVolume, formatRate, formatFirstSign, formatSecondSign } from "@/modules/ValueFormatter";
+// import { colorRate, colorValue, backgroundStrengthRatioV2, colorFirstSign, colorSecondSign } from "@/modules/StyleHelper";
+
+const colorRate = (v: number) => {
   const r = Math.round(v * 10) / 10;
   if (r > 16) return "text-red9";
   if (r > 14) return "text-red8";
@@ -729,29 +579,8 @@ const colorRate = (v) => {
   if (r < 0) return "text-blue1";
   return "";
 };
-const colorVolume = (v, sob) => {
-  const t = v < 0 ? v * -1 : v;
-  if (sob > 0 && t > 80000) return "text-red9";
-  if (sob > 0 && t > 70000) return "text-red8";
-  if (sob > 0 && t > 60000) return "text-red7";
-  if (sob > 0 && t > 50000) return "text-red6";
-  if (sob > 0 && t > 40000) return "text-red5";
-  if (sob > 0 && t > 30000) return "text-red4";
-  if (sob > 0 && t > 20000) return "text-red3";
-  if (sob > 0 && t > 10000) return "text-red2";
-  if (sob > 0 && t > 0) return "text-red1";
-  if (sob < 0 && t > 80000) return "text-blue9";
-  if (sob < 0 && t > 70000) return "text-blue8";
-  if (sob < 0 && t > 60000) return "text-blue7";
-  if (sob < 0 && t > 50000) return "text-blue6";
-  if (sob < 0 && t > 40000) return "text-blue5";
-  if (sob < 0 && t > 30000) return "text-blue4";
-  if (sob < 0 && t > 20000) return "text-blue3";
-  if (sob < 0 && t > 10000) return "text-blue2";
-  if (sob < 0 && t > 0) return "text-blue1";
-  return "";
-};
-const colorValue = (v) => {
+
+const colorValue = (v: number) => {
   if (v >= 300000000) return "text-red9";
   if (v >= 250000000) return "text-red8";
   if (v >= 200000000) return "text-red7";
@@ -771,56 +600,92 @@ const colorValue = (v) => {
   if (v >= 2000000) return "text-blue8";
   return "text-blue9";
 };
-const colorTick = (v) => {
-  if (v >= 600) return "text-red9";
-  if (v >= 500) return "text-red8";
-  if (v >= 450) return "text-red7";
-  if (v >= 400) return "text-red6";
-  if (v >= 350) return "text-red5";
-  if (v >= 300) return "text-red4";
-  if (v >= 250) return "text-red3";
-  if (v >= 200) return "text-red2";
-  if (v >= 150) return "text-red1";
-  if (v >= 100) return "text-blue1";
-  if (v >= 80) return "text-blue2";
-  if (v >= 60) return "text-blue3";
-  if (v >= 40) return "text-blue4";
-  if (v >= 30) return "text-blue5";
-  if (v >= 20) return "text-blue6";
-  if (v >= 10) return "text-blue7";
-  if (v >= 5) return "text-blue8";
-  return "text-blue9";
-};
-const colorLimitOrderRate = (v) => {
-  if (v >= 500) return "text-red9";
-  if (v >= 400) return "text-red8";
-  if (v >= 300) return "text-red7";
-  if (v >= 250) return "text-red6";
-  if (v >= 200) return "text-red5";
-  if (v >= 150) return "text-red4";
-  if (v >= 100) return "text-red3";
-  if (v >= 50) return "text-red2";
-  if (v >= 10) return "text-red1";
-  if (v <= -500) return "text-blue9";
-  if (v <= -400) return "text-blue8";
-  if (v <= -300) return "text-blue7";
-  if (v <= -250) return "text-blue6";
-  if (v <= -200) return "text-blue5";
-  if (v <= -150) return "text-blue4";
-  if (v <= -100) return "text-blue3";
-  if (v <= -50) return "text-blue2";
-  if (v <= -10) return "text-blue1";
-  return "";
-};
 
-const backgroundStyleVolume = (volume, baseVolume) => {
-  const ratio = (volume / baseVolume) * 100;
-  return `background: linear-gradient(to right, rgba(255, 235, 59, 0.5) ${ratio}%, transparent ${ratio}%)`;
-};
-const backgroundStyleRatio = (num, ratio) => {
+const progressColors = [
+  { color: "#1e88e5", percentage: 25 },
+  { color: "#42a5f5", percentage: 30 },
+  { color: "#64b5f6", percentage: 35 },
+  { color: "#90caf9", percentage: 40 },
+  { color: "#bbdefb", percentage: 45 },
+  { color: "#e3f2fd", percentage: 49 },
+  { color: "#ffebee", percentage: 50 },
+  { color: "#ffcdd2", percentage: 55 },
+  { color: "#ef9a9a", percentage: 60 },
+  { color: "#e57373", percentage: 65 },
+  { color: "#ef5350", percentage: 70 },
+  { color: "#f44336", percentage: 75 },
+];
+
+const backgroundStrengthRatioV2 = (num: number, ratio: number) => {
   if (num) {
     return `background: linear-gradient(to left, #f44336 ${ratio}%, #2196f3 ${ratio}%)`;
   }
   return "";
 };
+
+const backgroundStrengthRatio = (value: number, baseValue: number) => {
+  const ratio = (value / baseValue) * 100;
+  return `background: linear-gradient(to left, #f44336 ${ratio}%, #2196f3 ${ratio}%)`;
+};
+
+const backgroundBearRatio = (value: number, baseValue: number) => {
+  const ratio = (value / baseValue) * 100;
+  return `background: linear-gradient(to left, #2196f3 ${ratio}%, transparent ${ratio}%)`;
+};
+
+const backgroundBullRatio = (value: number, baseValue: number) => {
+  const ratio = (value / baseValue) * 100;
+  return `background: linear-gradient(to right, #f44336 ${ratio}%, transparent ${ratio}%)`;
+}
+
+const backgroundStyleVolume = (value: number, baseValue: number) => {
+  const ratio = (value / baseValue) * 100;
+  return `background: linear-gradient(to right, rgba(255, 235, 59, 0.5) ${ratio}%, transparent ${ratio}%)`;
+};
+
+const colorFirstSign = (bidSign: string, askSign: string) => {
+  if (bidSign == "0118") return "text-blue5";
+  if (askSign == "0118") return "text-red5";
+  if (bidSign == "0102" || askSign == "0102") return "text-yellow";
+  return "";
+};
+const colorSecondSign = (bidSign: string, askSign: string) => {
+  if (bidSign == "0118" || bidSign == "0102") return "text-blue5";
+  if (askSign == "0118" || askSign == "0102") return "text-red5";
+  return "";
+};
+
+const formatSymbolName = (row: any, column: any, cellValue: string, index: number) => {
+  const limit = 20;
+  if (cellValue.length > limit) {
+    return `${cellValue.substring(0, limit)}...`;
+  }
+  return cellValue;
+};
+
+const formatRate = (v: number) => {
+  return `${Math.round(v * 10) / 10} %`;
+};
+
+const formatVolume = (v: number) => {
+  const t = v < 0 ? v * -1 : v;
+  if (t >= 1000000000) return `${Math.round(v / 100000000) / 10}g`;
+  if (t >=    1000000) return `${Math.round(v / 100000) / 10}m`;
+  if (t >=       1000) return `${Math.round(v / 100) / 10}k`;
+  if (t >=          1) return v;
+  return "-";
+};
+
+const formatFirstSign = (bidSign: string, askSign: string) => {
+  if (bidSign == "0118" || askSign == "0118") return "連";
+  if (bidSign == "0102" || askSign == "0102") return "特";
+  return "";
+};
+
+const formatSecondSign = (bidSign: string, askSign: string) => {
+  if (bidSign == "0118" || bidSign == "0102") return "売";
+  if (askSign == "0118" || askSign == "0102") return "買";
+  return "";
+};
+
 </script>
