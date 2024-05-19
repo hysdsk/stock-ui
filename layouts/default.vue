@@ -29,27 +29,41 @@
     </template>
     <template #extra>
       <div style="padding-right: 1em">
-        <el-switch
-          v-model="isDark"
-          size="large"
-          style="--el-switch-on-color: #455a64; --el-switch-off-color: #cfd8dc"
-          inline-prompt
-          :active-icon="Moon"
-          :inactive-icon="Sunny"
-        />
-      </div>
+        <el-space>
+          <el-switch
+            v-model="isAudio"
+            size="large"
+            style="--el-switch-on-color: #455a64; --el-switch-off-color: #455a64"
+            inline-prompt
+            :active-icon="Bell"
+            :inactive-icon="MuteNotification"
+          />
+          <el-switch
+            :key="isDarkKey"
+            v-model="isDark"
+            size="large"
+            style="--el-switch-on-color: #455a64; --el-switch-off-color: #455a64"
+            inline-prompt
+            :active-icon="Moon"
+            :inactive-icon="Sunny"
+          />
+          </el-space>
+        </div>
     </template>
   </el-page-header>
   <slot />
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { useState } from "#app";
 import { useDark } from "@vueuse/core";
-import { ArrowDown, Moon, Sunny } from "@element-plus/icons-vue";
+import { ArrowDown, Moon, Sunny, Bell, MuteNotification } from "@element-plus/icons-vue";
 import "element-plus/theme-chalk/dark/css-vars.css";
 
+const isAudio = useState("isAudio", () => ref(false));
 const isDark = useDark();
+const isDarkKey = ref(0);
 
 const goHome = () => (window.location.href = "/");
 const goSearched = (key: string) => (window.location.href = `/search/${key}`);
@@ -59,5 +73,9 @@ useHead({
   titleTemplate: (title) => {
     return title == "Lorenzini" ? "Lorenzini" : `${title} - Lorenzini`;
   }
+});
+onMounted(() => {
+  // テーマ同期のためel-switchを強制的に再レンダリングする
+  isDarkKey.value++;
 });
 </script>
