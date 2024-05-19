@@ -31,6 +31,14 @@
       <div style="padding-right: 1em">
         <el-space>
           <el-switch
+            v-model="isAudio"
+            size="large"
+            style="--el-switch-on-color: #455a64; --el-switch-off-color: #455a64"
+            inline-prompt
+            :active-icon="Bell"
+            :inactive-icon="MuteNotification"
+          />
+          <el-switch
             :key="isDarkKey"
             v-model="isDark"
             size="large"
@@ -43,16 +51,17 @@
         </div>
     </template>
   </el-page-header>
-  <slot/>
+  <slot />
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import { useState } from "#app";
 import { useDark } from "@vueuse/core";
-import { ArrowDown, Moon, Sunny } from "@element-plus/icons-vue";
+import { ArrowDown, Moon, Sunny, Bell, MuteNotification } from "@element-plus/icons-vue";
 import "element-plus/theme-chalk/dark/css-vars.css";
 
+const isAudio = useState("isAudio", () => ref(false));
 const isDark = useDark();
 const isDarkKey = ref(0);
 
