@@ -1,4 +1,12 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import fs from "fs";
+import path from "path";
+
+const modulesDirectory = path.join(__dirname, "modules");
+const modules = fs.readdirSync(modulesDirectory)
+  .filter(file => file.endsWith(".ts"))
+  .map(file => require(path.resolve(modulesDirectory, file)).default);
+modules.push("@element-plus/nuxt");
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -28,9 +36,7 @@ export default defineNuxtConfig({
     css: [
         "@/assets/styles/main.css"
     ],
-    modules: [
-        '@element-plus/nuxt'
-    ],
+    modules,
     elementPlus: { /** Options */ },
     runtimeConfig: {
         dbHost: process.env.DB_HOST,
