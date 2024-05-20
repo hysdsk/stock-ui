@@ -42,3 +42,7 @@
 .text-selected {
     color: rgba(255, 225, 0, 1);
 }
+
+.el-table .el-table__body tr:hover > td {
+    background-color: transparent !important;
+}

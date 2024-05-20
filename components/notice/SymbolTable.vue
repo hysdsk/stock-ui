@@ -1,5 +1,5 @@
 <template>
-  <el-table :data="props.symbol.timeLines" max-height="768">
+  <el-table :data="props.symbol.timeLines" max-height="512">
     <el-table-column
       property="hhmm"
       label="時間"
