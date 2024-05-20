@@ -59,7 +59,7 @@
           row-key="code"
           ref="realtimeTableRef"
           :data="Object.values(ranklist)"
-          :row-class-name="colorRows"
+          :row-style="styleRows"
           @row-click="
             (r, c, e) => {
               openDialog(r);
@@ -332,7 +332,7 @@
         <NoticeSymbolTableV2 :symbol="dialogRow"/>
       </el-tab-pane>
       <el-tab-pane label="Scores" name="3">
-        <el-scrollbar max-height="768">
+        <el-scrollbar max-height="512">
           <el-timeline>
             <el-timeline-item
               v-for="(score, index) in dialogRow.scores"
@@ -445,12 +445,18 @@ const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
   return filterRatioMethod(value, row.smlContractValueBuyRatio);
 };
 
-const colorRows = (v) => {
-  const timeLines = ranklist[v.row.code].timeLines;
-  if (timeLines.length > 0) {
-    const timeLine = timeLines[timeLines.length - 1];
-    if (timeLine.middle_ratio > 50 && timeLine.large_ratio > 75) {
-      return "bg-chance";
+const styleRows = (data) => {
+  const timeLines = ranklist[data.row.code].timeLines;
+  if (timeLines.length >= 2) {
+    const crnt = timeLines[timeLines.length - 1];
+    const prev = timeLines[timeLines.length - 2];
+    if (crnt.large_ratio > 75 && prev.large_ratio > 75) {
+      return {"background-color": "rgba(255, 0, 0, 0.2)"};
+    }
+  } else if (timeLines.length >= 1) {
+    const crnt = timeLines[timeLines.length - 1];
+    if (crnt.large_ratio > 75) {
+      return {"background-color": "rgba(255, 0, 0, 0.1)"};
     }
   }
 };
@@ -493,6 +499,7 @@ onMounted(() => {
       ranklist[code].asksign = notice.asksign;
       ranklist[code].score = notice.score;
       ranklist[code].scores = notice.scores;
+      ranklist[code].totalContractValues = notice.total_contract_values;
       ranklist[code].timeLines = notice.time_lines;
       ranklist[code].baseValue = notice.base_value;
     } else {
@@ -515,6 +522,7 @@ onMounted(() => {
         asksign: notice.asksign,
         score: notice.score,
         scores: notice.scores,
+        totalContractValues: notice.total_contract_values,
         timeLines: notice.time_lines,
         baseValue: notice.base_value,
       };

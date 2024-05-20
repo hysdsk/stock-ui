@@ -1,9 +1,9 @@
 <template>
   <el-row style="text-align: center">
-    <el-col :span="6">
+    <el-col :span="5">
       <div>現値（前日比）</div>
       <div
-        style="font-size: 1.5em; padding: 5px"
+        style="font-size: 1.2em; padding: 5px"
         :class="colorRate(props.symbol.previouscloserate)"
       >
         {{
@@ -13,27 +13,27 @@
         }}（{{ formatRate(props.symbol.previouscloserate) }}）
       </div>
     </el-col>
-    <el-col :span="6">
+    <el-col :span="5">
       <div>始値比</div>
       <div
-        style="font-size: 1.5em; padding: 5px"
+        style="font-size: 1.2em; padding: 5px"
         :class="colorRate(props.symbol.openingrate)"
       >
         {{ formatRate(props.symbol.openingrate) }}
       </div>
     </el-col>
-    <el-col :span="6">
+    <el-col :span="5">
       <div>VWAP比</div>
       <div
-        style="font-size: 1.5em; padding: 5px"
+        style="font-size: 1.2em; padding: 5px"
         :class="colorRate(props.symbol.vwaprate)"
       >
         {{ formatRate(props.symbol.vwaprate) }}
       </div>
     </el-col>
-    <el-col :span="6">
+    <el-col :span="5">
       <div>買指値率（総指値量）</div>
-      <div style="font-size: 1.5em; padding: 5px">
+      <div style="font-size: 1.2em; padding: 5px">
         <el-progress
           :percentage="props.symbol.avgLimitOrderRatio"
           :color="progressColors"
@@ -44,7 +44,22 @@
         </el-progress>
       </div>
     </el-col>
+    <el-col :span="4">
+    </el-col>
   </el-row>
+  <el-table :data="props.symbol.totalContractValues" :show-header="false" size="small">
+    <el-table-column property="label" label="種別" width="100"/>
+    <el-table-column property="sell" label="売り" align="right">
+      <template #default="scope">
+        <div :style="backgroundBearRatio(scope.row.sell, maxContractValues(props.symbol.totalContractValues))">{{ scope.row.sell.toLocaleString() }}</div>
+      </template>
+    </el-table-column>
+    <el-table-column property="buy" label="買い">
+      <template #default="scope">
+        <div :style="backgroundBullRatio(scope.row.buy, maxContractValues(props.symbol.totalContractValues))">{{ scope.row.buy.toLocaleString() }}</div>
+      </template>
+    </el-table-column>
+  </el-table>
 </template>
 
 <script lang="ts" setup>
@@ -52,6 +67,19 @@ interface Props {
   symbol: object;
 }
 const props = withDefaults(defineProps<Props>(), {});
+
+interface ContractValue {
+  label: string;
+  sell: number;
+  buy: number;
+  ratio: number;
+}
+
+const maxContractValues = (contractValues: ContractValue[]) => {
+  const sells = contractValues.map(c => c.sell);
+  const buys = contractValues.map(c => c.buy);
+  return Math.max(...sells, ...buys);
+}
 
 
 // import { formatVolume, formatRate } from "~/modules/ValueFormatter";
