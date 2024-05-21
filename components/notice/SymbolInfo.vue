@@ -51,12 +51,12 @@
     <el-table-column property="label" label="種別" width="100"/>
     <el-table-column property="sell" label="売り" align="right">
       <template #default="scope">
-        <div :style="backgroundBearRatio(scope.row.sell, maxContractValues(props.symbol.totalContractValues))">{{ scope.row.sell.toLocaleString() }}</div>
+        <div :style="backgroundBearRatio(scope.row.sell, maxContractValues(props.symbol.totalContractValues))">{{ scope.row.sell.toLocaleString() }} 円&nbsp;</div>
       </template>
     </el-table-column>
     <el-table-column property="buy" label="買い">
       <template #default="scope">
-        <div :style="backgroundBullRatio(scope.row.buy, maxContractValues(props.symbol.totalContractValues))">{{ scope.row.buy.toLocaleString() }}</div>
+        <div :style="backgroundBullRatio(scope.row.buy, maxContractValues(props.symbol.totalContractValues))">&nbsp;{{ scope.row.buy.toLocaleString() }} 円</div>
       </template>
     </el-table-column>
   </el-table>
