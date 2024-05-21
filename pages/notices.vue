@@ -446,18 +446,15 @@ const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
 };
 
 const styleRows = (data) => {
-  const timeLines = ranklist[data.row.code].timeLines;
-  if (timeLines.length >= 2) {
-    const crnt = timeLines[timeLines.length - 1];
-    const prev = timeLines[timeLines.length - 2];
-    if (crnt.large_ratio > 75 && prev.large_ratio > 75) {
-      return {"background-color": "rgba(255, 0, 0, 0.2)"};
+  const symbol = ranklist[data.row.code];
+  if (symbol.totalContractValues.every(c => c.buy > c.sell)) {
+    if (symbol.timeLines.length >= 1) {
+      const lastTimeLine = symbol.timeLines.at(-1);
+      if (lastTimeLine.large_ratio > 75 && lastTimeLine.large_buy > symbol.threshold) {
+        return {"background-color": "rgba(255, 0, 0, 0.2)"};
+      }
     }
-  } else if (timeLines.length >= 1) {
-    const crnt = timeLines[timeLines.length - 1];
-    if (crnt.large_ratio > 75) {
-      return {"background-color": "rgba(255, 0, 0, 0.1)"};
-    }
+    return {"background-color": "rgba(255, 0, 0, 0.1)"};
   }
 };
 const colorSelectedText = (v) => {
