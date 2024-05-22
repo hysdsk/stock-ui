@@ -25,56 +25,56 @@
         <div :class="colorRate(scope.row.close_rate)">{{ scope.row.close_rate }} %</div>
       </template>
     </el-table-column>
-    <el-table-column label="一般" header-align="center">
+    <el-table-column label="成行" header-align="center">
       <el-table-column
-        property="small_sell"
+        property="order_limit_bid"
         label="売"
         header-align="center"
         align="right"
       >
         <template #default="scope">
           <div
-            :style="backgroundBearRatio(scope.row.small_sell, props.symbol.baseValue)"
+            :style="backgroundBearRatio(scope.row.order_market_bid, maxMarketOrder(props.symbol.timeLines))"
           >
-            {{ formatVolume(scope.row.small_sell) }}
+            {{ scope.row.order_market_bid.toLocaleString() }}
           </div>
         </template>
       </el-table-column>
       <el-table-column
-        property="small_buy"
+        property="order_market_ask"
         label="買"
         header-align="center"
         align="right"
       >
         <template #default="scope">
           <div
-            :style="backgroundBullRatio(scope.row.small_buy, props.symbol.baseValue)"
+            :style="backgroundBullRatio(scope.row.order_market_ask, maxMarketOrder(props.symbol.timeLines))"
           >
-            {{ formatVolume(scope.row.small_buy) }}
+            {{ scope.row.order_market_ask.toLocaleString() }}
           </div>
         </template>
       </el-table-column>
     </el-table-column>
     <el-table-column
-      :label="`中級（${formatVolume(props.symbol.threshold / 6)}）`"
+      label="指値"
       header-align="center"
     >
       <el-table-column
-        property="middle_sell"
+        property="order_limit_bid"
         label="売"
         header-align="center"
         align="right"
       >
         <template #default="scope">
           <div
-            :style="backgroundBearRatio(scope.row.middle_sell, props.symbol.baseValue)"
+            :style="backgroundBearRatio(scope.row.order_limit_bid, maxLimitOrder(props.symbol.timeLines))"
           >
-            {{ formatVolume(scope.row.middle_sell) }}
+            {{ scope.row.order_limit_bid.toLocaleString() }}
           </div>
         </template>
       </el-table-column>
       <el-table-column
-        property="middle_buy"
+        property="order_limit_ask"
         label="買"
         header-align="center"
         align="right"
@@ -82,43 +82,43 @@
         <template #default="scope">
           <div
             :style="
-              backgroundBullRatio(scope.row.middle_buy, props.symbol.baseValue)
+              backgroundBullRatio(scope.row.order_limit_ask, maxLimitOrder(props.symbol.timeLines))
             "
           >
-            {{ formatVolume(scope.row.middle_buy) }}
+            {{ scope.row.order_limit_ask.toLocaleString() }}
           </div>
         </template>
       </el-table-column>
     </el-table-column>
     <el-table-column
-      :label="`大口（${formatVolume(props.symbol.threshold / 2)}）`"
+      label="圧"
       header-align="center"
     >
       <el-table-column
-        property="large_sell"
-        label="売"
+        property="order_over"
+        label="Over"
         header-align="center"
         align="right"
       >
         <template #default="scope">
           <div
-            :style="backgroundBearRatio(scope.row.large_sell, props.symbol.baseValue)"
+            :style="backgroundBearRatio(scope.row.order_over, maxOverUnder(props.symbol.timeLines))"
           >
-            {{ formatVolume(scope.row.large_sell) }}
+            {{ scope.row.order_over.toLocaleString() }}
           </div>
         </template>
       </el-table-column>
       <el-table-column
-        property="large_buy"
-        label="買"
+        property="order_under"
+        label="Under"
         header-align="center"
         align="right"
       >
         <template #default="scope">
           <div
-            :style="backgroundBullRatio(scope.row.large_buy, props.symbol.baseValue)"
+            :style="backgroundBullRatio(scope.row.order_under, maxOverUnder(props.symbol.timeLines))"
           >
-            {{ formatVolume(scope.row.large_buy) }}
+            {{ scope.row.order_under.toLocaleString() }}
           </div>
         </template>
       </el-table-column>
@@ -132,6 +132,22 @@ interface Props {
   symbol: object;
 }
 const props = withDefaults(defineProps<Props>(), {});
+
+const maxMarketOrder = (timeLines) => {
+  const b = Math.max(...timeLines.map(tl => tl.order_market_bid));
+  const a = Math.max(...timeLines.map(tl => tl.order_market_ask));
+  return b > a ? b : a;
+}
+const maxLimitOrder = (timeLines) => {
+  const b = Math.max(...timeLines.map(tl => tl.order_limit_bid));
+  const a = Math.max(...timeLines.map(tl => tl.order_limit_ask));
+  return b > a ? b : a;
+}
+const maxOverUnder = (timeLines) => {
+  const o = Math.max(...timeLines.map(tl => tl.order_over));
+  const u = Math.max(...timeLines.map(tl => tl.order_over));
+  return o > u ? o : u;
+}
 
 // import { formatVolume } from "~/modules/ValueFormatter";
 // import { colorRate, backgroundBearRatio, backgroundBullRatio } from "~/modules/StyleHelper";

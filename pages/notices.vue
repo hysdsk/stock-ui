@@ -322,30 +322,21 @@
     v-model="dialogVisible"
     :title="`${dialogRow.code}: ${dialogRow.name}`"
     width="1024"
+    top="8vh"
   >
     <NoticeSymbolInfo :symbol="dialogRow"/>
     <el-tabs v-model="activeName">
-      <el-tab-pane label="Table v1" name="1">
-        <NoticeSymbolTable :symbol="dialogRow"/>
+      <el-tab-pane label="売買代金 v1" name="1">
+        <NoticeSymbolTable :height="tabHeight" :symbol="dialogRow"/>
       </el-tab-pane>
-      <el-tab-pane label="Table v2" name="2">
-        <NoticeSymbolTableV2 :symbol="dialogRow"/>
+      <el-tab-pane label="売買代金 v2" name="2">
+        <NoticeSymbolTableV2 :height="tabHeight" :symbol="dialogRow"/>
       </el-tab-pane>
-      <el-tab-pane label="Scores" name="3">
-        <el-scrollbar max-height="512">
-          <el-timeline>
-            <el-timeline-item
-              v-for="(score, index) in dialogRow.scores"
-              :key="index"
-              :color="score.point > 0 ? '#f44336' : '#2196f3'"
-              :timestamp="score.time"
-              placement="top"
-              size="large"
-            >
-              {{ score.label }}
-            </el-timeline-item>
-          </el-timeline>
-        </el-scrollbar>
+      <el-tab-pane label="注文量" name="3">
+        <NoticeSymbolOrderTable :height="tabHeight" :symbol="dialogRow"/>
+      </el-tab-pane>
+      <el-tab-pane label="スコア" name="4">
+        <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -357,6 +348,7 @@ import { io } from "socket.io-client";
 import { Bell, MuteNotification } from "@element-plus/icons-vue";
 
 useHead({ title: "通知受信" });
+const tabHeight = ref(768);
 const config = useRuntimeConfig().public;
 const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
 const filtered = ref(false);
@@ -446,15 +438,21 @@ const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
 };
 
 const styleRows = (data) => {
-  const symbol = ranklist[data.row.code];
-  if (symbol.totalContractValues.every(c => c.buy > c.sell)) {
-    if (symbol.timeLines.length >= 1) {
-      const lastTimeLine = symbol.timeLines.at(-1);
-      if (lastTimeLine.large_ratio > 75 && lastTimeLine.large_buy > symbol.threshold) {
-        return {"background-color": "rgba(255, 0, 0, 0.2)"};
-      }
-    }
+  if (data.row.timeLines.length == 0) {
+    return;
+  }
+  const lastTimeLine = data.row.timeLines.at(-1);
+  if (
+    lastTimeLine.large_sell < lastTimeLine.large_buy &&
+    lastTimeLine.middle_sell < lastTimeLine.middle_buy &&
+    lastTimeLine.small_sell < lastTimeLine.small_buy) {
     return {"background-color": "rgba(255, 0, 0, 0.1)"};
+  }
+  if (
+    lastTimeLine.large_sell > lastTimeLine.large_buy &&
+    lastTimeLine.middle_sell > lastTimeLine.middle_buy &&
+    lastTimeLine.small_sell > lastTimeLine.small_buy) {
+    return {"background-color": "rgba(0, 0, 255, 0.1)"};
   }
 };
 const colorSelectedText = (v) => {
