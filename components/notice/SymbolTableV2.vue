@@ -1,5 +1,5 @@
 <template>
-  <el-table :data="props.symbol.timeLines" max-height="512">
+  <el-table :data="props.symbol.timeLines" :max-height="props.height">
     <el-table-column
       property="hhmm"
       label="時間"
@@ -122,6 +122,7 @@
 
 <script lang="ts" setup>
 interface Props {
+  height: number;
   symbol: object;
 }
 const props = withDefaults(defineProps<Props>(), {});

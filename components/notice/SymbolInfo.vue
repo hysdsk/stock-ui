@@ -33,12 +33,12 @@
     </el-col>
     <el-col :span="5">
       <div>買指値率（総指値量）</div>
-      <div style="font-size: 1.2em; padding: 5px">
+      <div style="font-size: 0.5em; margin-top: 10px;">
         <el-progress
           :percentage="props.symbol.avgLimitOrderRatio"
           :color="progressColors"
           :text-inside="true"
-          :stroke-width="25"
+          :stroke-width="15"
         >
           {{ formatVolume(props.symbol.avgLimitOrderQty) }}
         </el-progress>
