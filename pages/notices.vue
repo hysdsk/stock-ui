@@ -438,21 +438,31 @@ const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
 };
 
 const styleRows = (data) => {
-  if (data.row.timeLines.length == 0) {
+  if (data.row.timeLines.length < 2) {
     return;
   }
-  const lastTimeLine = data.row.timeLines.at(-1);
-  if (
-    lastTimeLine.large_sell < lastTimeLine.large_buy &&
-    lastTimeLine.middle_sell < lastTimeLine.middle_buy &&
-    lastTimeLine.small_sell < lastTimeLine.small_buy) {
-    return {"background-color": "rgba(255, 0, 0, 0.1)"};
-  }
-  if (
-    lastTimeLine.large_sell > lastTimeLine.large_buy &&
-    lastTimeLine.middle_sell > lastTimeLine.middle_buy &&
-    lastTimeLine.small_sell > lastTimeLine.small_buy) {
-    return {"background-color": "rgba(0, 0, 255, 0.1)"};
+  const crntTimeLine = data.row.timeLines.at(-1);
+  const prevTimeLine = data.row.timeLines.at(-2);
+  if (data.row.baseValue == 0) {
+    if (crntTimeLine.close_rate > 0 && prevTimeLine.close_rate > 0) {
+      return {"background-color": "rgba(255, 0, 0, 0.1)"};
+    }
+    if (crntTimeLine.close_rate < 0 && prevTimeLine.close_rate < 0) {
+      return {"background-color": "rgba(0, 0, 255, 0.1)"};
+    }
+  } else {
+    if (
+      crntTimeLine.large_sell < crntTimeLine.large_buy &&
+      crntTimeLine.middle_sell < crntTimeLine.middle_buy &&
+      crntTimeLine.small_sell < crntTimeLine.small_buy) {
+      return {"background-color": "rgba(255, 0, 0, 0.1)"};
+    }
+    if (
+      crntTimeLine.large_sell > crntTimeLine.large_buy &&
+      crntTimeLine.middle_sell > crntTimeLine.middle_buy &&
+      crntTimeLine.small_sell > crntTimeLine.small_buy) {
+      return {"background-color": "rgba(0, 0, 255, 0.1)"};
+    }
   }
 };
 const colorSelectedText = (v) => {
