@@ -456,16 +456,13 @@ const styleRows = (data) => {
       return {"background-color": "rgba(0, 0, 255, 0.1)"};
     }
   } else {
-    if (
-      crntTimeLine.large_sell < crntTimeLine.large_buy &&
-      crntTimeLine.middle_sell < crntTimeLine.middle_buy &&
-      crntTimeLine.small_sell < crntTimeLine.small_buy) {
+    const sells = data.row.totalContractValues.map(c => c.sell).reduce((a, b) => a + b);
+    const buys = data.row.totalContractValues.map(c => c.buy).reduce((a, b) => a + b);
+    const largeAndMiddleBuys = data.row.totalContractValues.filter(c => c.id !== "small").map(c => c.buy).reduce((a, b) => a + b);
+    if ((sells * 2) < buys && largeAndMiddleBuys > 0) {
       return {"background-color": "rgba(255, 0, 0, 0.1)"};
     }
-    if (
-      crntTimeLine.large_sell > crntTimeLine.large_buy &&
-      crntTimeLine.middle_sell > crntTimeLine.middle_buy &&
-      crntTimeLine.small_sell > crntTimeLine.small_buy) {
+    if (sells > (buys * 2)) {
       return {"background-color": "rgba(0, 0, 255, 0.1)"};
     }
   }

@@ -43,6 +43,7 @@
     color: rgba(255, 225, 0, 1);
 }
 
-.el-table .el-table__body tr:hover > td {
+/* カーソルホバー時のハイライトをキャンセルする */
+.el-table .el-table__body tr > td {
     background-color: transparent !important;
 }
