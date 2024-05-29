@@ -321,7 +321,6 @@
   <el-dialog
     v-model="dialogVisible"
     :title="`${dialogRow.code}: ${dialogRow.name}`"
-    @opened="openedDialog"
     width="1280"
     top="8vh"
   >
@@ -339,8 +338,8 @@
       <el-tab-pane label="スコア" name="4">
         <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
       </el-tab-pane>
-      <el-tab-pane label="チャート" name="5">
-        <canvas id="chart" style="width: 1280px; height: 768px"></canvas>
+      <el-tab-pane label="タイムラインチャート" name="5">
+        <NoticeTimeLineChart :height="tabHeight" :symbol="dialogRow" ref="timeLineChartRef"/>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -363,6 +362,7 @@ const ranklist = reactive({});
 const now = ref("08:00:00");
 const dialogVisible = ref(false);
 const dialogRow = ref({});
+const timeLineChartRef = ref(null);
 const activeName = ref("1");
 const isAudio = ref(false);
 const scoreOptions = [
@@ -387,6 +387,12 @@ const scoreOptions = [
   }
 ];
 const selectedScoreOption = ref(scoreOptions.map(o => o.value));
+
+watch(dialogRow, (row, prevRow) => {
+  if (timeLineChartRef.value) {
+    timeLineChartRef.value.refreshChart(row);
+  }
+});
 
 interface SymbolTable {
   code: string;
@@ -483,122 +489,6 @@ const openDialog = (row) => {
   dialogRow.value = row;
 };
 
-const getChart = () => {
-  if (Object.values(Chart.instances).map(c => c.canvas.id).includes("chart")) {
-    return Chart.getChart("chart");
-  }
-  return new Chart(document.getElementById("chart").getContext("2d"), {
-    data: { labels: [], datasets: [] },
-    options: {
-      responsive: false,
-      animation: {
-        duration: 0
-      },
-      layout: {
-        padding: { right: 48 }
-      },
-      scales: {
-        price: { 
-          type: "linear",
-          position: "left",
-          beginAtZero: false,
-          stacked: true,
-        },
-        value: {
-          type: "linear",
-          position: "right",
-          stacked: true,
-        },
-        x: {
-          type: "category",
-          stacked: true,
-          ticks: {
-            minRotation: 45,
-            maxRotation: 45,
-          },
-        },
-      },
-    }
-  });
-}
-
-const refreshChart = () => {
-  // ダイアログを表示するまではスキップする
-  if (Object.keys(dialogRow.value).length == 0) {
-    return;
-  }
-  // チャートを取得しデータセットの表示状態を取得する
-  const chart = getChart();
-  const visibilities = Object.fromEntries(chart.data.datasets.map((dataset, i) => [dataset.label, chart.isDatasetVisible(i)]));
-  // チャートを最新データで更新する
-  chart.data.labels = dialogRow.value.timeLines.map(timeLine => timeLine.hhmm);
-  chart.data.datasets = [{
-    label: "価格",
-    type: "line",
-    yAxisID: "price", 
-    backgroundColor: "#4caf50",
-    borderColor: "#4caf50",
-    pointRadius: 2,
-    data: dialogRow.value.timeLines.map(timeLine => timeLine.close)
-  }, {
-    label: "大口売",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#2196f3",
-    data: dialogRow.value.timeLines.map(timeLine => timeLine.large_sell)
-  }, {
-    label: "中級売",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#42a5f5",
-    data: dialogRow.value.timeLines.map(timeLine => timeLine.middle_sell)
-  }, {
-    label: "一般売",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#64b5f6",
-    data: dialogRow.value.timeLines.map(timeLine => timeLine.small_sell)
-  }, {
-    label: "大口買",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#f44336",
-    data: dialogRow.value.timeLines.map(timeLine => timeLine.large_buy)
-  }, {
-    label: "中級買",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#ef5350",
-    data: dialogRow.value.timeLines.map(timeLine => timeLine.middle_buy)
-  }, {
-    label: "一般買",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#e57373",
-    data: dialogRow.value.timeLines.map(timeLine => timeLine.small_buy)
-  }];
-  chart.update();
-  // データセットの表示状態を引き継ぐ
-  chart.data.datasets.forEach((dataset, i) => {
-    const visibility = visibilities[dataset.label];
-    if (visibility != null && !visibility) {
-      chart.hide(i);
-    }
-  })
-}
-
-const openedDialog = () => {
-  refreshChart();
-}
-
-const closedDialog = () => {
-  const chart = getChart();
-  chart.data.datasets.forEach(dataset => dataset.data = []);
-  chart.update();
-  // chart.render();
-  // chart.clear();
-}
-
 onMounted(() => {
   const bearAudio = new Audio("/audio/soundeffect_01.wav");
   const bullAudio = new Audio("/audio/soundeffect_02.wav");
@@ -683,9 +573,6 @@ onMounted(() => {
       }
     }
   });
-
-  // チャートの自動更新設定
-  setInterval(() => refreshChart(), 5000);
 });
 
 // import { formatSymbolName, formatVolume, formatRate, formatFirstSign, formatSecondSign } from "@/modules/ValueFormatter";
