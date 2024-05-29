@@ -339,7 +339,7 @@
         <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
       </el-tab-pane>
       <el-tab-pane label="タイムラインチャート" name="5">
-        <NoticeTimeLineChart :height="tabHeight" :symbol="dialogRow"/>
+        <NoticeTimeLineChart :height="tabHeight" :symbol="dialogRow" ref="timeLineChartRef"/>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -362,6 +362,7 @@ const ranklist = reactive({});
 const now = ref("08:00:00");
 const dialogVisible = ref(false);
 const dialogRow = ref({});
+const timeLineChartRef = ref(null);
 const activeName = ref("1");
 const isAudio = ref(false);
 const scoreOptions = [
@@ -386,6 +387,12 @@ const scoreOptions = [
   }
 ];
 const selectedScoreOption = ref(scoreOptions.map(o => o.value));
+
+watch(dialogRow, (row, prevRow) => {
+  if (timeLineChartRef.value) {
+    timeLineChartRef.value.refreshChart(row);
+  }
+});
 
 interface SymbolTable {
   code: string;
