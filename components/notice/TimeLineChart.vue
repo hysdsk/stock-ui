@@ -1,20 +1,23 @@
 <template>
-  <canvas id="timeline" :style="{width: '1280px', height: `${props.height}px`}"></canvas>
+  <div>
+    <canvas id="timeline" :style="{width: `${width}px`, height: `${props.height}px`}"></canvas>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import Chart from "chart.js/auto";
 interface Props {
   height: number;
+  width: number;
   symbol: object;
 }
 const props = withDefaults(defineProps<Props>(), {});
 
-const getChart = () => {
-  if (Object.values(Chart.instances).map(c => c.canvas.id).includes("timeline")) {
-    return Chart.getChart("timeline");
+const getChart = (chartId) => {
+  if (Object.values(Chart.instances).map(c => c.canvas.id).includes(chartId)) {
+    return Chart.getChart(chartId);
   }
-  return new Chart(document.getElementById("timeline").getContext("2d"), {
+  return new Chart(document.getElementById(chartId).getContext("2d"), {
     data: { labels: [], datasets: [] },
     options: {
       responsive: false,
@@ -51,7 +54,7 @@ const refreshChart = (symbol) => {
     return;
   }
   // チャートを取得しデータセットの表示状態を取得する
-  const chart = getChart();
+  const chart = getChart("timeline");
   const visibilities = Object.fromEntries(chart.data.datasets.map((dataset, i) => [dataset.label, chart.isDatasetVisible(i)]));
   // チャートを最新データで更新する
   chart.data.labels = symbol.timeLines.map(timeLine => timeLine.hhmm);
@@ -88,14 +91,14 @@ const refreshChart = (symbol) => {
     label: "中級売",
     type: "bar",
     yAxisID: "value",
-    backgroundColor: "#90caf9",
+    backgroundColor: "#64b5f6",
     barPercentage: 0.8,
     data: symbol.timeLines.map(timeLine => timeLine.middle_sell * -1)
   }, {
     label: "大口売",
     type: "bar",
     yAxisID: "value",
-    backgroundColor: "#64b5f6",
+    backgroundColor: "#2196f3",
     barPercentage: 0.8,
     data: symbol.timeLines.map(timeLine => timeLine.large_sell * -1)
   }, {
@@ -109,14 +112,14 @@ const refreshChart = (symbol) => {
     label: "中級買",
     type: "bar",
     yAxisID: "value",
-    backgroundColor: "#ef9a9a",
+    backgroundColor: "#e57373",
     barPercentage: 0.8,
     data: symbol.timeLines.map(timeLine => timeLine.middle_buy)
   }, {
     label: "大口買",
     type: "bar",
     yAxisID: "value",
-    backgroundColor: "#e57373",
+    backgroundColor: "#f44336",
     barPercentage: 0.8,
     data: symbol.timeLines.map(timeLine => timeLine.large_buy)
   }];

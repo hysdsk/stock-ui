@@ -321,7 +321,8 @@
   <el-dialog
     v-model="dialogVisible"
     :title="`${dialogRow.code}: ${dialogRow.name}`"
-    width="1280"
+    @opened="openedDialog"
+    :width="tabWidth"
     top="8vh"
   >
     <NoticeSymbolInfo :symbol="dialogRow"/>
@@ -339,7 +340,10 @@
         <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
       </el-tab-pane>
       <el-tab-pane label="タイムラインチャート" name="5">
-        <NoticeTimeLineChart :height="tabHeight" :symbol="dialogRow" ref="timeLineChartRef"/>
+        <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
+      </el-tab-pane>
+      <el-tab-pane label="売買代金分布" name="6">
+        <NoticeDistributionGraph :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="distributionGraphRef"/>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -353,6 +357,7 @@ import { Bell, MuteNotification } from "@element-plus/icons-vue";
 
 useHead({ title: "通知受信" });
 const tabHeight = ref(768);
+const tabWidth = ref(1280);
 const config = useRuntimeConfig().public;
 const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
 const filtered = ref(false);
@@ -363,6 +368,7 @@ const now = ref("08:00:00");
 const dialogVisible = ref(false);
 const dialogRow = ref({});
 const timeLineChartRef = ref(null);
+const distributionGraphRef = ref(null);
 const activeName = ref("1");
 const isAudio = ref(false);
 const scoreOptions = [
@@ -391,6 +397,9 @@ const selectedScoreOption = ref(scoreOptions.map(o => o.value));
 watch(dialogRow, (row, prevRow) => {
   if (timeLineChartRef.value) {
     timeLineChartRef.value.refreshChart(row);
+  }
+  if (distributionGraphRef.value) {
+    distributionGraphRef.value.refreshChart(row);
   }
 });
 
@@ -488,6 +497,12 @@ const openDialog = (row) => {
   dialogVisible.value = true;
   dialogRow.value = row;
 };
+
+const openedDialog = () => {
+  // ダイアログのCanvasが描画されてからサイズを反映する
+  tabHeight.value = 769;
+  tabWidth.value = 1281;
+}
 
 onMounted(() => {
   const bearAudio = new Audio("/audio/soundeffect_01.wav");
