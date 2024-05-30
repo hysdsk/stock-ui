@@ -1,5 +1,5 @@
 <template>
-  <el-scrollbar :max-height="props.height">
+  <el-scrollbar :height="props.height">
     <el-timeline>
       <el-timeline-item
         v-for="(score, index) in props.symbol.scores"
