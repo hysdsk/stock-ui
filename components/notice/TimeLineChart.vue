@@ -81,6 +81,14 @@ const refreshChart = (symbol) => {
     pointRadius: 2,
     data: symbol.timeLines.map(timeLine => timeLine.close)
   }, {
+    label: "VWAP",
+    type: "line",
+    yAxisID: "price", 
+    backgroundColor: "#ff9800",
+    borderColor: "#ff9800",
+    pointRadius: 2,
+    data: symbol.timeLines.map(timeLine => timeLine.vwap)
+  }, {
     label: "一般売",
     type: "bar",
     yAxisID: "value",
