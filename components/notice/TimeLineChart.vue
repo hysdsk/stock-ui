@@ -24,6 +24,19 @@ const getChart = (chartId) => {
       animation: {
         duration: 0
       },
+      layout: {
+        padding: {
+          right: 64
+        }
+      },
+      elements: {
+        point: {
+          radius: 1.5,
+        },
+        bar: {
+          borderWidth: 0,
+        },
+      },
       scales: {
         price: { 
           type: "linear",
@@ -44,6 +57,11 @@ const getChart = (chartId) => {
           },
         },
       },
+      plugins: {
+        legend: {
+          position: "left",
+        }
+      }
     }
   });
 }
@@ -78,7 +96,6 @@ const refreshChart = (symbol) => {
     yAxisID: "price", 
     backgroundColor: "#4caf50",
     borderColor: "#4caf50",
-    pointRadius: 2,
     data: symbol.timeLines.map(timeLine => timeLine.close)
   }, {
     label: "VWAP",
@@ -86,50 +103,43 @@ const refreshChart = (symbol) => {
     yAxisID: "price", 
     backgroundColor: "#ff9800",
     borderColor: "#ff9800",
-    pointRadius: 2,
     data: symbol.timeLines.map(timeLine => timeLine.vwap)
-  }, {
-    label: "一般売",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#bbdefb",
-    barPercentage: 0.8,
-    data: symbol.timeLines.map(timeLine => timeLine.small_sell * -1)
-  }, {
-    label: "中級売",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#64b5f6",
-    barPercentage: 0.8,
-    data: symbol.timeLines.map(timeLine => timeLine.middle_sell * -1)
-  }, {
-    label: "大口売",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#2196f3",
-    barPercentage: 0.8,
-    data: symbol.timeLines.map(timeLine => timeLine.large_sell * -1)
   }, {
     label: "一般買",
     type: "bar",
     yAxisID: "value",
     backgroundColor: "#ffcdd2",
-    barPercentage: 0.8,
     data: symbol.timeLines.map(timeLine => timeLine.small_buy)
   }, {
     label: "中級買",
     type: "bar",
     yAxisID: "value",
     backgroundColor: "#e57373",
-    barPercentage: 0.8,
     data: symbol.timeLines.map(timeLine => timeLine.middle_buy)
   }, {
     label: "大口買",
     type: "bar",
     yAxisID: "value",
     backgroundColor: "#f44336",
-    barPercentage: 0.8,
     data: symbol.timeLines.map(timeLine => timeLine.large_buy)
+  }, {
+    label: "一般売",
+    type: "bar",
+    yAxisID: "value",
+    backgroundColor: "#bbdefb",
+    data: symbol.timeLines.map(timeLine => timeLine.small_sell * -1)
+  }, {
+    label: "中級売",
+    type: "bar",
+    yAxisID: "value",
+    backgroundColor: "#64b5f6",
+    data: symbol.timeLines.map(timeLine => timeLine.middle_sell * -1)
+  }, {
+    label: "大口売",
+    type: "bar",
+    yAxisID: "value",
+    backgroundColor: "#2196f3",
+    data: symbol.timeLines.map(timeLine => timeLine.large_sell * -1)
   }];
   chart.update();
   // データセットの表示状態を引き継ぐ

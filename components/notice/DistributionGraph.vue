@@ -27,18 +27,23 @@ const getChart = (chartId) => {
       animation: {
         duration: 0
       },
+      plugins: {
+        legend: {
+          position: "left",
+        }
+      }
     },
     plugins: [{
       id: "center-text",
       beforeDraw: (chart, args, options) => {
         const { ctx, chartArea: { top, width, height } } = chart;
         ctx.save();
-        ctx.fillRect(width / 2, top + (height / 2), 0, 0);
+        ctx.fillRect(width / 1.725, top + (height / 2), 0, 0);
         ctx.font = "32px Roboto"
         ctx.fillStyle = "grey"
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(totalContractValue.value, width / 2, top + (height / 2));
+        ctx.fillText(totalContractValue.value, width / 1.725, top + (height / 2));
       }
     }],
   });
@@ -50,20 +55,15 @@ const refreshChart = (symbol) => {
     return;
   }
   // 合計代金を更新する
-  const sum = props.symbol.totalContractValues.reduce((total, cv) => total + cv.sell + cv.buy, 0);
+  const sum = props.symbol.totalContractValues.reduce((total, part) => total + part, 0);
   totalContractValue.value = sum.toLocaleString() + "円";
   // チャートを取得しデータセットの表示状態を取得する
   const chart = getChart("distribution");
   const visibilities = Object.fromEntries(chart.data.datasets.map((dataset, i) => [dataset.label, chart.isDatasetVisible(i)]));
-  // チャートを最新データで更新する
-  const large = symbol.totalContractValues.find(cv => cv.id === "large");
-  const middle = symbol.totalContractValues.find(cv => cv.id === "middle");
-  const small = symbol.totalContractValues.find(cv => cv.id === "small");
   chart.data.datasets = [{
-    label: "投資家分布",
     borderWidth: 0,
     backgroundColor: ["#f44336", "#e57373", "#ffcdd2", "#bbdefb", "#64b5f6", "#2196f3"],
-    data: [large.buy, middle.buy, small.buy, small.sell, middle.sell, large.sell],
+    data: symbol.totalContractValues,
   }];
   chart.update();
   // データセットの表示状態を引き継ぐ

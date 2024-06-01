@@ -327,23 +327,17 @@
   >
     <NoticeSymbolInfo :symbol="dialogRow"/>
     <el-tabs v-model="activeName">
-      <el-tab-pane label="売買代金 v1" name="1">
-        <NoticeSymbolTable :height="tabHeight" :symbol="dialogRow"/>
+      <el-tab-pane label="時系列チャート" name="1">
+        <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
       </el-tab-pane>
-      <el-tab-pane label="売買代金 v2" name="2">
-        <NoticeSymbolTableV2 :height="tabHeight" :symbol="dialogRow"/>
+      <el-tab-pane label="分布別総出来高" name="2">
+        <NoticeDistributionGraph :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="distributionGraphRef"/>
       </el-tab-pane>
       <el-tab-pane label="注文量" name="3">
         <NoticeSymbolOrderTable :height="tabHeight" :symbol="dialogRow"/>
       </el-tab-pane>
       <el-tab-pane label="スコア" name="4">
         <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
-      </el-tab-pane>
-      <el-tab-pane label="タイムラインチャート" name="5">
-        <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
-      </el-tab-pane>
-      <el-tab-pane label="売買代金分布" name="6">
-        <NoticeDistributionGraph :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="distributionGraphRef"/>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -356,8 +350,9 @@ import Chart from "chart.js/auto";
 import { Bell, MuteNotification } from "@element-plus/icons-vue";
 
 useHead({ title: "通知受信" });
-const tabHeight = ref(768);
-const tabWidth = ref(1280);
+const baseTabSize = { height: 768, width: 1440 }
+const tabHeight = ref(baseTabSize.height);
+const tabWidth = ref(baseTabSize.width);
 const config = useRuntimeConfig().public;
 const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
 const filtered = ref(false);
@@ -500,8 +495,8 @@ const openDialog = (row) => {
 
 const openedDialog = () => {
   // ダイアログのCanvasが描画されてからサイズを反映する
-  tabHeight.value = 769;
-  tabWidth.value = 1281;
+  tabHeight.value = tabHeight.value == baseTabSize.height ? baseTabSize.height + 1 : baseTabSize.height;
+  tabWidth.value = tabWidth.value == baseTabSize.width ? baseTabSize.width + 1 : baseTabSize.width;
 }
 
 onMounted(() => {
