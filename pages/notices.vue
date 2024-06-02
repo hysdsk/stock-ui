@@ -223,7 +223,10 @@
               header-align="center"
               align="right"
               width="100"
-              sortable
+              :filters="filterRatioItems"
+              :filter-method="filterContractValueBy5MinRatio"
+              :filter-multiple="false"
+              filter-placement="bottom"
             >
               <template #default="scope">
                 <div
@@ -320,30 +323,26 @@
   </el-row>
   <el-dialog
     v-model="dialogVisible"
-    :title="`${dialogRow.code}: ${dialogRow.name}`"
     @opened="openedDialog"
     :width="tabWidth"
     top="8vh"
   >
+    <template #title>
+      <el-button :icon="CopyDocument" @click="copyToClipboard(dialogRow.code)"/> {{dialogRow.code}}: {{dialogRow.name}}
+    </template>
     <NoticeSymbolInfo :symbol="dialogRow"/>
     <el-tabs v-model="activeName">
-      <el-tab-pane label="売買代金 v1" name="1">
-        <NoticeSymbolTable :height="tabHeight" :symbol="dialogRow"/>
+      <el-tab-pane label="分布別総出来高" name="1">
+        <NoticeDistributionGraph :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="distributionGraphRef"/>
       </el-tab-pane>
-      <el-tab-pane label="売買代金 v2" name="2">
-        <NoticeSymbolTableV2 :height="tabHeight" :symbol="dialogRow"/>
+      <el-tab-pane label="時系列出来高" name="2">
+        <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
       </el-tab-pane>
-      <el-tab-pane label="注文量" name="3">
-        <NoticeSymbolOrderTable :height="tabHeight" :symbol="dialogRow"/>
+      <el-tab-pane label="時系列注文数量" name="3">
+        <NoticeSymbolOrderChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="noticeSymbolOrderChartRef"/>
       </el-tab-pane>
       <el-tab-pane label="スコア" name="4">
         <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
-      </el-tab-pane>
-      <el-tab-pane label="タイムラインチャート" name="5">
-        <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
-      </el-tab-pane>
-      <el-tab-pane label="売買代金分布" name="6">
-        <NoticeDistributionGraph :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="distributionGraphRef"/>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -353,11 +352,12 @@
 import { reactive, ref, onMounted, h } from "vue";
 import { io } from "socket.io-client";
 import Chart from "chart.js/auto";
-import { Bell, MuteNotification } from "@element-plus/icons-vue";
+import { Bell, MuteNotification, CopyDocument } from "@element-plus/icons-vue";
 
 useHead({ title: "通知受信" });
-const tabHeight = ref(768);
-const tabWidth = ref(1280);
+const baseTabSize = { height: 768, width: 1440 }
+const tabHeight = ref(baseTabSize.height);
+const tabWidth = ref(baseTabSize.width);
 const config = useRuntimeConfig().public;
 const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
 const filtered = ref(false);
@@ -369,6 +369,7 @@ const dialogVisible = ref(false);
 const dialogRow = ref({});
 const timeLineChartRef = ref(null);
 const distributionGraphRef = ref(null);
+const noticeSymbolOrderChartRef = ref(null);
 const activeName = ref("1");
 const isAudio = ref(false);
 const scoreOptions = [
@@ -400,6 +401,9 @@ watch(dialogRow, (row, prevRow) => {
   }
   if (distributionGraphRef.value) {
     distributionGraphRef.value.refreshChart(row);
+  }
+  if (noticeSymbolOrderChartRef.value) {
+    noticeSymbolOrderChartRef.value.refreshChart(row);
   }
 });
 
@@ -443,6 +447,9 @@ const filterRatioMethod = (value: number, ratio: number) => {
     default:
       return false;
   }
+};
+const filterContractValueBy5MinRatio = (value: string, row: SymbolTable) => {
+  return filterRatioMethod(value, row.tradingValueByMinRate);
 };
 const filterLimitOrderRatio = (value: string, row: SymbolTable) => {
   return filterRatioMethod(value, row.avgLimitOrderRatio);
@@ -500,8 +507,8 @@ const openDialog = (row) => {
 
 const openedDialog = () => {
   // ダイアログのCanvasが描画されてからサイズを反映する
-  tabHeight.value = 769;
-  tabWidth.value = 1281;
+  tabHeight.value = tabHeight.value == baseTabSize.height ? baseTabSize.height + 1 : baseTabSize.height;
+  tabWidth.value = tabWidth.value == baseTabSize.width ? baseTabSize.width + 1 : baseTabSize.width;
 }
 
 onMounted(() => {
