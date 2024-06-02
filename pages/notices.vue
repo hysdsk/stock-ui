@@ -223,7 +223,10 @@
               header-align="center"
               align="right"
               width="100"
-              sortable
+              :filters="filterRatioItems"
+              :filter-method="filterContractValueBy5MinRatio"
+              :filter-multiple="false"
+              filter-placement="bottom"
             >
               <template #default="scope">
                 <div
@@ -438,6 +441,9 @@ const filterRatioMethod = (value: number, ratio: number) => {
     default:
       return false;
   }
+};
+const filterContractValueBy5MinRatio = (value: string, row: SymbolTable) => {
+  return filterRatioMethod(value, row.tradingValueByMinRate);
 };
 const filterLimitOrderRatio = (value: string, row: SymbolTable) => {
   return filterRatioMethod(value, row.avgLimitOrderRatio);
