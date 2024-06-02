@@ -323,11 +323,13 @@
   </el-row>
   <el-dialog
     v-model="dialogVisible"
-    :title="`${dialogRow.code}: ${dialogRow.name}`"
     @opened="openedDialog"
     :width="tabWidth"
     top="8vh"
   >
+    <template #title>
+      <el-button :icon="CopyDocument" @click="copyToClipboard(dialogRow.code)"/> {{dialogRow.code}}: {{dialogRow.name}}
+    </template>
     <NoticeSymbolInfo :symbol="dialogRow"/>
     <el-tabs v-model="activeName">
       <el-tab-pane label="時系列チャート" name="1">
@@ -350,7 +352,7 @@
 import { reactive, ref, onMounted, h } from "vue";
 import { io } from "socket.io-client";
 import Chart from "chart.js/auto";
-import { Bell, MuteNotification } from "@element-plus/icons-vue";
+import { Bell, MuteNotification, CopyDocument } from "@element-plus/icons-vue";
 
 useHead({ title: "通知受信" });
 const baseTabSize = { height: 768, width: 1440 }
