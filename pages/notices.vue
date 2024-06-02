@@ -332,14 +332,14 @@
     </template>
     <NoticeSymbolInfo :symbol="dialogRow"/>
     <el-tabs v-model="activeName">
-      <el-tab-pane label="時系列チャート" name="1">
-        <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
-      </el-tab-pane>
-      <el-tab-pane label="分布別総出来高" name="2">
+      <el-tab-pane label="分布別総出来高" name="1">
         <NoticeDistributionGraph :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="distributionGraphRef"/>
       </el-tab-pane>
-      <el-tab-pane label="注文量" name="3">
-        <NoticeSymbolOrderTable :height="tabHeight" :symbol="dialogRow"/>
+      <el-tab-pane label="時系列出来高" name="2">
+        <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
+      </el-tab-pane>
+      <el-tab-pane label="時系列注文数量" name="3">
+        <NoticeSymbolOrderChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="noticeSymbolOrderChartRef"/>
       </el-tab-pane>
       <el-tab-pane label="スコア" name="4">
         <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
@@ -369,6 +369,7 @@ const dialogVisible = ref(false);
 const dialogRow = ref({});
 const timeLineChartRef = ref(null);
 const distributionGraphRef = ref(null);
+const noticeSymbolOrderChartRef = ref(null);
 const activeName = ref("1");
 const isAudio = ref(false);
 const scoreOptions = [
@@ -400,6 +401,9 @@ watch(dialogRow, (row, prevRow) => {
   }
   if (distributionGraphRef.value) {
     distributionGraphRef.value.refreshChart(row);
+  }
+  if (noticeSymbolOrderChartRef.value) {
+    noticeSymbolOrderChartRef.value.refreshChart(row);
   }
 });
 

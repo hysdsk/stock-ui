@@ -1,6 +1,6 @@
 <template>
   <div>
-    <canvas id="timeline" :style="{width: `${width}px`, height: `${props.height}px`}"></canvas>
+    <canvas id="order" :style="{width: `${width}px`, height: `${props.height}px`}"></canvas>
   </div>
 </template>
 
@@ -33,9 +33,6 @@ const getChart = (chartId) => {
         point: {
           radius: 0,
         },
-        bar: {
-          borderWidth: 0,
-        },
       },
       scales: {
         price: { 
@@ -43,14 +40,12 @@ const getChart = (chartId) => {
           position: "left",
           beginAtZero: false,
         },
-        value: {
+        order: {
           type: "linear",
           position: "right",
-          stacked: true,
         },
         x: {
           type: "category",
-          stacked: true,
           ticks: {
             minRotation: 45,
             maxRotation: 45,
@@ -72,25 +67,11 @@ const refreshChart = (symbol) => {
     return;
   }
   // チャートを取得しデータセットの表示状態を取得する
-  const chart = getChart("timeline");
+  const chart = getChart("order");
   const visibilities = Object.fromEntries(chart.data.datasets.map((dataset, i) => [dataset.label, chart.isDatasetVisible(i)]));
   // チャートを最新データで更新する
   chart.data.labels = symbol.timeLines.map(timeLine => timeLine.hhmm);
   chart.data.datasets = [{
-  //   label: "価格（実態）",
-  //   type: "bar",
-  //   yAxisID: "price", 
-  //   barPercentage: 1.1,
-  //   backgroundColor: symbol.timeLines.map(timeLine => timeLine.open > timeLine.close ? "#00c853" : "#d50000"),
-  //   data: symbol.timeLines.map(timeLine => timeLine.open > timeLine.close ? [timeLine.close, timeLine.open] : [timeLine.open, timeLine.close]),
-  // }, {
-  //   label: "価格（ヒゲ）",
-  //   type: "bar",
-  //   yAxisID: "price", 
-  //   barPercentage: 0.1,
-  //   backgroundColor: symbol.timeLines.map(timeLine => timeLine.open > timeLine.close ? "#00c853" : "#d50000"),
-  //   data: symbol.timeLines.map(timeLine => timeLine.low > timeLine.high ? [timeLine.high, timeLine.low] : [timeLine.low, timeLine.high]),
-  // }, {
     label: "価格",
     type: "line",
     yAxisID: "price", 
@@ -104,42 +85,34 @@ const refreshChart = (symbol) => {
     backgroundColor: "#ff9800",
     borderColor: "#ff9800",
     data: symbol.timeLines.map(timeLine => timeLine.vwap)
-  }, {
-    label: "一般買",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#ffcdd2",
-    data: symbol.timeLines.map(timeLine => timeLine.small_buy)
-  }, {
-    label: "中級買",
-    type: "bar",
-    yAxisID: "value",
+}, {
+    label: "買指値",
+    type: "line",
+    yAxisID: "order",
     backgroundColor: "#e57373",
-    data: symbol.timeLines.map(timeLine => timeLine.middle_buy)
+    fill: true,
+    data: symbol.timeLines.map(timeLine => timeLine.order_limit_ask)
   }, {
-    label: "大口買",
-    type: "bar",
-    yAxisID: "value",
+    label: "成行買",
+    type: "line",
+    yAxisID: "order",
     backgroundColor: "#f44336",
-    data: symbol.timeLines.map(timeLine => timeLine.large_buy)
+    fill: true,
+    data: symbol.timeLines.map(timeLine => timeLine.order_market_ask)
   }, {
-    label: "一般売",
-    type: "bar",
-    yAxisID: "value",
-    backgroundColor: "#bbdefb",
-    data: symbol.timeLines.map(timeLine => timeLine.small_sell * -1)
-  }, {
-    label: "中級売",
-    type: "bar",
-    yAxisID: "value",
+    label: "売指値",
+    type: "line",
+    yAxisID: "order",
     backgroundColor: "#64b5f6",
-    data: symbol.timeLines.map(timeLine => timeLine.middle_sell * -1)
+    fill: true,
+    data: symbol.timeLines.map(timeLine => timeLine.order_limit_bid * -1)
   }, {
-    label: "大口売",
-    type: "bar",
-    yAxisID: "value",
+    label: "成行売",
+    type: "line",
+    yAxisID: "order",
     backgroundColor: "#2196f3",
-    data: symbol.timeLines.map(timeLine => timeLine.large_sell * -1)
+    fill: true,
+    data: symbol.timeLines.map(timeLine => timeLine.order_market_bid * -1)
   }];
   chart.update();
   // データセットの表示状態を引き継ぐ
