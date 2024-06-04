@@ -468,29 +468,31 @@ const filterMidContractValueRatio = (value: string, row: SymbolTable) => {
 const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
   return filterRatioMethod(value, row.smlContractValueBuyRatio);
 };
-
 const styleRows = (data) => {
-  if (data.row.timeLines.length < 2) {
+  if (data.row.baseValue == 0) {
+    if (data.row.timeLines.length >= 2) {
+      const scope = data.row.timeLines.slice(-2);
+      if (scope.filter(timeLine => timeLine.close_rate > 0).length >= 2) {
+        return {"background-color": "rgba(255 0 0 / .1)"};
+      }
+      if (scope.filter(timeLine => timeLine.close_rate < 0).length >= 2) {
+        return {"background-color": "rgba(0 0 255 / .1)"};
+      }
+    }
     return;
   }
-  const crntTimeLine = data.row.timeLines.at(-1);
-  const prevTimeLine = data.row.timeLines.at(-2);
-  if (data.row.baseValue == 0) {
-    if (crntTimeLine.close_rate > 0 && prevTimeLine.close_rate > 0) {
-      return {"background-color": "rgba(255, 0, 0, 0.1)"};
+  if (data.row.timeLines.length >= 10) {
+    const scope = data.row.timeLines.slice(-10);
+    const bulls = scope.filter(timeLine => timeLine.large_ratio > 50);
+    const bears = scope.filter(timeLine => timeLine.large_sell > 0 && timeLine.large_ratio < 50);
+    const power = bulls.length - bears.length;
+    if (power >= 2) {
+      const alpha = power - 1;
+      return {"background-color": `rgb(255 0 0 / .${alpha})`};
     }
-    if (crntTimeLine.close_rate < 0 && prevTimeLine.close_rate < 0) {
-      return {"background-color": "rgba(0, 0, 255, 0.1)"};
-    }
-  } else {
-    const sells = data.row.totalContractValues.map(c => c.sell).reduce((a, b) => a + b);
-    const buys = data.row.totalContractValues.map(c => c.buy).reduce((a, b) => a + b);
-    const largeAndMiddleBuys = data.row.totalContractValues.filter(c => c.id !== "small").map(c => c.buy).reduce((a, b) => a + b);
-    if ((sells * 2) < buys && largeAndMiddleBuys > 0) {
-      return {"background-color": "rgba(255, 0, 0, 0.1)"};
-    }
-    if (sells > (buys * 2)) {
-      return {"background-color": "rgba(0, 0, 255, 0.1)"};
+    if (power <= -2) {
+      const alpha = (power * -1) - 1;
+      return {"background-color": `rgba(0, 0, 255, .${alpha})`};
     }
   }
 };
