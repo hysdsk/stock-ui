@@ -6,6 +6,7 @@ const pool = mysql.createPool({
     user: config.dbUser,
     password: config.dbPswd,
     database: config.dbName,
+    timezone: "UTC",
 });
 
 export default defineEventHandler(async (event: any) => {
