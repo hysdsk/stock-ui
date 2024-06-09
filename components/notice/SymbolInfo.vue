@@ -1,28 +1,28 @@
 <template>
   <el-row style="text-align: center">
-    <el-col :span="5">
+    <el-col :span="4">
       <div>現値（前日比）</div>
       <div
         style="font-size: 1.2em; padding: 5px"
-        :class="colorRate(props.symbol.previouscloserate)"
+        :class="colorRate(props.symbol.previousCloseRate)"
       >
         {{
-          props.symbol.currentprice == null
+          props.symbol.currentPrice == null
             ? " - "
-            : props.symbol.currentprice.toLocaleString()
-        }}（{{ formatRate(props.symbol.previouscloserate) }}）
+            : props.symbol.currentPrice.toLocaleString()
+        }}（{{ formatRate(props.symbol.previousCloseRate) }}）
       </div>
     </el-col>
-    <el-col :span="5">
+    <el-col :span="4">
       <div>始値比</div>
       <div
         style="font-size: 1.2em; padding: 5px"
-        :class="colorRate(props.symbol.openingrate)"
+        :class="colorRate(props.symbol.openingRate)"
       >
-        {{ formatRate(props.symbol.openingrate) }}
+        {{ formatRate(props.symbol.openingRate) }}
       </div>
     </el-col>
-    <el-col :span="5">
+    <el-col :span="4">
       <div>VWAP比</div>
       <div
         style="font-size: 1.2em; padding: 5px"
@@ -31,20 +31,7 @@
         {{ formatRate(props.symbol.vwaprate) }}
       </div>
     </el-col>
-    <el-col :span="5">
-      <div>買指値率（総指値量）</div>
-      <div style="font-size: 0.5em; margin-top: 10px;">
-        <el-progress
-          :percentage="props.symbol.avgLimitOrderRatio"
-          :color="progressColors"
-          :text-inside="true"
-          :stroke-width="15"
-        >
-          {{ formatVolume(props.symbol.avgLimitOrderQty) }}
-        </el-progress>
-      </div>
-    </el-col>
-    <el-col :span="4">
+    <el-col :span="12">
     </el-col>
   </el-row>
 </template>

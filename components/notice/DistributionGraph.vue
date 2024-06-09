@@ -54,16 +54,24 @@ const refreshChart = (symbol) => {
   if (Object.keys(props.symbol).length == 0) {
     return;
   }
+  const timeLineArray = Object.values(symbol.timeLines);
+  const totalContractValues = [
+    timeLineArray.reduce((total, tl) => total + tl.large_buy, 0),
+    timeLineArray.reduce((total, tl) => total + tl.middle_buy, 0),
+    timeLineArray.reduce((total, tl) => total + tl.small_buy, 0),
+    timeLineArray.reduce((total, tl) => total + tl.small_sell, 0),
+    timeLineArray.reduce((total, tl) => total + tl.middle_sell, 0),
+    timeLineArray.reduce((total, tl) => total + tl.large_sell, 0),
+  ]
   // 合計代金を更新する
-  const sum = props.symbol.totalContractValues.reduce((total, part) => total + part, 0);
-  totalContractValue.value = sum.toLocaleString() + "円";
+  totalContractValue.value = symbol.tradingValue.toLocaleString() + "円";
   // チャートを取得しデータセットの表示状態を取得する
   const chart = getChart("distribution");
   const visibilities = Object.fromEntries(chart.data.datasets.map((dataset, i) => [dataset.label, chart.isDatasetVisible(i)]));
   chart.data.datasets = [{
     borderWidth: 0,
     backgroundColor: ["#f44336", "#e57373", "#ffcdd2", "#bbdefb", "#64b5f6", "#2196f3"],
-    data: symbol.totalContractValues,
+    data: totalContractValues,
   }];
   chart.update();
   // データセットの表示状態を引き継ぐ
@@ -79,7 +87,7 @@ onMounted(() => {
   //初回更新
   refreshChart(props.symbol)
   // チャートの自動更新設定
-  setInterval(() => refreshChart(props.symbol), 5000);
+  setInterval(() => refreshChart(props.symbol), 3000);
 });
 
 defineExpose({ refreshChart });

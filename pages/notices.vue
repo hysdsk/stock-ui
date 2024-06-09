@@ -2,11 +2,11 @@
   <el-row :gutter="10">
     <el-col :span="24">
       <el-row :gutter="16">
-        <el-col :span="3">
+        <el-col :span="4">
           <el-card style="text-align: center">
             <el-space direction="vertical" wrap>
               <el-text size="small" type="info">現在時刻</el-text>
-              <el-text size="large">{{ now }}</el-text>
+              <el-text size="large">{{ now.substring(0, 10) }} {{ now.substring(11, 19) }}</el-text>
             </el-space>
           </el-card>
         </el-col>
@@ -14,7 +14,7 @@
           <el-card style="text-align: center">
             <el-space direction="vertical" wrap>
               <el-text size="small" type="info">前日超数</el-text>
-              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.previouscloserate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.previousCloseRate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
             </el-space>
           </el-card>
         </el-col>
@@ -22,11 +22,11 @@
           <el-card style="text-align: center">
             <el-space direction="vertical" wrap>
               <el-text size="small" type="info">陽線数</el-text>
-              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.openingrate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.openingRate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
             </el-space>
           </el-card>
         </el-col>
-        <el-col :span="11"></el-col>
+        <el-col :span="10"></el-col>
         <el-col :span="4">
           <el-space direction="vertical">
             <el-switch
@@ -113,7 +113,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            prop="currentprice"
+            prop="currentPrice"
             label="現値"
             header-align="center"
             align="right"
@@ -124,16 +124,16 @@
               <span
                 v-if="scope.row.bidsign == '0107' && scope.row.asksign == '0107'"
                 class="text-gray"
-                >{{ scope.row.currentprice }}</span
+                >{{ scope.row.currentPrice }}</span
               >
-              <span v-else :class="colorRate(scope.row.previouscloserate)">{{
-                scope.row.currentprice
+              <span v-else :class="colorRate(scope.row.previousCloseRate)">{{
+                scope.row.currentPrice
               }}</span>
             </template>
           </el-table-column>
           <el-table-column label="現値対比" header-align="center">
             <el-table-column
-              prop="previouscloserate"
+              prop="previousCloseRate"
               label="前日"
               header-align="center"
               align="right"
@@ -141,13 +141,13 @@
               sortable
             >
               <template #default="scope">
-                <span :class="colorRate(scope.row.previouscloserate)">{{
-                  formatRate(scope.row.previouscloserate)
+                <span :class="colorRate(scope.row.previousCloseRate)">{{
+                  formatRate(scope.row.previousCloseRate)
                 }}</span>
               </template>
             </el-table-column>
             <el-table-column
-              prop="openingrate"
+              prop="openingRate"
               label="始値"
               header-align="center"
               align="right"
@@ -155,8 +155,8 @@
               sortable
             >
               <template #default="scope">
-                <span :class="colorRate(scope.row.openingrate)">{{
-                  formatRate(scope.row.openingrate)
+                <span :class="colorRate(scope.row.openingRate)">{{
+                  formatRate(scope.row.openingRate)
                 }}</span>
               </template>
             </el-table-column>
@@ -188,134 +188,32 @@
             </template>
           </el-table-column>
           <el-table-column
-            prop="score"
-            label="スコア"
+            prop="tradingValueByMin"
+            label="直近売買代金"
             header-align="center"
             align="right"
-            width="100"
-            :filters="filterScore"
-            :filter-method="filterScoreMethod"
-            :filter-multiple="false"
-            filter-placement="bottom"
+            width="160"
+            sortable
           >
             <template #default="scope">
-              <span>{{ scope.row.score }}</span>
+              <span :class="colorValue(scope.row.tradingValueByMin)">
+                {{ scope.row.tradingValueByMin.toLocaleString() }}
+              </span>
             </template>
           </el-table-column>
-          <el-table-column label="売買代金／分" header-align="center">
-            <el-table-column
-              prop="tradingValueByMin"
-              label="代金"
-              header-align="center"
-              align="right"
-              width="80"
-              sortable
-            >
-              <template #default="scope">
-                <span :class="colorValue(scope.row.tradingValueByMin)">
-                  {{ formatVolume(scope.row.tradingValueByMin) }}
-                </span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="tradingValueByMinRate"
-              label="売買比"
-              header-align="center"
-              align="right"
-              width="100"
-              :filters="filterRatioItems"
-              :filter-method="filterContractValueBy5MinRatio"
-              :filter-multiple="false"
-              filter-placement="bottom"
-            >
-              <template #default="scope">
-                <div
-                  :style="
-                    backgroundStrengthRatioV2(
-                      scope.row.tradingValueByMin,
-                      scope.row.tradingValueByMinRate
-                    )
-                  "
-                >
-                  {{ formatRate(scope.row.tradingValueByMinRate) }}
-                </div>
-              </template>
-            </el-table-column>
-          </el-table-column>
-          <el-table-column label="注文" header-align="center">
-            <el-table-column
-              prop="avgLimitOrderQty"
-              label="指値量"
-              header-align="center"
-              align="right"
-              width="100"
-              sortable
-            >
-              <template #default="scope">
-                <span class="text-blue3">{{
-                  formatVolume(scope.row.avgLimitOrderQty)
-                }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="avgLimitOrderRatio"
-              label="指値比"
-              header-align="center"
-              align="right"
-              width="100"
-              :filters="filterRatioItems"
-              :filter-method="filterLimitOrderRatio"
-              :filter-multiple="false"
-              filter-placement="bottom"
-            >
-              <template #default="scope">
-                <div
-                  :style="
-                    backgroundStrengthRatioV2(
-                      scope.row.avgLimitOrderQty,
-                      scope.row.avgLimitOrderRatio
-                    )
-                  "
-                >
-                  {{ scope.row.avgLimitOrderRatio }} %
-                </div>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="marketOrderValue"
-              label="成行量"
-              header-align="center"
-              align="right"
-              width="100"
-              sortable
-            >
-              <template #default="scope">
-                <span class="text-blue3">{{
-                  formatVolume(scope.row.marketOrderValue)
-                }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="marketOrderBuyRatio"
-              label="成行比"
-              header-align="center"
-              align="right"
-              width="100"
-              sortable
-            >
-              <template #default="scope">
-                <div
-                  :style="
-                    backgroundStrengthRatioV2(
-                      scope.row.marketOrderValue,
-                      scope.row.marketOrderBuyRatio
-                    )
-                  "
-                >
-                  {{ formatVolume(scope.row.marketOrderBuyRatio) }}
-                </div>
-              </template>
-            </el-table-column>
+          <el-table-column
+            prop="tradingValueByMin"
+            label="当日売買代金"
+            header-align="center"
+            align="right"
+            width="160"
+            sortable
+          >
+            <template #default="scope">
+              <span :class="colorValue(scope.row.tradingValue/100)">
+                {{ scope.row.tradingValue.toLocaleString() }}
+              </span>
+            </template>
           </el-table-column>
         </el-table>
       </el-card>
@@ -346,9 +244,6 @@
       <el-tab-pane label="時系列注文数量" name="3">
         <NoticeSymbolOrderChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="noticeSymbolOrderChartRef"/>
       </el-tab-pane>
-      <el-tab-pane label="スコア" name="4">
-        <NoticeScoreTimeLine :height="tabHeight" :symbol="dialogRow"/>
-      </el-tab-pane>
     </el-tabs>
   </el-dialog>
 </template>
@@ -358,6 +253,12 @@ import { reactive, ref, onMounted, h } from "vue";
 import { io } from "socket.io-client";
 import Chart from "chart.js/auto";
 import { Bell, MuteNotification } from "@element-plus/icons-vue";
+import dayjs from "dayjs";
+dayjs.locale("ja");
+
+const route = useRoute();
+const queryParams = route.query;
+const today = queryParams.today ? queryParams.today : dayjs().format("YYYY-MM-DD");
 
 useHead({ title: "通知受信" });
 const baseTabSize = { height: 768, width: 1440 }
@@ -369,7 +270,7 @@ const filtered = ref(false);
 const selectedSymbols = ref([]);
 const symbols = reactive({});
 const ranklist = reactive({});
-const now = ref("08:00:00");
+const now = ref("YYYY-MM-DDThh:mm:ss.sssZ");
 const dialogVisible = ref(false);
 const dialogRow = ref({});
 const timeLineChartRef = ref(null);
@@ -469,9 +370,10 @@ const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
   return filterRatioMethod(value, row.smlContractValueBuyRatio);
 };
 const styleRows = (data) => {
-  if (data.row.baseValue == 0) {
-    if (data.row.timeLines.length >= 2) {
-      const scope = data.row.timeLines.slice(-2);
+  const timeLineArray = Object.values(data.row.timeLines);
+  if (data.row.tradingValue == 0) {
+    if (timeLineArray.length >= 2) {
+      const scope = timeLineArray.slice(-2);
       if (scope.filter(timeLine => timeLine.close_rate > 0).length >= 2) {
         return {"background-color": "rgba(255 0 0 / .1)"};
       }
@@ -481,10 +383,10 @@ const styleRows = (data) => {
     }
     return;
   }
-  if (data.row.timeLines.length >= 10) {
-    const scope = data.row.timeLines.slice(-10);
-    const bulls = scope.filter(timeLine => timeLine.large_ratio > 50);
-    const bears = scope.filter(timeLine => timeLine.large_sell > 0 && timeLine.large_ratio < 50);
+  if (timeLineArray.length >= 10) {
+    const scope = timeLineArray.slice(-10);
+    const bulls = scope.filter(timeLine => timeLine.large_buy > timeLine.large_sell);
+    const bears = scope.filter(timeLine => timeLine.large_sell > 0 && timeLine.large_buy < timeLine.large_sell);
     const power = bulls.length - bears.length;
     if (power >= 2) {
       const alpha = power - 1;
@@ -518,90 +420,98 @@ const openedDialog = () => {
   tabWidth.value = tabWidth.value == baseTabSize.width ? baseTabSize.width + 1 : baseTabSize.width;
 }
 
-onMounted(() => {
-  const bearAudio = new Audio("/audio/soundeffect_01.wav");
-  const bullAudio = new Audio("/audio/soundeffect_02.wav");
-  const socket = io(config.wsBaseURL);
-  socket.on("regular-notice", (notice) => {
-    now.value = notice.time;
-    const code = notice.code;
-    if (ranklist[code]) {
-      ranklist[code].threshold = notice.threshold;
-      ranklist[code].currentprice = notice.currentprice;
-      ranklist[code].tradingValueByMin = notice.trading_value_by_min;
-      ranklist[code].tradingValueByMinRate = notice.trading_value_by_min_ratio;
-      ranklist[code].previouscloserate = notice.previouscloserate;
-      ranklist[code].openingrate = notice.openingrate;
-      ranklist[code].vwaprate = notice.vwaprate;
-      ranklist[code].marketOrderValue = notice.market_order_value;
-      ranklist[code].marketOrderBuyRatio = notice.market_order_buy_ratio;
-      ranklist[code].avgLimitOrderQty = notice.avg_limit_order_qty;
-      ranklist[code].avgLimitOrderRatio = notice.avg_limit_order_ratio;
-      ranklist[code].bidsign = notice.bidsign;
-      ranklist[code].asksign = notice.asksign;
-      ranklist[code].score = notice.score;
-      ranklist[code].scores = notice.scores;
-      ranklist[code].totalContractValues = notice.total_contract_values;
-      ranklist[code].timeLines = notice.time_lines;
-      ranklist[code].baseValue = notice.base_value;
+const calcRate = (to: number, from: number) => {
+  if (from > 0 && to > 0) {
+    return (to / from * 100) - 100;
+  }
+  return 0;
+}
+
+const lastTime = ref("08:20:00");
+
+const refreshData = async () => {
+  const toplineRes  = await fetch(`/api/topline?today=${today}`);
+  if (!toplineRes.ok) {
+    console.error("Error topline");
+  }
+  const topline = await toplineRes.json();
+  topline.forEach(data => {
+    if (ranklist[data.symbol_code]) {
+      ranklist[data.symbol_code].currentDateTime = data.current_datetime;
+      ranklist[data.symbol_code].currentPrice = data.current_price;
+      ranklist[data.symbol_code].tradingValue = data.trading_value;
+      ranklist[data.symbol_code].tradingValueByMin = data.recent_value;
+      ranklist[data.symbol_code].previousCloseRate = calcRate(data.current_price, data.previous_close_price);
+      ranklist[data.symbol_code].openingRate = calcRate(data.current_price, data.opening_price);
+      ranklist[data.symbol_code].vwaprate = calcRate(data.current_price, data.vwap);
+      ranklist[data.symbol_code].bidsign = data.bid_sign;
+      ranklist[data.symbol_code].asksign = data.ask_sign;
     } else {
-      ranklist[code] = {
-        code: code,
-        name:
-          notice.name.length > 20 ? `${notice.name.substring(0, 20)}...` : notice.name,
-        threshold: notice.threshold,
-        currentprice: notice.currentprice,
-        tradingValueByMin: notice.trading_value_by_min,
-        tradingValueByMinRate: notice.trading_value_by_min_ratio,
-        previouscloserate: notice.previouscloserate,
-        openingrate: notice.openingrate,
-        vwaprate: notice.vwaprate,
-        marketOrderValue: notice.market_order_value,
-        marketOrderBuyRatio: notice.market_order_buy_ratio,
-        avgLimitOrderQty: notice.avg_limit_order_qty,
-        avgLimitOrderRatio: notice.avg_limit_order_ratio,
-        bidsign: notice.bidsign,
-        asksign: notice.asksign,
-        score: notice.score,
-        scores: notice.scores,
-        totalContractValues: notice.total_contract_values,
-        timeLines: notice.time_lines,
-        baseValue: notice.base_value,
-      };
-      let index = 0;
-      while (filterCode.length > index) {
-        if (filterCode[index].value > code) {
-          break;
-        }
-        index++;
+      const symbolName = data.symbol_name == null ? "未登録" : data.symbol_name;
+      ranklist[data.symbol_code] = {
+        currentDateTime: data.current_datetime,
+        code: data.symbol_code,
+        name: symbolName.length > 20 ? `${symbolName.substring(0, 20)}...` : symbolName,
+        threshold: 0,
+        currentPrice: data.current_price,
+        tradingValue: data.trading_value,
+        tradingValueByMin: data.recent_value,
+        previousCloseRate: calcRate(data.current_price, data.previous_close_price),
+        openingRate: calcRate(data.current_price, data.opening_price),
+        vwaprate: calcRate(data.current_price, data.vwap),
+        bidsign: data.bid_sign,
+        asksign: data.ask_sign,
+        score: 0,
+        scores: [],
+        totalContractValues: [],
+        timeLines: {},
       }
-      filterCode.splice(index, 0, {
-        text: `${code}: ${ranklist[code].name}`,
-        value: code,
-      });
     }
-    const recent_score = parseInt(notice.increased_score);
-    if (recent_score != 0) {
-      const colorCode = recent_score > 0 ? "#f44336" : "#2196f3";
-      const latestScore = notice.scores[notice.scores.length - 1];
-      if (isAudio.value && selectedScoreOption.value.includes(latestScore.label)) {
-        if (recent_score > 0) {
-          bullAudio.play();
-        } else {
-          bearAudio.play();
-        }
-        ElNotification({
-          title: `${notice.code}: ${notice.name.substring(0, 12)}`,
-          message: h(
-            "b", { style: `color: ${colorCode}` }, latestScore.label
-          ),
-          duration: 6000,
-          position: "bottom-right",
-          onClick: () => copyToClipboard(notice.code),
-        });
+    now.value = data.current_datetime;
+  });
+
+
+  const timelinesRes  = await fetch(`/api/timelines?today=${today}&lastTime=${lastTime.value}`);
+  if (!timelinesRes.ok) {
+    console.error("Error");
+  }
+  const timelines = await timelinesRes.json();
+  timelines.forEach(data => {
+    const tickTime = data.tick_time;
+    if (lastTime.value < tickTime) {
+      lastTime.value = tickTime;
+    }
+    if (ranklist[data.symbol_code]) {
+      ranklist[data.symbol_code].timeLines[tickTime] = {
+        hhmm: tickTime,
+        open: data.opening_price,
+        high: data.high_price,
+        low: data.low_price,
+        close: data.close_price,
+        close_rate: 0,
+        vwap: data.vwap,
+        large_sell: data.large_sell_value,
+        middle_sell: data.middle_sell_value,
+        small_sell: data.small_sell_value,
+        large_buy: data.large_buy_value,
+        middle_buy: data.middle_buy_value,
+        small_buy: data.small_buy_value,
+        order_limit_bid: data.bid_limit_order,
+        order_limit_ask: data.ask_limit_order,
+        order_market_bid: data.bid_market_order,
+        order_market_ask: data.ask_market_order,
+        order_over: data.bid_over_order,
+        order_under: data.ask_under_order,
       }
     }
   });
+}
+
+onMounted(async () => {
+  const bearAudio = new Audio("/audio/soundeffect_01.wav");
+  const bullAudio = new Audio("/audio/soundeffect_02.wav");
+  refreshData();
+  setInterval(() => refreshData(), 3000);
 });
 
 // import { formatSymbolName, formatVolume, formatRate, formatFirstSign, formatSecondSign } from "@/modules/ValueFormatter";
