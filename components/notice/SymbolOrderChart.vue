@@ -1,6 +1,8 @@
 <template>
   <div>
-    <canvas id="order" :style="{width: `${width}px`, height: `${props.height}px`}"></canvas>
+    <el-scrollbar :style="{width: `${width}px`}">
+      <canvas id="order"></canvas>
+    </el-scrollbar>
   </div>
 </template>
 
@@ -21,6 +23,7 @@ const getChart = (chartId) => {
     data: { labels: [], datasets: [] },
     options: {
       responsive: false,
+      maintainAspectRatio: false,
       animation: {
         duration: 0
       },
@@ -52,11 +55,6 @@ const getChart = (chartId) => {
           },
         },
       },
-      plugins: {
-        legend: {
-          position: "left",
-        }
-      }
     }
   });
 }
@@ -66,69 +64,72 @@ const refreshChart = (symbol) => {
   if (Object.keys(props.symbol).length == 0) {
     return;
   }
+  const timeLineArray = Object.values(symbol.timeLines);
   // チャートを取得しデータセットの表示状態を取得する
   const chart = getChart("order");
   const visibilities = Object.fromEntries(chart.data.datasets.map((dataset, i) => [dataset.label, chart.isDatasetVisible(i)]));
   // チャートを最新データで更新する
-  chart.data.labels = symbol.timeLines.map(timeLine => timeLine.hhmm);
+  chart.data.labels = timeLineArray.map(timeLine => timeLine.hhmm);
   chart.data.datasets = [{
     label: "価格",
     type: "line",
     yAxisID: "price", 
     backgroundColor: "#4caf50",
     borderColor: "#4caf50",
-    data: symbol.timeLines.map(timeLine => timeLine.close)
+    data: timeLineArray.map(timeLine => timeLine.close)
   }, {
     label: "VWAP",
     type: "line",
     yAxisID: "price", 
     backgroundColor: "#ff9800",
     borderColor: "#ff9800",
-    data: symbol.timeLines.map(timeLine => timeLine.vwap)
-}, {
+    data: timeLineArray.map(timeLine => timeLine.vwap)
+  }, {
     label: "買指値",
     type: "line",
     yAxisID: "order",
     backgroundColor: "#e57373",
     fill: true,
-    data: symbol.timeLines.map(timeLine => timeLine.order_limit_ask)
+    data: timeLineArray.map(timeLine => timeLine.order_limit_ask)
   }, {
     label: "成行買",
     type: "line",
     yAxisID: "order",
     backgroundColor: "#f44336",
     fill: true,
-    data: symbol.timeLines.map(timeLine => timeLine.order_market_ask)
+    data: timeLineArray.map(timeLine => timeLine.order_market_ask)
   }, {
     label: "売指値",
     type: "line",
     yAxisID: "order",
     backgroundColor: "#64b5f6",
     fill: true,
-    data: symbol.timeLines.map(timeLine => timeLine.order_limit_bid * -1)
+    data: timeLineArray.map(timeLine => timeLine.order_limit_bid * -1)
   }, {
     label: "成行売",
     type: "line",
     yAxisID: "order",
     backgroundColor: "#2196f3",
     fill: true,
-    data: symbol.timeLines.map(timeLine => timeLine.order_market_bid * -1)
+    data: timeLineArray.map(timeLine => timeLine.order_market_bid * -1)
   }];
   chart.update();
+  const dynamicWidth = timeLineArray.length * 24;
+  chart.resize(dynamicWidth > props.width ? dynamicWidth : props.width, props.height);
   // データセットの表示状態を引き継ぐ
   chart.data.datasets.forEach((dataset, i) => {
     const visibility = visibilities[dataset.label];
     if (visibility != null && !visibility) {
       chart.hide(i);
     }
-  })
+  });
 }
 
 onMounted(() => {
   //初回更新
   refreshChart(props.symbol)
   // チャートの自動更新設定
-  setInterval(() => refreshChart(props.symbol), 5000);
+  setInterval(() => refreshChart(props.symbol), 3000);
 });
 
 defineExpose({ refreshChart });
