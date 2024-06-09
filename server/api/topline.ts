@@ -15,7 +15,7 @@ export default defineEventHandler(async (event: any) => {
             SELECT
                 tl.symbol_code,
                 s.name symbol_name,
-                CONVERT_TZ(tl.current_datetime, 'UTC', 'Asia/Tokyo') current_datetime,
+                tl.current_datetime,
                 tl.current_price,
                 tl.opening_price,
                 tl.previous_close_price,
