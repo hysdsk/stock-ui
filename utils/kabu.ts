@@ -6,7 +6,8 @@ const pool = mysql.createPool({
     user: config.dbUser,
     password: config.dbPswd,
     database: config.dbName,
-    timezone: "+00:00",
+    timezone: "+09:00",
+    dateStrings: false,
 });
 
 export const find = async (sql: string, params: any) => {
@@ -17,5 +18,13 @@ export const find = async (sql: string, params: any) => {
             }
             resolve(rows);
         });
+    });
+}
+
+export const save = async (sql: string, params: any) => {
+    pool.query(sql, params, (err, rows, fields) => {
+        if (err) {
+            console.error(err);
+        }
     });
 }
