@@ -25,6 +25,5 @@ export default defineEventHandler(async (event: any) => {
         WHERE
             tl.opening_date = ?
     `
-    const results = find(sql, [query.today]);
-    return results;
+    return find(sql, [query.today]);
 });

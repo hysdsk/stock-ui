@@ -6,7 +6,7 @@
           <el-card style="text-align: center">
             <el-space direction="vertical" wrap>
               <el-text size="small" type="info">現在時刻</el-text>
-              <el-text size="large">{{ now.substring(0, 10) }} {{ now.substring(11, 19) }}</el-text>
+              <el-text size="large">{{ formatDate(now) }}</el-text>
             </el-space>
           </el-card>
         </el-col>
@@ -270,7 +270,7 @@ const filtered = ref(false);
 const selectedSymbols = ref([]);
 const symbols = reactive({});
 const ranklist = reactive({});
-const now = ref("YYYY-MM-DDThh:mm:ss.sssZ");
+const now = ref(new Date());
 const dialogVisible = ref(false);
 const dialogRow = ref({});
 const timeLineChartRef = ref(null);
@@ -300,6 +300,16 @@ const scoreOptions = [
   }
 ];
 const selectedScoreOption = ref(scoreOptions.map(o => o.value));
+
+const formatDate = (date: Date) => {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+}
 
 watch(dialogRow, (row, prevRow) => {
   if (timeLineChartRef.value) {
@@ -467,7 +477,7 @@ const refreshData = async () => {
         timeLines: {},
       }
     }
-    now.value = data.current_datetime;
+    now.value = new Date(data.current_datetime);
   });
 
 

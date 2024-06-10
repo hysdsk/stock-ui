@@ -1,12 +1,4 @@
-import * as mysql from "mysql2";
-const config = useRuntimeConfig()
-
-const pool = mysql.createPool({
-  host: config.dbHost,
-  user: config.dbUser,
-  password: config.dbPswd,
-  database: config.dbName
-});
+import { save } from "~/utils/kabu"
 
 interface Data {
   currentDateTime: Date;
@@ -85,11 +77,7 @@ const put = (data: Data) => {
     data.bidSign,
     data.askSign,
   ]
-  pool.query(top_line_sql, top_line_params, (err, rows, fields) => {
-    if (err) {
-      console.error(err)
-    }
-  });
+  save(top_line_sql, top_line_params);
 
   const time_lines_sql = `
     INSERT INTO time_lines (
@@ -157,11 +145,7 @@ const put = (data: Data) => {
     data.bidOverOrder,
     data.askUnderOrder,
   ]
-  pool.query(time_lines_sql, time_lines_params, (err, rows, fields) => {
-    if (err) {
-      console.error(err)
-    }
-  });
+  save(time_lines_sql, time_lines_params);
 }
 
 export default defineEventHandler(async (event: any) => {
