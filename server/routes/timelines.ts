@@ -1,4 +1,6 @@
 import { save } from "~/utils/kabu"
+import dayjs from "dayjs";
+dayjs.locale("ja");
 
 interface Data {
   currentDateTime: Date;
@@ -30,11 +32,8 @@ interface Data {
 }
 
 const put = (data: Data) => {
-  const year = String(data.currentDateTime.getFullYear());
-  const month = String(data.currentDateTime.getMonth() + 1).padStart(2, "0");
-  const day = String(data.currentDateTime.getDate()).padStart(2, "0");
-  const hour = String(data.currentDateTime.getHours()).padStart(2, "0");
-  const minute = String(data.currentDateTime.getMinutes()).padStart(2, "0");
+  const openingDate = dayjs(data.currentDateTime).format("YYYY/MM/DD");
+  const tickTime = dayjs(data.currentDateTime).format("HH:mm:00");
   const top_line_sql = `
     INSERT INTO top_line (
       opening_date,
@@ -65,7 +64,7 @@ const put = (data: Data) => {
     ;
   `
   const top_line_params = [
-    `${year}-${month}-${day}`,
+    openingDate,
     data.symbolCode,
     data.currentDateTime,
     data.currentPrice,
@@ -124,9 +123,9 @@ const put = (data: Data) => {
     ;
   `;
   const time_lines_params = [
-    `${year}-${month}-${day}`,
+    openingDate,
     data.symbolCode,
-    `${hour}:${minute}:00`,
+    tickTime,
     data.openingPrice,
     data.highPrice,
     data.lowPrice,
