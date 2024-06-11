@@ -6,7 +6,7 @@
           <el-card style="text-align: center">
             <el-space direction="vertical" wrap>
               <el-text size="small" type="info">現在時刻</el-text>
-              <el-text size="large">{{ now }}</el-text>
+              <el-text size="large">{{ clock }}</el-text>
             </el-space>
           </el-card>
         </el-col>
@@ -14,7 +14,7 @@
           <el-card style="text-align: center">
             <el-space direction="vertical" wrap>
               <el-text size="small" type="info">前日超数</el-text>
-              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.previousCloseRate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+              <el-text size="large">{{ Object.values(symbolRows).filter((e) => e.previousCloseRate > 0).length }}／{{ Object.keys(symbolRows).length }}</el-text>
             </el-space>
           </el-card>
         </el-col>
@@ -22,21 +22,13 @@
           <el-card style="text-align: center">
             <el-space direction="vertical" wrap>
               <el-text size="small" type="info">陽線数</el-text>
-              <el-text size="large">{{ Object.values(ranklist).filter((e) => e.openingRate > 0).length }}／{{ Object.keys(ranklist).length }}</el-text>
+              <el-text size="large">{{ Object.values(symbolRows).filter((e) => e.openingRate > 0).length }}／{{ Object.keys(symbolRows).length }}</el-text>
             </el-space>
           </el-card>
         </el-col>
-        <el-col :span="10"></el-col>
-        <el-col :span="4">
-          <el-space direction="vertical">
-            <el-switch
-              v-model="isAudio"
-              size="large"
-              style="--el-switch-on-color: #455a64; --el-switch-off-color: #455a64"
-              inline-prompt
-              :active-icon="Bell"
-              :inactive-icon="MuteNotification"
-            />
+        <el-col :span="9"></el-col>
+        <el-col :span="5">
+          <el-space>
             <el-select
               v-model="selectedScoreOption"
               multiple
@@ -51,6 +43,23 @@
                 :value="item.value"
               />
             </el-select>
+            <el-switch
+              v-model="isAudio"
+              size="large"
+              style="--el-switch-on-color: #455a64; --el-switch-off-color: #455a64"
+              inline-prompt
+              :active-icon="Bell"
+              :inactive-icon="MuteNotification"
+            />
+          </el-space>
+          <br/><br/>
+          <el-space>
+            <el-date-picker
+              v-model="fromDateTime"
+              type="datetime"
+              placeholder="Select date and time"
+              @change="changeDateTime"
+            />
           </el-space>
         </el-col>
       </el-row>
@@ -58,7 +67,7 @@
         <el-table
           row-key="code"
           ref="realtimeTableRef"
-          :data="Object.values(ranklist)"
+          :data="Object.values(symbolRows)"
           :row-style="styleRows"
           @row-click="
             (r, c, e) => {
@@ -256,27 +265,35 @@ import { Bell, MuteNotification } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
 dayjs.locale("ja");
 
+useHead({ title: "通知受信" });
+
+// クエリパラメータ
 const route = useRoute();
 const queryParams = route.query;
-const today = /[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(queryParams.today) ? queryParams.today : dayjs().format("YYYY-MM-DD");
 
-useHead({ title: "通知受信" });
+// 時間
+const clock = ref(dayjs().format("YYYY/MM/DD HH:mm:ss"));
+const fromDateTime = ref(queryParams.from != null && /[0-9]*/.test(queryParams.from)
+  ? dayjs(queryParams.from*1000).toDate()
+  : dayjs().toDate());
+const lastTime = ref(dayjs(fromDateTime.value).format("HH:mm:ss"));
+
+// メインテーブル
+const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
+const symbolRows = reactive({});
+
+// ダイアログ
+const dialogVisible = ref(false);
+const dialogRow = ref({});
+const activeName = ref("1");
 const baseTabSize = { height: 768, width: 1440 }
 const tabHeight = ref(baseTabSize.height);
 const tabWidth = ref(baseTabSize.width);
-const config = useRuntimeConfig().public;
-const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
-const filtered = ref(false);
-const selectedSymbols = ref([]);
-const symbols = reactive({});
-const ranklist = reactive({});
-const now = ref(dayjs().format("YYYY/MM/DD HH:mm:ss"));
-const dialogVisible = ref(false);
-const dialogRow = ref({});
 const timeLineChartRef = ref(null);
 const distributionGraphRef = ref(null);
 const noticeSymbolOrderChartRef = ref(null);
-const activeName = ref("1");
+
+// オーディオ
 const isAudio = ref(false);
 const scoreOptions = [
   {
@@ -300,6 +317,10 @@ const scoreOptions = [
   }
 ];
 const selectedScoreOption = ref(scoreOptions.map(o => o.value));
+
+const changeDateTime = () => {
+  window.location.href = `?from=${dayjs(fromDateTime.value).unix()}`;
+}
 
 watch(dialogRow, (row, prevRow) => {
   if (timeLineChartRef.value) {
@@ -325,50 +346,8 @@ const filterCode = [];
 const filterCodeMethod = (value: string, row: SymbolTable) => {
   return row.code == value;
 };
-const filterScore = [
-  { text: "0 以上", value: 0 },
-  { text: "1 以上", value: 1 },
-  { text: "2 以上", value: 2 },
-  { text: "3 以上", value: 3 },
-];
-const filterScoreMethod = (value: string, row: SymbolTable) => {
-  return row.score >= value;
-};
-const filterRatioItems = [
-  { text: "超弱気", value: 0 },
-  { text: "弱気", value: 1 },
-  { text: "強気", value: 2 },
-  { text: "超強気", value: 3 },
-];
-const filterRatioMethod = (value: number, ratio: number) => {
-  switch (value) {
-    case 0:
-      return ratio <= 25;
-    case 1:
-      return ratio <= 50;
-    case 2:
-      return ratio >= 50;
-    case 3:
-      return ratio >= 75;
-    default:
-      return false;
-  }
-};
-const filterContractValueBy5MinRatio = (value: string, row: SymbolTable) => {
-  return filterRatioMethod(value, row.tradingValueByMinRate);
-};
-const filterLimitOrderRatio = (value: string, row: SymbolTable) => {
-  return filterRatioMethod(value, row.avgLimitOrderRatio);
-};
-const filterLrgContractValueRatio = (value: string, row: SymbolTable) => {
-  return filterRatioMethod(value, row.lrgContractValueBuyRatio);
-};
-const filterMidContractValueRatio = (value: string, row: SymbolTable) => {
-  return filterRatioMethod(value, row.midContractValueBuyRatio);
-};
-const filterSmlContractValueRatio = (value: string, row: SymbolTable) => {
-  return filterRatioMethod(value, row.smlContractValueBuyRatio);
-};
+
+// メインテーブル ハイライト
 const styleRows = (data) => {
   const timeLineArray = Object.values(data.row.timeLines);
   if (data.row.tradingValue == 0) {
@@ -398,6 +377,8 @@ const styleRows = (data) => {
     }
   }
 };
+
+
 const colorSelectedText = (v) => {
   const rows = realtimeTableRef.value!.getSelectionRows();
   if (rows.length > 0 && rows.filter((row) => row.code == v).length > 0) {
@@ -427,28 +408,27 @@ const calcRate = (to: number, from: number) => {
   return 0;
 }
 
-const lastTime = ref("08:20:00");
-
 const refreshData = async () => {
-  const toplineRes  = await fetch(`/api/topline?today=${today}`);
+  const fromDate = dayjs(fromDateTime.value).format("YYYY-MM-DD");
+  const toplineRes  = await fetch(`/api/topline?today=${fromDate}`);
   if (!toplineRes.ok) {
     console.error("Error topline");
   }
   const topline = await toplineRes.json();
   topline.forEach(data => {
-    if (ranklist[data.symbol_code]) {
-      ranklist[data.symbol_code].currentDateTime = data.current_datetime;
-      ranklist[data.symbol_code].currentPrice = data.current_price;
-      ranklist[data.symbol_code].tradingValue = data.trading_value;
-      ranklist[data.symbol_code].tradingValueByMin = data.recent_value;
-      ranklist[data.symbol_code].previousCloseRate = calcRate(data.current_price, data.previous_close_price);
-      ranklist[data.symbol_code].openingRate = calcRate(data.current_price, data.opening_price);
-      ranklist[data.symbol_code].vwaprate = calcRate(data.current_price, data.vwap);
-      ranklist[data.symbol_code].bidsign = data.bid_sign;
-      ranklist[data.symbol_code].asksign = data.ask_sign;
+    if (symbolRows[data.symbol_code]) {
+      symbolRows[data.symbol_code].currentDateTime = data.current_datetime;
+      symbolRows[data.symbol_code].currentPrice = data.current_price;
+      symbolRows[data.symbol_code].tradingValue = data.trading_value;
+      symbolRows[data.symbol_code].tradingValueByMin = data.recent_value;
+      symbolRows[data.symbol_code].previousCloseRate = calcRate(data.current_price, data.previous_close_price);
+      symbolRows[data.symbol_code].openingRate = calcRate(data.current_price, data.opening_price);
+      symbolRows[data.symbol_code].vwaprate = calcRate(data.current_price, data.vwap);
+      symbolRows[data.symbol_code].bidsign = data.bid_sign;
+      symbolRows[data.symbol_code].asksign = data.ask_sign;
     } else {
       const symbolName = data.symbol_name == null ? "未登録" : data.symbol_name;
-      ranklist[data.symbol_code] = {
+      symbolRows[data.symbol_code] = {
         currentDateTime: data.current_datetime,
         code: data.symbol_code,
         name: symbolName.length > 20 ? `${symbolName.substring(0, 20)}...` : symbolName,
@@ -467,11 +447,11 @@ const refreshData = async () => {
         timeLines: {},
       }
     }
-    now.value = dayjs(data.current_datetime).format("YYYY/MM/DD HH:mm:ss");
+    clock.value = dayjs(data.current_datetime).format("YYYY/MM/DD HH:mm:ss");
   });
 
 
-  const timelinesRes  = await fetch(`/api/timelines?today=${today}&lastTime=${lastTime.value}`);
+  const timelinesRes  = await fetch(`/api/timelines?today=${fromDate}&lastTime=${lastTime.value}`);
   if (!timelinesRes.ok) {
     console.error("Error");
   }
@@ -481,8 +461,8 @@ const refreshData = async () => {
     if (lastTime.value < tickTime) {
       lastTime.value = tickTime;
     }
-    if (ranklist[data.symbol_code]) {
-      ranklist[data.symbol_code].timeLines[tickTime] = {
+    if (symbolRows[data.symbol_code]) {
+      symbolRows[data.symbol_code].timeLines[tickTime] = {
         hhmm: tickTime,
         open: data.opening_price,
         high: data.high_price,
@@ -575,33 +555,6 @@ const progressColors = [
   { color: "#ef5350", percentage: 70 },
   { color: "#f44336", percentage: 75 },
 ];
-
-const backgroundStrengthRatioV2 = (num: number, ratio: number) => {
-  if (num) {
-    return `background: linear-gradient(to left, #f44336 ${ratio}%, #2196f3 ${ratio}%)`;
-  }
-  return "";
-};
-
-const backgroundStrengthRatio = (value: number, baseValue: number) => {
-  const ratio = (value / baseValue) * 100;
-  return `background: linear-gradient(to left, #f44336 ${ratio}%, #2196f3 ${ratio}%)`;
-};
-
-const backgroundBearRatio = (value: number, baseValue: number) => {
-  const ratio = (value / baseValue) * 100;
-  return `background: linear-gradient(to left, #2196f3 ${ratio}%, transparent ${ratio}%)`;
-};
-
-const backgroundBullRatio = (value: number, baseValue: number) => {
-  const ratio = (value / baseValue) * 100;
-  return `background: linear-gradient(to right, #f44336 ${ratio}%, transparent ${ratio}%)`;
-}
-
-const backgroundStyleVolume = (value: number, baseValue: number) => {
-  const ratio = (value / baseValue) * 100;
-  return `background: linear-gradient(to right, rgba(255, 235, 59, 0.5) ${ratio}%, transparent ${ratio}%)`;
-};
 
 const colorFirstSign = (bidSign: string, askSign: string) => {
   if (bidSign == "0118") return "text-blue5";
