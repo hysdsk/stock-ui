@@ -10,6 +10,12 @@ interface Data {
   todayOpeningPrice: number;
   tragingValue: number;
   recentValue: number;
+  totalLargeBuyValue: number;
+  totalMiddleBuyValue: number;
+  totalSmallBuyValue: number;
+  totalLargeSellValue: number;
+  totalMiddleSellValue: number;
+  totalSmallSellValue: number;
   bidSign: string;
   askSign: string;
   openingPrice: number;
@@ -45,10 +51,16 @@ const put = (data: Data) => {
       vwap,
       trading_value,
       recent_value,
+      large_buy_value,
+      middle_buy_value,
+      small_buy_value,
+      large_sell_value,
+      middle_sell_value,
+      small_sell_value,
       bid_sign,
       ask_sign
     ) VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
     ) ON DUPLICATE KEY UPDATE
       opening_date = VALUES(opening_date),
       symbol_code = VALUES(symbol_code),
@@ -59,6 +71,12 @@ const put = (data: Data) => {
       vwap = VALUES(vwap),
       trading_value = VALUES(trading_value),
       recent_value = VALUES(recent_value),
+      large_buy_value = VALUES(large_buy_value),
+      middle_buy_value = VALUES(middle_buy_value),
+      small_buy_value = VALUES(small_buy_value),
+      large_sell_value = VALUES(large_sell_value),
+      middle_sell_value = VALUES(middle_sell_value),
+      small_sell_value = VALUES(small_sell_value),
       bid_sign = VALUES(bid_sign),
       ask_sign = VALUES(ask_sign)
     ;
@@ -73,6 +91,12 @@ const put = (data: Data) => {
     data.vwap,
     data.tragingValue,
     data.recentValue,
+    data.totalLargeBuyValue,
+    data.totalMiddleBuyValue,
+    data.totalSmallBuyValue,
+    data.totalLargeSellValue,
+    data.totalMiddleSellValue,
+    data.totalSmallSellValue,
     data.bidSign,
     data.askSign,
   ]
