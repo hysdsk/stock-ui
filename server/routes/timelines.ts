@@ -1,4 +1,6 @@
 import { save } from "~/utils/kabu"
+import dayjs from "dayjs";
+dayjs.locale("ja");
 
 interface Data {
   currentDateTime: Date;
@@ -8,6 +10,12 @@ interface Data {
   todayOpeningPrice: number;
   tragingValue: number;
   recentValue: number;
+  totalLargeBuyValue: number;
+  totalMiddleBuyValue: number;
+  totalSmallBuyValue: number;
+  totalLargeSellValue: number;
+  totalMiddleSellValue: number;
+  totalSmallSellValue: number;
   bidSign: string;
   askSign: string;
   openingPrice: number;
@@ -30,13 +38,10 @@ interface Data {
 }
 
 const put = (data: Data) => {
-  const year = String(data.currentDateTime.getFullYear());
-  const month = String(data.currentDateTime.getMonth() + 1).padStart(2, "0");
-  const day = String(data.currentDateTime.getDate()).padStart(2, "0");
-  const hour = String(data.currentDateTime.getHours()).padStart(2, "0");
-  const minute = String(data.currentDateTime.getMinutes()).padStart(2, "0");
-  const top_line_sql = `
-    INSERT INTO top_line (
+  const openingDate = dayjs(data.currentDateTime).format("YYYY/MM/DD");
+  const tickTime = dayjs(data.currentDateTime).format("HH:mm:00");
+  const top_lines_sql = `
+    INSERT INTO top_lines (
       opening_date,
       symbol_code,
       current_datetime,
@@ -46,10 +51,16 @@ const put = (data: Data) => {
       vwap,
       trading_value,
       recent_value,
+      large_buy_value,
+      middle_buy_value,
+      small_buy_value,
+      large_sell_value,
+      middle_sell_value,
+      small_sell_value,
       bid_sign,
       ask_sign
     ) VALUES (
-      ?,?,?,?,?,?,?,?,?,?,?
+      ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
     ) ON DUPLICATE KEY UPDATE
       opening_date = VALUES(opening_date),
       symbol_code = VALUES(symbol_code),
@@ -60,12 +71,18 @@ const put = (data: Data) => {
       vwap = VALUES(vwap),
       trading_value = VALUES(trading_value),
       recent_value = VALUES(recent_value),
+      large_buy_value = VALUES(large_buy_value),
+      middle_buy_value = VALUES(middle_buy_value),
+      small_buy_value = VALUES(small_buy_value),
+      large_sell_value = VALUES(large_sell_value),
+      middle_sell_value = VALUES(middle_sell_value),
+      small_sell_value = VALUES(small_sell_value),
       bid_sign = VALUES(bid_sign),
       ask_sign = VALUES(ask_sign)
     ;
   `
-  const top_line_params = [
-    `${year}-${month}-${day}`,
+  const top_lines_params = [
+    openingDate,
     data.symbolCode,
     data.currentDateTime,
     data.currentPrice,
@@ -74,10 +91,16 @@ const put = (data: Data) => {
     data.vwap,
     data.tragingValue,
     data.recentValue,
+    data.totalLargeBuyValue,
+    data.totalMiddleBuyValue,
+    data.totalSmallBuyValue,
+    data.totalLargeSellValue,
+    data.totalMiddleSellValue,
+    data.totalSmallSellValue,
     data.bidSign,
     data.askSign,
   ]
-  save(top_line_sql, top_line_params);
+  save(top_lines_sql, top_lines_params);
 
   const time_lines_sql = `
     INSERT INTO time_lines (
@@ -124,9 +147,9 @@ const put = (data: Data) => {
     ;
   `;
   const time_lines_params = [
-    `${year}-${month}-${day}`,
+    openingDate,
     data.symbolCode,
-    `${hour}:${minute}:00`,
+    tickTime,
     data.openingPrice,
     data.highPrice,
     data.lowPrice,
