@@ -14,6 +14,12 @@ export default defineEventHandler(async (event: any) => {
             tl.vwap,
             tl.trading_value,
             tl.recent_value,
+            tl.large_buy_value,
+            tl.middle_buy_value,
+            tl.small_buy_value,
+            tl.large_sell_value,
+            tl.middle_sell_value,
+            tl.small_sell_value,
             tl.bid_sign,
             tl.ask_sign
         FROM

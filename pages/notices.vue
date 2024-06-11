@@ -419,11 +419,17 @@ const refreshData = async () => {
     if (symbolRows[data.symbol_code]) {
       symbolRows[data.symbol_code].currentDateTime = data.current_datetime;
       symbolRows[data.symbol_code].currentPrice = data.current_price;
-      symbolRows[data.symbol_code].tradingValue = data.trading_value;
-      symbolRows[data.symbol_code].tradingValueByMin = data.recent_value;
       symbolRows[data.symbol_code].previousCloseRate = calcRate(data.current_price, data.previous_close_price);
       symbolRows[data.symbol_code].openingRate = calcRate(data.current_price, data.opening_price);
       symbolRows[data.symbol_code].vwaprate = calcRate(data.current_price, data.vwap);
+      symbolRows[data.symbol_code].tradingValue = data.trading_value;
+      symbolRows[data.symbol_code].tradingValueByMin = data.recent_value;
+      symbolRows[data.symbol_code].largeBuyValue = data.large_buy_value;
+      symbolRows[data.symbol_code].middleBuyValue = data.middle_buy_value;
+      symbolRows[data.symbol_code].smallBuyValue = data.small_buy_value;
+      symbolRows[data.symbol_code].largeSellValue = data.large_sell_value;
+      symbolRows[data.symbol_code].middleSellValue = data.middle_sell_value;
+      symbolRows[data.symbol_code].smallSellValue = data.small_sell_value;
       symbolRows[data.symbol_code].bidsign = data.bid_sign;
       symbolRows[data.symbol_code].asksign = data.ask_sign;
     } else {
@@ -434,11 +440,17 @@ const refreshData = async () => {
         name: symbolName.length > 20 ? `${symbolName.substring(0, 20)}...` : symbolName,
         threshold: 0,
         currentPrice: data.current_price,
-        tradingValue: data.trading_value,
-        tradingValueByMin: data.recent_value,
         previousCloseRate: calcRate(data.current_price, data.previous_close_price),
         openingRate: calcRate(data.current_price, data.opening_price),
         vwaprate: calcRate(data.current_price, data.vwap),
+        tradingValue: data.trading_value,
+        tradingValueByMin: data.recent_value,
+        largeBuyValue: data.large_buy_value,
+        middleBuyValue: data.middle_buy_value,
+        smallBuyValue: data.small_buy_value,
+        largeSellValue: data.large_sell_value,
+        middleSellValue: data.middle_sell_value,
+        smallSellValue: data.small_sell_value,
         bidsign: data.bid_sign,
         asksign: data.ask_sign,
         score: 0,
