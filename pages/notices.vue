@@ -410,12 +410,12 @@ const calcRate = (to: number, from: number) => {
 
 const refreshData = async () => {
   const fromDate = dayjs(fromDateTime.value).format("YYYY-MM-DD");
-  const toplineRes  = await fetch(`/api/topline?today=${fromDate}`);
-  if (!toplineRes.ok) {
-    console.error("Error topline");
+  const toplinesRes  = await fetch(`/api/toplines?today=${fromDate}`);
+  if (!toplinesRes.ok) {
+    console.error("Error toplines");
   }
-  const topline = await toplineRes.json();
-  topline.forEach(data => {
+  const toplines = await toplinesRes.json();
+  toplines.forEach(data => {
     if (symbolRows[data.symbol_code]) {
       symbolRows[data.symbol_code].currentDateTime = data.current_datetime;
       symbolRows[data.symbol_code].currentPrice = data.current_price;

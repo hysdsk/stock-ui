@@ -17,7 +17,7 @@ export default defineEventHandler(async (event: any) => {
             tl.bid_sign,
             tl.ask_sign
         FROM
-            top_line tl
+            top_lines tl
         LEFT JOIN
             symbols s
         ON

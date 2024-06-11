@@ -34,8 +34,8 @@ interface Data {
 const put = (data: Data) => {
   const openingDate = dayjs(data.currentDateTime).format("YYYY/MM/DD");
   const tickTime = dayjs(data.currentDateTime).format("HH:mm:00");
-  const top_line_sql = `
-    INSERT INTO top_line (
+  const top_lines_sql = `
+    INSERT INTO top_lines (
       opening_date,
       symbol_code,
       current_datetime,
@@ -63,7 +63,7 @@ const put = (data: Data) => {
       ask_sign = VALUES(ask_sign)
     ;
   `
-  const top_line_params = [
+  const top_lines_params = [
     openingDate,
     data.symbolCode,
     data.currentDateTime,
@@ -76,7 +76,7 @@ const put = (data: Data) => {
     data.bidSign,
     data.askSign,
   ]
-  save(top_line_sql, top_line_params);
+  save(top_lines_sql, top_lines_params);
 
   const time_lines_sql = `
     INSERT INTO time_lines (
