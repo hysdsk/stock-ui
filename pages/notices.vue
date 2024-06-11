@@ -184,45 +184,101 @@
               </template>
             </el-table-column>
           </el-table-column>
-          <el-table-column
-            prop="threshold"
-            label="閾値"
-            header-align="center"
-            align="right"
-            width="80"
-            sortable
-          >
-            <template #default="scope">
-              <span>{{ formatVolume(scope.row.threshold) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="tradingValueByMin"
-            label="直近売買代金"
-            header-align="center"
-            align="right"
-            width="160"
-            sortable
-          >
-            <template #default="scope">
-              <span :class="colorValue(scope.row.tradingValueByMin)">
-                {{ scope.row.tradingValueByMin.toLocaleString() }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="tradingValueByMin"
-            label="当日売買代金"
-            header-align="center"
-            align="right"
-            width="160"
-            sortable
-          >
-            <template #default="scope">
-              <span :class="colorValue(scope.row.tradingValue/100)">
-                {{ scope.row.tradingValue.toLocaleString() }}
-              </span>
-            </template>
+          <el-table-column label="売買代金" header-align="center">
+            <el-table-column
+              prop="tradingValueByMin"
+              label="直近10分"
+              header-align="center"
+              align="right"
+              width="130"
+              sortable
+            >
+              <template #default="scope">
+                <span :class="colorValue(scope.row.tradingValueByMin)">
+                  {{ scope.row.tradingValueByMin.toLocaleString() }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="tradingValueByMin"
+              label="当日総額"
+              header-align="center"
+              align="right"
+              width="150"
+              sortable
+            >
+              <template #default="scope">
+                <span :class="colorValue(scope.row.tradingValue/100)">
+                  {{ scope.row.tradingValue.toLocaleString() }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="largeBuyValue"
+              label="大口買"
+              header-align="center"
+              align="right"
+              width="80"
+            >
+              <template #default="scope">
+                  {{ formatRate(calcRatio(scope.row.largeBuyValue, scope.row.tradingValue)) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="largeSellValue"
+              label="大口売"
+              header-align="center"
+              align="right"
+              width="80"
+            >
+              <template #default="scope">
+                  {{ formatRate(calcRatio(scope.row.largeSellValue, scope.row.tradingValue)) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="middleBuyValue"
+              label="中級買"
+              header-align="center"
+              align="right"
+              width="80"
+            >
+              <template #default="scope">
+                  {{ formatRate(calcRatio(scope.row.middleBuyValue, scope.row.tradingValue)) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="middleSellValue"
+              label="中級売"
+              header-align="center"
+              align="right"
+              width="80"
+            >
+              <template #default="scope">
+                  {{ formatRate(calcRatio(scope.row.middleSellValue, scope.row.tradingValue)) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="smallBuyValue"
+              label="一般買"
+              header-align="center"
+              align="right"
+              width="80"
+            >
+              <template #default="scope">
+                  {{ formatRate(calcRatio(scope.row.smallBuyValue, scope.row.tradingValue)) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="smallSellValue"
+              label="一般売"
+              header-align="center"
+              align="right"
+              width="80"
+            >
+              <template #default="scope">
+                  {{ formatRate(calcRatio(scope.row.smallSellValue, scope.row.tradingValue)) }}
+              </template>
+            </el-table-column>
           </el-table-column>
         </el-table>
       </el-card>
@@ -404,6 +460,13 @@ const openedDialog = () => {
 const calcRate = (to: number, from: number) => {
   if (from > 0 && to > 0) {
     return (to / from * 100) - 100;
+  }
+  return 0;
+}
+
+const calcRatio = (top: number, bottom: number) => {
+  if (bottom > 0 && top > 0) {
+    return top / bottom * 100;
   }
   return 0;
 }
