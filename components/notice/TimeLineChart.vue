@@ -140,7 +140,7 @@ const refreshChart = (symbol) => {
 
 onMounted(() => {
   //初回更新
-  refreshChart(props.symbol)
+  refreshChart(props.symbol);
   // チャートの自動更新設定
   setInterval(() => refreshChart(props.symbol), 3000);
 });

@@ -404,18 +404,28 @@ const filterCodeMethod = (value: string, row: SymbolTable) => {
 };
 
 // メインテーブル ハイライト
+const getPowerValue = (count: number, ratio: number) => {
+  const ones = ratio / 10 < 5 ? 5 : 10;
+  const tens = Math.floor(ratio / 10) * 10
+  const key = tens + ones;
+
+  const matrix = {
+    50: [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    55: [1, 2, 2, 2, 2, 2, 2, 2, 2],
+    60: [1, 2, 3, 3, 3, 3, 3, 3, 3],
+    65: [1, 2, 3, 4, 4, 4, 4, 4, 4],
+    70: [1, 2, 3, 4, 5, 5, 5, 5, 5],
+    75: [1, 2, 3, 4, 5, 6, 6, 6, 6],
+    80: [1, 2, 3, 4, 5, 6, 7, 7, 7],
+    85: [1, 2, 3, 4, 5, 6, 7, 8, 8],
+    90: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+  }
+  
+  return matrix[key > 90 ? 90 : key][count - 1]
+}
 const styleRows = (data) => {
   const timeLineArray = Object.values(data.row.timeLines);
   if (data.row.tradingValue == 0) {
-    if (timeLineArray.length >= 2) {
-      const scope = timeLineArray.slice(-2);
-      if (scope.filter(timeLine => timeLine.close_rate > 0).length >= 2) {
-        return {"background-color": "rgba(255 0 0 / .1)"};
-      }
-      if (scope.filter(timeLine => timeLine.close_rate < 0).length >= 2) {
-        return {"background-color": "rgba(0 0 255 / .1)"};
-      }
-    }
     return;
   }
   if (timeLineArray.length >= 10) {
@@ -423,12 +433,15 @@ const styleRows = (data) => {
     const bulls = scope.filter(timeLine => timeLine.large_buy > timeLine.large_sell);
     const bears = scope.filter(timeLine => timeLine.large_sell > 0 && timeLine.large_buy < timeLine.large_sell);
     const power = bulls.length - bears.length;
-    if (power >= 2) {
-      const alpha = power - 1;
+    const bullsAmount = bulls.length > 0 ? bulls.map(timeline => timeline.large_buy).reduce((amount, value) => amount + value) : 0;
+    const bearsAmount = bears.length > 0 ? bears.map(timeline => timeline.large_sell).reduce((amount, value) => amount + value) : 0;
+    const powerRatio = calcRatio(bullsAmount, bullsAmount + bearsAmount)
+    if (power >= 1 && powerRatio > 50) {
+      const alpha = getPowerValue(power, powerRatio)
       return {"background-color": `rgb(255 0 0 / .${alpha})`};
     }
-    if (power <= -2) {
-      const alpha = (power * -1) - 1;
+    if (power <= -1 && powerRatio < 50) {
+      const alpha = getPowerValue(power * -1, 100 - powerRatio)
       return {"background-color": `rgba(0, 0, 255, .${alpha})`};
     }
   }
