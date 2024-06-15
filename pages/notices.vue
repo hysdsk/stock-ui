@@ -375,7 +375,9 @@ const scoreOptions = [
 const selectedScoreOption = ref(scoreOptions.map(o => o.value));
 
 const changeDateTime = () => {
-  window.location.href = `?from=${dayjs(fromDateTime.value).unix()}`;
+  if (fromDateTime.value) {
+    window.location.href = `?from=${dayjs(fromDateTime.value).unix()}`;
+  }
 }
 
 watch(dialogRow, (row, prevRow) => {
@@ -485,6 +487,10 @@ const calcRatio = (top: number, bottom: number) => {
 }
 
 const refreshData = async () => {
+  if (!fromDateTime.value) {
+    // 日付が入力されていな場合は実行しない
+    return
+  }
   const fromDate = dayjs(fromDateTime.value).format("YYYY-MM-DD");
   const toplinesRes  = await fetch(`/api/toplines?today=${fromDate}`);
   if (!toplinesRes.ok) {
