@@ -33,7 +33,7 @@ export default defineEventHandler(async (event: any) => {
         AND
             tl.opening_date < STR_TO_DATE(?, '%Y-%m-%d')
         AND
-            tl.opening_date >= (STR_TO_DATE(?, '%Y-%m-%d') - INTERVAL 14 DAY)
+            tl.opening_date >= (STR_TO_DATE(?, '%Y-%m-%d') - INTERVAL 28 DAY)
         ;
     `
     return find(sql, [query.code, query.from, query.from]);
