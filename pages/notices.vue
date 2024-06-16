@@ -307,7 +307,10 @@
         <NoticeTimeLineChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="timeLineChartRef"/>
       </el-tab-pane>
       <el-tab-pane label="時系列注文数量" name="3">
-        <NoticeSymbolOrderChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="noticeSymbolOrderChartRef"/>
+        <NoticeSymbolOrderChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="symbolOrderChartRef"/>
+      </el-tab-pane>
+      <el-tab-pane label="日次出来高" name="4">
+        <NoticeDailyValueChart :height="tabHeight" :width="tabWidth" :symbol="dialogRow" ref="dailyValueChartRef"/>
       </el-tab-pane>
     </el-tabs>
   </el-dialog>
@@ -347,7 +350,8 @@ const tabHeight = ref(baseTabSize.height);
 const tabWidth = ref(baseTabSize.width);
 const timeLineChartRef = ref(null);
 const distributionGraphRef = ref(null);
-const noticeSymbolOrderChartRef = ref(null);
+const symbolOrderChartRef = ref(null);
+const dailyValueChartRef = ref(null);
 
 // オーディオ
 const isAudio = ref(false);
@@ -387,8 +391,11 @@ watch(dialogRow, (row, prevRow) => {
   if (distributionGraphRef.value) {
     distributionGraphRef.value.refreshChart(row);
   }
-  if (noticeSymbolOrderChartRef.value) {
-    noticeSymbolOrderChartRef.value.refreshChart(row);
+  if (symbolOrderChartRef.value) {
+    symbolOrderChartRef.value.refreshChart(row);
+  }
+  if (dailyValueChartRef.value) {
+    dailyValueChartRef.value.refreshChart(row);
   }
 });
 
@@ -518,6 +525,7 @@ const refreshData = async () => {
       const symbolName = data.symbol_name == null ? "未登録" : data.symbol_name;
       symbolRows[data.symbol_code] = {
         currentDateTime: data.current_datetime,
+        currentDate: dayjs(data.current_datetime).format("YYYY-MM-DD"),
         code: data.symbol_code,
         name: symbolName.length > 20 ? `${symbolName.substring(0, 20)}...` : symbolName,
         threshold: 0,
