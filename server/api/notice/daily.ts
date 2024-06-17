@@ -31,7 +31,7 @@ export default defineEventHandler(async (event: any) => {
         WHERE
             tl.symbol_code = ?
         AND
-            tl.opening_date < STR_TO_DATE(?, '%Y-%m-%d')
+            tl.opening_date =< STR_TO_DATE(?, '%Y-%m-%d')
         AND
             tl.opening_date >= (STR_TO_DATE(?, '%Y-%m-%d') - INTERVAL 28 DAY)
         ;
