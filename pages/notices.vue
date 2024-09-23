@@ -170,7 +170,7 @@
               </template>
             </el-table-column>
             <el-table-column
-              prop="vwaprate"
+              prop="vwapRate"
               label="VWAP"
               header-align="center"
               align="right"
@@ -178,8 +178,8 @@
               sortable
             >
               <template #default="scope">
-                <span :class="colorRate(scope.row.vwaprate)">{{
-                  formatRate(scope.row.vwaprate)
+                <span :class="colorRate(scope.row.vwapRate)">{{
+                  formatRate(scope.row.vwapRate)
                 }}</span>
               </template>
             </el-table-column>
@@ -413,32 +413,26 @@ const filterCodeMethod = (value: string, row: SymbolTable) => {
 };
 
 // メインテーブル ハイライト
-const getPowerValue = (count: number, ratio: number) => {
-  const ones = ratio / 10 < 5 ? 5 : 10;
-  const tens = Math.floor(ratio / 10) * 10
-  const key = tens + ones;
+const getPowerValue = (power: number, ratio: number) => {
+  const key = Math.floor(ratio / 10) * 10
 
   const matrix = {
-    50: [1, 1, 1, 1, 1, 1, 1, 1, 1],
-    55: [1, 2, 2, 2, 2, 2, 2, 2, 2],
-    60: [1, 2, 3, 3, 3, 3, 3, 3, 3],
-    65: [1, 2, 3, 4, 4, 4, 4, 4, 4],
-    70: [1, 2, 3, 4, 5, 5, 5, 5, 5],
-    75: [1, 2, 3, 4, 5, 6, 6, 6, 6],
-    80: [1, 2, 3, 4, 5, 6, 7, 7, 7],
-    85: [1, 2, 3, 4, 5, 6, 7, 8, 8],
-    90: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    50: [1, 1, 3, 4, 5],
+    60: [1, 2, 4, 5, 6],
+    70: [1, 3, 5, 6, 7],
+    80: [1, 4, 6, 7, 8],
+    90: [1, 5, 7, 8, 9],
   }
   
-  return matrix[key > 90 ? 90 : key][count - 1]
+  return matrix[key > 90 ? 90 : key][power - 1]
 }
 const styleRows = (data) => {
   const timeLineArray = Object.values(data.row.timeLines);
   if (data.row.tradingValue == 0) {
     return;
   }
-  if (timeLineArray.length >= 10) {
-    const scope = timeLineArray.slice(-10);
+  if (timeLineArray.length >= 5) {
+    const scope = timeLineArray.slice(-5);
     const bulls = scope.filter(timeLine => timeLine.large_buy > timeLine.large_sell);
     const bears = scope.filter(timeLine => timeLine.large_sell > 0 && timeLine.large_buy < timeLine.large_sell);
     const power = bulls.length - bears.length;
@@ -510,7 +504,7 @@ const refreshData = async () => {
       symbolRows[data.symbol_code].currentPrice = data.current_price;
       symbolRows[data.symbol_code].previousCloseRate = calcRate(data.current_price, data.previous_close_price);
       symbolRows[data.symbol_code].openingRate = calcRate(data.current_price, data.opening_price);
-      symbolRows[data.symbol_code].vwaprate = calcRate(data.current_price, data.vwap);
+      symbolRows[data.symbol_code].vwapRate = calcRate(data.current_price, data.vwap);
       symbolRows[data.symbol_code].tradingValue = data.trading_value;
       symbolRows[data.symbol_code].tradingValueByMin = data.recent_value;
       symbolRows[data.symbol_code].largeBuyValue = data.large_buy_value;
@@ -532,7 +526,7 @@ const refreshData = async () => {
         currentPrice: data.current_price,
         previousCloseRate: calcRate(data.current_price, data.previous_close_price),
         openingRate: calcRate(data.current_price, data.opening_price),
-        vwaprate: calcRate(data.current_price, data.vwap),
+        vwapRate: calcRate(data.current_price, data.vwap),
         tradingValue: data.trading_value,
         tradingValueByMin: data.recent_value,
         largeBuyValue: data.large_buy_value,
