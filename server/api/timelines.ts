@@ -2,7 +2,7 @@ import { find } from "~/utils/kabu"
 
 export default defineEventHandler(async (event: any) => {
     const query = getQuery(event);
-    const sql = `
+    let sql = `
         SELECT
             opening_date,
             symbol_code,
@@ -29,8 +29,16 @@ export default defineEventHandler(async (event: any) => {
         WHERE
             opening_date = ?
         AND
-            tick_time >= ?;
-    `
-    const results = find(sql, [query.today, query.lastTime]);
+            tick_time >= ?
+    `;
+    const params = [query.today, query.fromTime]
+    if (query.toTime) {
+        sql += `
+        AND
+            tick_time <= ?
+        `;
+        params.push(query.toTime);
+    }
+    const results = find(sql, params);
     return results;
 });
