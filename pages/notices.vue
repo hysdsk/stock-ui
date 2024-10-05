@@ -35,6 +35,7 @@
               collapse-tags
               collapse-tags-tooltip
               placeholder="Select score label"
+              style="width: 220px;"
             >
               <el-option
                 v-for="item in scoreOptions"
@@ -52,7 +53,6 @@
               :inactive-icon="MuteNotification"
             />
           </el-space>
-          <br/><br/>
           <el-space>
             <el-date-picker
               v-model="fromDateTime"
@@ -60,6 +60,17 @@
               placeholder="Select date and time"
               @change="changeDateTime"
             />
+            <el-switch
+              v-model="realTimeChecked"
+              size="large"
+              style="--el-switch-on-color: #455a64; --el-switch-off-color: #455a64"
+              inline-prompt
+              :active-icon="VideoPlay"
+              :inactive-icon="VideoPause"
+            />
+          </el-space>
+          <el-space>
+            <el-input-number v-model="timeLineRange" :min="60" :max="360" />
           </el-space>
         </el-col>
       </el-row>
@@ -200,7 +211,7 @@
               </template>
             </el-table-column>
             <el-table-column
-              prop="tradingValueByMin"
+              prop="tradingValue"
               label="当日総額"
               header-align="center"
               align="right"
@@ -320,7 +331,7 @@
 import { reactive, ref, onMounted, h } from "vue";
 import { io } from "socket.io-client";
 import Chart from "chart.js/auto";
-import { Bell, MuteNotification } from "@element-plus/icons-vue";
+import { Bell, MuteNotification, VideoPlay, VideoPause } from "@element-plus/icons-vue";
 import dayjs from "dayjs";
 dayjs.locale("ja");
 
@@ -336,6 +347,8 @@ const fromDateTime = ref(queryParams.from != null && /[0-9]*/.test(queryParams.f
   ? dayjs(queryParams.from*1000).toDate()
   : dayjs().toDate());
 const lastTime = ref(dayjs(fromDateTime.value).format("HH:mm:ss"));
+const timeLineRange = ref(60);
+const realTimeChecked = ref(false)
 
 // メインテーブル
 const realtimeTableRef = ref<InstanceType<typeof ElTable>>();
@@ -547,7 +560,13 @@ const refreshData = async () => {
   });
 
 
-  const timelinesRes  = await fetch(`/api/timelines?today=${fromDate}&lastTime=${lastTime.value}`);
+  const fromTime = dayjs(`${fromDate} ${lastTime.value}`).subtract(timeLineRange.value, "minute").format("HH:mm:ss");
+  let url = `/api/timelines?today=${fromDate}&fromTime=${fromTime}`;
+  if (!realTimeChecked.value) {
+    url += `&toTime=${lastTime.value}`;
+  }
+  const timelinesRes  = await fetch(url);
+
   if (!timelinesRes.ok) {
     console.error("Error");
   }
@@ -580,6 +599,25 @@ const refreshData = async () => {
         order_under: data.ask_under_order,
       }
     }
+    Object.keys(symbolRows[data.symbol_code].timeLines).filter(hhmm => hhmm < fromTime).forEach(hhmm => delete symbolRows[data.symbol_code].timeLines[hhmm]);
+    const timeLineArray = Object.values(symbolRows[data.symbol_code].timeLines);
+    timeLineArray.sort((a, b) => {
+      const ahhmm = a.hhmm.split(":");
+      const bhhmm = b.hhmm.split(":");
+      if (ahhmm[0] > bhhmm[0]) {
+        return 1;
+      }
+      if (ahhmm[0] < bhhmm[0]) {
+        return -1;
+      }
+      if (ahhmm[1] > bhhmm[1]) {
+        return 1;
+      }
+      if (ahhmm[1] < bhhmm[1]) {
+        return -1;
+      }
+    });
+    symbolRows[data.symbol_code].timeLines = Object.assign({}, ...timeLineArray.map(timeLine => ({ [timeLine.hhmm]: timeLine })));
   });
 }
 
