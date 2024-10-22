@@ -46,9 +46,11 @@ const getChart = (chartId) => {
         order: {
           type: "linear",
           position: "right",
+          stacked: true,
         },
         x: {
           type: "category",
+          stacked: true,
           ticks: {
             minRotation: 45,
             maxRotation: 45,
@@ -70,6 +72,30 @@ const refreshChart = (symbol) => {
   const visibilities = Object.fromEntries(chart.data.datasets.map((dataset, i) => [dataset.label, chart.isDatasetVisible(i)]));
   // チャートを最新データで更新する
   chart.data.labels = timeLineArray.map(timeLine => timeLine.hhmm);
+  const timeLineOvers = timeLineArray.map((e, i, arr) => {
+    const pe = i > 0 ? arr[i-1] : e;
+    return (e.order_over - pe.order_over) * -1;
+  });
+  const timeLineUnders = timeLineArray.map((e, i, arr) => {
+    const pe = i > 0 ? arr[i-1] : e;
+    return e.order_under - pe.order_under;
+  });
+  const timeLineLimitBids = timeLineArray.map((e, i, arr) => {
+    const pe = i > 0 ? arr[i-1] : e;
+    return (e.order_limit_bid - pe.order_limit_bid) * -1;
+  });
+  const timeLineLimitAsks = timeLineArray.map((e, i, arr) => {
+    const pe = i > 0 ? arr[i-1] : e;
+    return e.order_limit_ask - pe.order_limit_ask;
+  });
+  const timeLineMarketBids = timeLineArray.map((e, i, arr) => {
+    const pe = i > 0 ? arr[i-1] : e;
+    return (e.order_market_bid - pe.order_market_bid) * -1;
+  });
+  const timeLineMarketAsks = timeLineArray.map((e, i, arr) => {
+    const pe = i > 0 ? arr[i-1] : e;
+    return e.order_market_ask - pe.order_market_ask;
+  });
   chart.data.datasets = [{
     label: "価格",
     type: "line",
@@ -85,33 +111,41 @@ const refreshChart = (symbol) => {
     borderColor: "#ff9800",
     data: timeLineArray.map(timeLine => timeLine.vwap)
   }, {
-    label: "買指値",
-    type: "line",
+    label: "売圧",
+    type: "bar",
     yAxisID: "order",
-    backgroundColor: "#e57373",
-    fill: true,
-    data: timeLineArray.map(timeLine => timeLine.order_limit_ask)
+    backgroundColor: timeLineOvers.map(e => e > 0 ? "#ffcdd2" : "#bbdefb"),
+    data: timeLineOvers
   }, {
-    label: "成行買",
-    type: "line",
+    label: "買圧",
+    type: "bar",
     yAxisID: "order",
-    backgroundColor: "#f44336",
-    fill: true,
-    data: timeLineArray.map(timeLine => timeLine.order_market_ask)
+    backgroundColor: timeLineUnders.map(e => e > 0 ? "#ffcdd2" : "#bbdefb"),
+    data: timeLineUnders
   }, {
-    label: "売指値",
-    type: "line",
+    label: "売指",
+    type: "bar",
     yAxisID: "order",
-    backgroundColor: "#64b5f6",
-    fill: true,
-    data: timeLineArray.map(timeLine => timeLine.order_limit_bid * -1)
+    backgroundColor: timeLineLimitBids.map(e => e > 0 ? "#e57373" : "#64b5f6"),
+    data: timeLineLimitBids
   }, {
-    label: "成行売",
-    type: "line",
+    label: "買指",
+    type: "bar",
     yAxisID: "order",
-    backgroundColor: "#2196f3",
-    fill: true,
-    data: timeLineArray.map(timeLine => timeLine.order_market_bid * -1)
+    backgroundColor: timeLineLimitAsks.map(e => e > 0 ? "#e57373" : "#64b5f6"),
+    data: timeLineLimitAsks
+  }, {
+    label: "成売",
+    type: "bar",
+    yAxisID: "order",
+    backgroundColor: timeLineMarketBids.map(e => e > 0 ? "#f44336" : "#2196f3"),
+    data: timeLineMarketBids
+  }, {
+    label: "成買",
+    type: "bar",
+    yAxisID: "order",
+    backgroundColor: timeLineMarketAsks.map(e => e > 0 ? "#f44336" : "#2196f3"),
+    data: timeLineMarketAsks
   }];
   chart.update();
   const dynamicWidth = timeLineArray.length * 24;
