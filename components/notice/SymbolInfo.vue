@@ -26,9 +26,9 @@
       <div>VWAP比</div>
       <div
         style="font-size: 1.2em; padding: 5px"
-        :class="colorRate(props.symbol.vwaprate)"
+        :class="colorRate(props.symbol.vwapRate)"
       >
-        {{ formatRate(props.symbol.vwaprate) }}
+        {{ formatRate(props.symbol.vwapRate) }}
       </div>
     </el-col>
     <el-col :span="12">
