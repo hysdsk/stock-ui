@@ -439,6 +439,7 @@ const getPowerValue = (power: number, ratio: number) => {
   
   return matrix[key > 90 ? 90 : key][power - 1]
 }
+
 const styleRows = (data) => {
   const timeLineArray = Object.values(data.row.timeLines);
   if (data.row.tradingValue == 0) {
@@ -451,7 +452,7 @@ const styleRows = (data) => {
     const power = bulls.length - bears.length;
     const bullsAmount = bulls.length > 0 ? bulls.map(timeline => timeline.large_buy).reduce((amount, value) => amount + value) : 0;
     const bearsAmount = bears.length > 0 ? bears.map(timeline => timeline.large_sell).reduce((amount, value) => amount + value) : 0;
-    const powerRatio = calcRatio(bullsAmount, bullsAmount + bearsAmount)
+    const powerRatio = calcRatio(bullsAmount, bullsAmount + bearsAmount);
     if (power >= 1 && powerRatio > 50) {
       const alpha = getPowerValue(power, powerRatio)
       return {"background-color": `rgb(255 0 0 / .${alpha})`};
@@ -463,18 +464,19 @@ const styleRows = (data) => {
   }
 };
 
-
 const colorSelectedText = (v) => {
   const rows = realtimeTableRef.value!.getSelectionRows();
   if (rows.length > 0 && rows.filter((row) => row.code == v).length > 0) {
     return "text-selected";
   }
 };
+
 const copyToClipboard = (v) => {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(v);
   }
 };
+
 const openDialog = (row) => {
   dialogVisible.value = true;
   dialogRow.value = row;
@@ -565,12 +567,13 @@ const refreshData = async () => {
   if (!realTimeChecked.value) {
     url += `&toTime=${lastTime.value}`;
   }
-  const timelinesRes  = await fetch(url);
 
+  const timelinesRes  = await fetch(url);
   if (!timelinesRes.ok) {
     console.error("Error");
   }
   const timelines = await timelinesRes.json();
+
   timelines.forEach(data => {
     const tickTime = data.tick_time;
     if (lastTime.value < tickTime) {
@@ -627,9 +630,6 @@ onMounted(async () => {
   refreshData();
   setInterval(() => refreshData(), 3000);
 });
-
-// import { formatSymbolName, formatVolume, formatRate, formatFirstSign, formatSecondSign } from "@/modules/ValueFormatter";
-// import { colorRate, colorValue, backgroundStrengthRatioV2, colorFirstSign, colorSecondSign } from "@/modules/StyleHelper";
 
 const colorRate = (v: number) => {
   const r = Math.round(v * 10) / 10;

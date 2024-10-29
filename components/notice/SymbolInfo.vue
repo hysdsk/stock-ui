@@ -1,19 +1,25 @@
 <template>
   <el-row style="text-align: center">
-    <el-col :span="4">
-      <div>現値（前日比）</div>
-      <div
-        style="font-size: 1.2em; padding: 5px"
-        :class="colorRate(props.symbol.previousCloseRate)"
-      >
+    <el-col :span="3">
+      <div>現値</div>
+      <div style="font-size: 1.2em; padding: 5px">
         {{
           props.symbol.currentPrice == null
             ? " - "
             : props.symbol.currentPrice.toLocaleString()
-        }}（{{ formatRate(props.symbol.previousCloseRate) }}）
+        }}
       </div>
     </el-col>
-    <el-col :span="4">
+    <el-col :span="3">
+      <div>前日比</div>
+      <div
+        style="font-size: 1.2em; padding: 5px"
+        :class="colorRate(props.symbol.previousCloseRate)"
+      >
+        {{ formatRate(props.symbol.previousCloseRate) }}
+      </div>
+    </el-col>
+    <el-col :span="3">
       <div>始値比</div>
       <div
         style="font-size: 1.2em; padding: 5px"
@@ -22,7 +28,7 @@
         {{ formatRate(props.symbol.openingRate) }}
       </div>
     </el-col>
-    <el-col :span="4">
+    <el-col :span="3">
       <div>VWAP比</div>
       <div
         style="font-size: 1.2em; padding: 5px"
