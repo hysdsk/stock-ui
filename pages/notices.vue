@@ -446,6 +446,7 @@ const styleRows = (data) => {
     return;
   }
   if (timeLineArray.length >= 5) {
+    const latestTimeLine = timeLineArray[timeLineArray.length - 1]
     const scope = timeLineArray.slice(-5);
     const bulls = scope.filter(timeLine => timeLine.large_buy > timeLine.large_sell);
     const bears = scope.filter(timeLine => timeLine.large_sell > 0 && timeLine.large_buy < timeLine.large_sell);
@@ -453,11 +454,11 @@ const styleRows = (data) => {
     const bullsAmount = bulls.length > 0 ? bulls.map(timeline => timeline.large_buy).reduce((amount, value) => amount + value) : 0;
     const bearsAmount = bears.length > 0 ? bears.map(timeline => timeline.large_sell).reduce((amount, value) => amount + value) : 0;
     const powerRatio = calcRatio(bullsAmount, bullsAmount + bearsAmount);
-    if (power >= 1 && powerRatio > 50) {
+    if (power >= 1 && powerRatio > 50 && latestTimeLine.vwap >= data.row.openingPrice && latestTimeLine.close >= latestTimeLine.vwap) {
       const alpha = getPowerValue(power, powerRatio)
       return {"background-color": `rgb(255 0 0 / .${alpha})`};
     }
-    if (power <= -1 && powerRatio < 50) {
+    if (power <= -1 && powerRatio < 50 && latestTimeLine.vwap < data.row.openingPrice && latestTimeLine.close < latestTimeLine.vwap) {
       const alpha = getPowerValue(power * -1, 100 - powerRatio)
       return {"background-color": `rgba(0, 0, 255, .${alpha})`};
     }
@@ -518,6 +519,7 @@ const refreshData = async () => {
       symbolRows[data.symbol_code].currentDateTime = data.current_datetime;
       symbolRows[data.symbol_code].currentPrice = data.current_price;
       symbolRows[data.symbol_code].previousCloseRate = calcRate(data.current_price, data.previous_close_price);
+      symbolRows[data.symbol_code].openingPrice = data.opening_price;
       symbolRows[data.symbol_code].openingRate = calcRate(data.current_price, data.opening_price);
       symbolRows[data.symbol_code].vwapRate = calcRate(data.current_price, data.vwap);
       symbolRows[data.symbol_code].tradingValue = data.trading_value;
@@ -540,6 +542,7 @@ const refreshData = async () => {
         threshold: 0,
         currentPrice: data.current_price,
         previousCloseRate: calcRate(data.current_price, data.previous_close_price),
+        openingPrice: data.opening_price,
         openingRate: calcRate(data.current_price, data.opening_price),
         vwapRate: calcRate(data.current_price, data.vwap),
         tradingValue: data.trading_value,
